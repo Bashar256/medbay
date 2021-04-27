@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+{% block body %}
+    <p><bold>welcome to Medbay. Here we provide best preformance and derive best connection between the patient and Doctor</bold></p>
+    <div class="card">             
+        {% if user.is_patient(): %}
+            <a href="/book appointment">
+                <div class="plus-box">
+                    Make Appointment
+                </div>
+            </a>
+        {% endif %} 
+    </div>
+{% endblock body %}

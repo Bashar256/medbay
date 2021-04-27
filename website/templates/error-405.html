@@ -1,0 +1,10 @@
+{% extends 'errorbase.html' %}
+{% block title %}405{% endblock %}
+{% block body %}
+    <h1 class="error-text font-weight-bold">405</h1>
+    <h4><i class="fa fa-exclamation-triangle text-warning"></i>Method Not Allowed</h4>
+    <p>The HTTP method used is not allowed!</p>
+    <div>
+        <a class="btn btn-primary" href="/">Back to Home</a>
+    </div>
+{% endblock %}

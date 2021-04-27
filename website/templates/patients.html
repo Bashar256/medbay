@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Patients{% endblock %}
+{% block body %}
+    <div class="row">  
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Patients</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-responsive-md">
+                            <thead>
+                                <tr>	
+                                    <th><strong>Patient Name</strong></th>
+                                    <th><strong>Last Visit</strong></th>
+                                    <th><strong>Diagnosis</strong></th>
+                                    <th><strong>Lab Results</strong></th>
+                                    <th><strong>Action</strong></th>
+                                </tr>
+                            </thead>
+                                <tbody>
+                                    {% for (patient, appointment) in info: %}
+                                        <tr>
+                                            <td><div class="d-flex align-items-center"> <span class="w-space-no">{{patient.first_name + ' ' + patient.last_name}}</span></div></td>
+                                            <td>{% if appointment: %}{{appointment}}{% else: %}<p>No previous appoinment</p>{% endif %}</td>
+                                            <td><a href="/diagnoses/{{patient.id}}">Diagnoses</a></td>
+                                            <td><div></div><a href="/lab results/{{patient.id}}">Lab Results</a></td>
+                                            <td>
+                                                <div class="d-flex">
+                                                    <button onclick="window.location.href='/patient details{{patient.id}}'" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-user"></i></button>
+                                                    <button type="submit" data-toggle="modal" data-target="#upload{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-file"></i></button>
+                                                    <button type="submit" data-toggle="modal" data-target="#bed{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-bed"></i></button>
+                                                </div>
+                                                <div class="modal fade" id="upload{{patient.id}}">
+                                                    <div class="modal-dialog" role="document">
+                                                        <form method='POST' enctype = "multipart/form-data" action = "http://localhost:5000/upload">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Upload</h5>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="form-group">
+                                                                        <input type="hidden" name="patient_id" value="{{patient.id}}"></input>
+                                                                        <div class="input-group mb-3">
+                                                                            <div class="custom-file">
+                                                                                <input type="file" name="diagnosis" class="custom-file-input">
+                                                                                <label class="custom-file-label">Upload Diagnosis</label>
+                                                                            </div> 
+                                                                        </div>
+                                                                        <div class="input-group mb-3">
+                                                                            <div class="custom-file">
+                                                                                <input type="file" name="lab_result" class="custom-file-input">
+                                                                                <label class="custom-file-label">Upload Lab Result</label>
+                                                                            </div> 
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="submit" class="btn btn-primary">Upload</button>
+                                                                    <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div> 
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>	    
+    </div>
+{% endblock %}

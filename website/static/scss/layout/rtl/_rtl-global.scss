@@ -1,0 +1,201 @@
+// html[dir="rtl"] {
+
+    //content body
+    [direction="rtl"] {
+		.list-group{
+			padding-left: 0;
+		}
+		.form-check-input{
+		    margin-left: -1.25rem;
+			margin-right: inherit;
+		}
+		.form-check-inline .form-check-input{
+			margin-right: 0;
+			margin-left: 10px;
+		}
+		.radio input, 
+		.radio-inline, 
+		.checkbox input, 
+		.checkbox-inline input{
+		    margin-left: 0;
+			margin-right: 0;
+		}
+        .content-body {
+            margin-right:  21.563rem;
+            margin-left: auto;
+			@at-root [data-sidebar-style="modern"]#{&} {
+				margin-right: 9.375rem;
+			}
+            .page-titles {
+                text-align: right;
+            }
+        }
+		.doctor-info-details .media-body span i,
+		.recovered-chart-deta .col [class*="bg-"]{
+			margin-right:0;
+			margin-left:10px;
+		}
+		.patients-chart-deta .col,
+		.patients-chart-deta .col [class*="bg-"],
+		.recovered-chart-deta .col{
+			margin-right:0;
+			margin-left:15px;
+		}
+		
+		.best-doctor .timeline .timeline-panel .media .number{
+			left: auto;
+			right: -13px;
+		}
+		.doctor-info-details .media i{
+		    right: 0;
+		    left: -15px;
+		}
+		.review-table .disease{
+		    border-left:0;
+		    border-right: 1px solid #eee;
+			padding-left: 0;
+			padding-right: 20px;
+		}
+		.apexcharts-legend-text{
+			margin:4px;
+		}
+		.doctor-info-details .media-body{
+		    padding-left: 0;
+		    padding-right: 40px;
+		}
+		.custom-control{
+		    margin-left: 0;
+		}
+		.review-tab.nav-pills li:first-child a.nav-link {
+			border-radius: 0 0.75rem 0 0;
+		}
+		.review-tab.nav-pills li:last-child a.nav-link {
+			border-radius: 0.75rem 0 0 0;
+		}
+		.form-head .btn i{
+			margin-left: 5px;
+			margin-right: 0;
+		}
+		.iconbox{
+			padding-left: 0;
+			padding-right: 70px;
+			i{
+				left: auto;
+				right: 0;
+			}
+		}
+        &[data-layout="horizontal"] {
+            .content-body {
+                margin-right: 0;
+            }
+			.deznav .metismenu li li .has-arrow:after{
+				-webkit-transform: rotate(-4deg) translateY(-50%);
+				transform: rotate(-45deg) translateY(-50%);
+			}
+        }
+
+        &[data-sidebar-style="mini"]:not([data-layout="horizontal"]) {
+            .content-body {
+                margin-right: 6.25rem;
+            }
+        }
+
+        &[data-sidebar-style="compact"]:not([data-layout="horizontal"]) {
+            .content-body {
+                margin-right: 11.25rem;
+            }
+        }
+
+        
+		
+        &[data-sidebar-style="overlay"] {
+            .content-body {
+                margin-right: 0;
+            }
+        }
+		#external-events .external-event:before{
+			margin-right: 0;
+			margin-left: .9rem;
+		}
+		.post-input a i{
+		    margin-left: 15px;
+		    margin-right: 0;
+		}
+		.deznav .metismenu .has-arrow:after{
+		    -webkit-transform: rotate(-45deg) translateY(-50%);
+			transform: rotate(-45deg) translateY(-50%);
+		}
+		.deznav .metismenu .has-arrow[aria-expanded=true]:after, 
+		.deznav .metismenu .mm-active > .has-arrow:after {
+			-webkit-transform: rotate(-135deg) translateY(-50%);
+			transform: rotate(-135deg) 
+		}
+		.chatbox{
+		    left: -500px;
+		    right: auto;
+		}
+		.chatbox.active{
+		    left: 0;
+		    right: auto;
+		}
+		
+		@media only screen and (max-width: 575px){
+			.best-doctor .timeline .timeline-panel .media {
+				float: right;
+				margin-right: 0 !important;
+				margin-left: 15px !important;
+			}
+		}
+		
+		.default-select{
+			&.style-1{
+				.btn{
+					&:after{
+						margin-left: 0;
+						margin-right:0.5em;
+					}
+				}
+			}
+		}
+		/* ===== Light gallery ===== */
+		.lg-outer.lg-visible{
+			direction: ltr;
+		}
+		
+		.chart-point .chart-point-list {
+			margin: 0;
+			padding-right: 20px;
+		}
+		.noUi-target{
+			direction:rtl;
+		}
+		.noUi-vertical{
+			.noUi-pips-vertical{
+				left: -20px;
+			}
+			.noUi-value-vertical{
+				padding-left: 0;
+				padding-right: 25px;
+			}
+		}
+		.sidebar-right .ps--active-x > .ps__rail-x {
+		  display: none;
+		}
+		.form-wizard .nav-wizard li .nav-link:after{
+			right:50%;
+			left:auto;
+		}
+		.dtp > .dtp-content{
+			right: 50%;
+			left:auto;
+		}
+    }
+
+// }
+@media only screen and (max-width: 1350px) and (min-width: 1200px){
+    [direction="rtl"] {
+		.content-body {
+			margin-right: 14.375rem;
+		}
+	}
+}

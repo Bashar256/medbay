@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Profile{% endblock %}
+{% block body %}
+    <div class="card">
+        <div class="card-header">
+            <h4 class="card-title">Edit your Information</h4> 
+        </div>
+        <div class="card-body">
+            <div class="basic-form">
+                <form method="POST" >
+                    <div class="form-group">
+                        <label class="mb-1"><strong>Name</strong></label>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control" name='firstname' id='firstname' value="{{user.first_name}}" required>
+                                </div>
+                                <div class="col-sm-6 mt-2 mt-sm-0">
+                                    <input type="text" class="form-control" name='lastname' id='lastname' value="{{user.last_name}}" required>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="mb-1"><strong>Gender</strong></label>
+                        <select name='gender' id="gender" class="form-control" value={{user.gender}}>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="mb-1"><strong>Date of birth</strong></label>
+                        <input type="date" class="form-control" name='dob' min="1900-01-01" id="datePickerId" value="{{user.date_of_birth}}">
+                    </div>
+                    <div class="form-group">
+                        <label class="mb-1"><strong>Phone number</strong></label>
+                        <input type="tel" class="form-control" name='phone_no' id='phone_no' value="{{user.phone_no}}" maxlength="13">
+                    </div>
+                    <div class="form-group">
+                        <label class="mb-1"><strong>Email</strong></label>
+                        <input type="email" class="form-control" name="email" id ='email' value="{{user.email}}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="mb-1"><strong>Password</strong></label>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <input type="password" class="form-control" name='password1' id='password1' placeholder="Old Password">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <input type="password" class="form-control" name='password2' id='password2' placeholder="New Password">
+                            </div>
+                            <div class="col-sm-6 mt-2 mt-sm-0">
+                                <input type="password" class="form-control" name='password3' id='password3' placeholder="Confirm New Password">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

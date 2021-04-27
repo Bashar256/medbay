@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Doctors{% endblock %}
+{% block body %}
+    <div id="default_collapseOne" class="collapse accordion__body show" data-parent="#accordion-one">
+        <div class="widget-media best-doctor pt-4">
+            <div class="timeline row">
+                {% for doctor in medical_staff: %}
+                    <div class="col-lg-6">
+                        <div class="timeline-panel bg-white p-4 mb-4">
+                            <div class="media-body">
+                                <a href="/book appointment/{{hospital_id}}/{{department_id}}/staff details-{{doctor.id}}{{doctor.role}}"><h4 class="mb-2">{{doctor}}</h4></a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}	
+            </div>
+        </div>
+    </div>
+{% endblock %}

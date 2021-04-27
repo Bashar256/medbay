@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Hospitals{% endblock %}
+{% block body %}
+    <div class="row">
+    {% for hospital in hospitals: %}
+        <div class="col-xl-12">
+            <div id="accordion-one" class="accordion doctor-list ">
+                <div class="accordion__item">
+                    <div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#default_collapseOne">
+                        <span class="form-group">{{hospital.name}}</span>
+                        <span class="accordion__header-line flex-grow-1"></span>
+                        <span class="accordion__header--indicator style_two"></span>
+                    </div>
+                        <div id="default_collapseOne" class="collapse accordion__body show" data-parent="#accordion-one">
+                            <div class="widget-media best-doctor pt-4">
+                                <div class="timeline row">
+                                    {% for department in departments: %}
+                                        {% if department.hospital == hospital.id%}
+                                            <div class="col-lg-6">
+                                                <div class="timeline-panel bg-white p-4 mb-4">
+                                                    <div class="media-body">
+                                                        <a href="/book appointment/{{hospital.id}}/{{department.id}}/doctors"><h4 class="mb-2">{{department}}</h4></a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}	
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+{% endblock %}

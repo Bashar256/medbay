@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Mediqu - Bootstrap Admin Dashboard </title>
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon.png">
+    <!-- Nestable -->
+    <link href="./vendor/nestable2/css/jquery.nestable.min.css" rel="stylesheet">
+    <!-- Custom Stylesheet -->
+    <link href="./vendor/bootstrap-select/dist/css/bootstrap-select.min.css" rel="stylesheet">
+    <link href="./css/style.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+    <!--*******************
+        Preloader start
+    ********************-->
+    <div id="preloader">
+        <div class="sk-three-bounce">
+            <div class="sk-child sk-bounce1"></div>
+            <div class="sk-child sk-bounce2"></div>
+            <div class="sk-child sk-bounce3"></div>
+        </div>
+    </div>
+    <!--*******************
+        Preloader end
+    ********************-->
+
+
+    <!--**********************************
+        Main wrapper start
+    ***********************************-->
+    <div id="main-wrapper">
+
+        <!--**********************************
+            Nav header start
+        ***********************************-->
+        <div class="nav-header">
+            <a href="index.html" class="brand-logo">
+                <img class="logo-abbr" src="./images/logo.png" alt="">
+                <img class="logo-compact" src="./images/logo-text.png" alt="">
+                <img class="brand-title" src="./images/logo-text.png" alt="">
+            </a>
+
+            <div class="nav-control">
+                <div class="hamburger">
+                    <span class="line"></span><span class="line"></span><span class="line"></span>
+                </div>
+            </div>
+        </div>
+        <!--**********************************
+            Nav header end
+        ***********************************-->
+		
+		
+
+		
+		
+        <!--**********************************
+            Header start
+        ***********************************-->
+        <div class="header">
+            <div class="header-content">
+                <nav class="navbar navbar-expand">
+                    <div class="collapse navbar-collapse justify-content-between">
+                        <div class="header-left">
+                            <div class="dashboard_bar">
+                                Hospitals
+                            </div>
+                        </div>
+
+                        <ul class="navbar-nav header-right">
+							
+							<li class="dropdown-item ai-icon">
+								<a  href="./page-login.html" >
+									<svg id="icon-logout" xmlns="http://www.w3.org/2000/svg" class="text-danger" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                                        <span class="ml-2">Logout </span>
+								</a>
+							</li>	
+ 
+                            
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <!--**********************************
+            Header end ti-comment-alt
+        ***********************************-->
+
+         <!--**********************************
+            Sidebar start
+        ***********************************-->
+        <div class="deznav">
+            <div class="deznav-scroll">
+				<ul class="metismenu" id="menu">
+                    
+											
+
+                   
+												
+											<!--Admin-->
+                    
+					<li><a href="./uc-nestable.html" class="ai-icon" aria-expanded="false">
+						<i class="flaticon-381-television"></i>
+							<span class="nav-text">Hospitals</span>
+						</a>
+					</li>
+					<li><a href="./uc-lightgallery.html" class="ai-icon" aria-expanded="false">
+						<i class="flaticon-381-network"></i>
+						<span class="nav-text">Rooms</span>
+					</a>
+					</li>
+					<li><a href="./uc-select2.html" class="ai-icon" aria-expanded="false">
+						<i class="flaticon-381-notepad"></i>
+					<span class="nav-text">Patient</span>
+					</a>
+					</li>
+					<li><a href="./doctors.html" class="ai-icon" aria-expanded="false">
+						<i class="flaticon-381-heart"></i>
+						<span class="nav-text">Staff</span>
+					</a>
+					</li>
+
+											<!--end admin-->
+
+											
+
+
+                    
+											<!--pages-->
+                    <li><a href="./chart-sparkline.html" class="ai-icon" aria-expanded="false">
+						<i class="flaticon-381-layer-1"></i>
+					<span class="nav-text">About us</span>
+					</a>
+					</li>
+                </ul>
+            
+				
+			</div>
+        </div>
+        <!--**********************************
+            Sidebar end
+        ***********************************-->
+		
+
+       <!--**********************************
+            Content body start
+        ***********************************-->
+        <div class="content-body">
+            <!-- row -->
+			<div class="container-fluid">
+                <div class="form-head d-flex mb-3  mb-lg-5   align-items-start">
+					<a href="javascript:void(0)" class="btn btn-danger" data-toggle="modal" data-target="#addDoctorModal">+New Hospital</a>
+					
+					
+				</div>
+				<!-- Add Doctor -->
+				<div class="modal fade" id="addDoctorModal">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title">Add Hospital</h5>
+								<button type="button" class="close" data-dismiss="modal"><span>&times;</span>
+								</button>
+							</div>
+							<div class="modal-body">
+								<form>
+									<div class="form-group">
+										<label class="text-black font-w500">Hospital Name</label>
+										<input type="text" class="form-control">
+									</div>
+									<div class="form-group">
+										<label class="text-black font-w500">Hospital ID</label>
+										<input type="text" class="form-control">
+									</div>
+									
+									
+									<div class="form-group">
+										<button type="button" class="btn btn-primary">CREATE</button>
+									</div>
+								</form>
+							</div>
+						</div>
+						
+					</div>
+				</div>
+                <div class="row">
+					<div class="col-xl-12">
+						<div id="accordion-one" class="accordion doctor-list ">
+							<div class="accordion__item">
+								<div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#default_collapseOne">
+									<span class="form-group">Abg Hospital</span>
+									<span class="accordion__header-line flex-grow-1"></span>
+									
+									<span class="accordion__header--indicator style_two"></span>
+								</div>
+								<div id="default_collapseOne" class="collapse accordion__body show" data-parent="#accordion-one">
+										<div class="widget-media best-doctor pt-4">
+											<div class="timeline row">
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Allergists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Dermatologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												
+												
+												
+											</div>
+										</div>
+								</div>
+							</div>
+							<div class="accordion__item">
+								<div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#default_collapseOne">
+									<span class="form-group">Bashir Hospital</span>
+									<span class="accordion__header-line flex-grow-1"></span>
+									
+									<span class="accordion__header--indicator style_two"></span>
+								</div>
+								<div id="default_collapseOne" class="collapse accordion__body show" data-parent="#accordion-one">
+										<div class="widget-media best-doctor pt-4">
+											<div class="timeline row">
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Ophthalmologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Dermatologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Infectious disease</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Obstetrician</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+											</div>
+										</div>
+								</div>
+							</div>
+							<div class="accordion__item">
+								<div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#default_collapseOne">
+									<span class="form-group">Hamzeh Hospital</span>
+									<span class="accordion__header-line flex-grow-1"></span>
+									
+									<span class="accordion__header--indicator style_two"></span>
+								</div>
+								<div id="default_collapseOne" class="collapse accordion__body show" data-parent="#accordion-one">
+										<div class="widget-media best-doctor pt-4">
+											<div class="timeline row">
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Endocrinologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Gastroenterologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Nephrologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												
+											</div>
+										</div>
+								</div>
+							</div>
+							<div class="accordion__item">
+								<div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#default_collapseOne">
+									<span class="form-group">Hussain Hospital</span>
+									<span class="accordion__header-line flex-grow-1"></span>
+									
+									<span class="accordion__header--indicator style_two"></span>
+								</div>
+								<div id="default_collapseOne" class="collapse accordion__body show" data-parent="#accordion-one">
+										<div class="widget-media best-doctor pt-4">
+											<div class="timeline row">
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Oncology</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												
+												
+												
+												
+											</div>
+										</div>
+								</div>
+							</div>
+							<div class="accordion__item">
+								<div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#default_collapseOne">
+									<span class="form-group">Hope Hospital</span>
+									<span class="accordion__header-line flex-grow-1"></span>
+									
+									<span class="accordion__header--indicator style_two"></span>
+								</div>
+								<div id="default_collapseOne" class="collapse accordion__body show" data-parent="#accordion-one">
+										<div class="widget-media best-doctor pt-4">
+											<div class="timeline row">
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Urologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Pulmonologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Otolaryngologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												
+											</div>
+										</div>
+								</div>
+							</div>
+							<div class="accordion__item">
+								<div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#default_collapseOne">
+									<span class="form-group">Ibn al haitham Hospital</span>
+									<span class="accordion__header-line flex-grow-1"></span>
+									
+									<span class="accordion__header--indicator style_two"></span>
+								</div>
+								<div id="default_collapseOne" class="collapse accordion__body show" data-parent="#accordion-one">
+										<div class="widget-media best-doctor pt-4">
+											<div class="timeline row">
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Radiologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Rheumatologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												
+												
+												
+											</div>
+										</div>
+								</div>
+							</div>
+							<div class="accordion__item">
+								<div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#default_collapseOne">
+									<span class="form-group">Jordan Hospital</span>
+									<span class="accordion__header-line flex-grow-1"></span>
+									
+									<span class="accordion__header--indicator style_two"></span>
+								</div>
+								<div id="default_collapseOne" class="collapse accordion__body show" data-parent="#accordion-one">
+										<div class="widget-media best-doctor pt-4">
+											<div class="timeline row">
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">General surgeons</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Orthopedic surgeons</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Anesthesiologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												
+											</div>
+										</div>
+								</div>
+							</div>
+							<div class="accordion__item">
+								<div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#default_collapseOne">
+									<span class="form-group">Majdi Hospital</span>
+									<span class="accordion__header-line flex-grow-1"></span>
+									
+									<span class="accordion__header--indicator style_two"></span>
+								</div>
+								<div id="default_collapseOne" class="collapse accordion__body show" data-parent="#accordion-one">
+										<div class="widget-media best-doctor pt-4">
+											<div class="timeline row">
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Cardiologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												
+												
+												
+											</div>
+										</div>
+								</div>
+							</div>
+							<div class="accordion__item">
+								<div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#default_collapseOne">
+									<span class="form-group">Noor Hospital</span>
+									<span class="accordion__header-line flex-grow-1"></span>
+									
+									<span class="accordion__header--indicator style_two"></span>
+								</div>
+								<div id="default_collapseOne" class="collapse accordion__body show" data-parent="#accordion-one">
+										<div class="widget-media best-doctor pt-4">
+											<div class="timeline row">
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Urologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Pulmonologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Otolaryngologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												
+											</div>
+										</div>
+								</div>
+							</div>
+							<div class="accordion__item">
+								<div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#default_collapseOne">
+									<span class="form-group">QNB Hospital</span>
+									<span class="accordion__header-line flex-grow-1"></span>
+									
+									<span class="accordion__header--indicator style_two"></span>
+								</div>
+								<div id="default_collapseOne" class="collapse accordion__body show" data-parent="#accordion-one">
+										<div class="widget-media best-doctor pt-4">
+											<div class="timeline row">
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">General surgeons</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Orthopedic surgeons</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												
+												<div class="col-lg-6">
+													<div class="timeline-panel bg-white p-4 mb-4">
+														
+														<div class="media-body">
+															<a href="doctors.html"><h4 class="mb-2">Anesthesiologists</h4></a>
+															
+															
+														</div>
+														
+													</div>
+												</div>
+												
+											</div>
+										</div>
+								</div>
+							</div>
+							
+						</div>
+					</div>
+				</div>
+            </div>
+        </div>
+        <!--**********************************
+            Content body end
+        ***********************************-->
+
+
+      
+
+        <!--**********************************
+           Support ticket button start
+        ***********************************-->
+
+        <!--**********************************
+           Support ticket button end
+        ***********************************-->
+
+        
+    </div>
+    <!--**********************************
+        Main wrapper end
+    ***********************************-->
+
+    <!--**********************************
+        Scripts
+    ***********************************-->
+    <!-- Required vendors -->
+    <script src="./vendor/global/global.min.js"></script>
+	<script src="./vendor/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
+    <script src="./js/custom.min.js"></script>
+	<script src="./js/deznav-init.js"></script>
+
+    <!-- Nestable -->
+    <script src="./vendor/nestable2/js/jquery.nestable.min.js"></script>
+
+
+    <!-- All init script -->
+    
+
+
+
+    
+</body>
+</html>

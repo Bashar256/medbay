@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Appointments{% endblock %}
+{% block body %}
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card">
+                <div class="card-header d-block">
+                    <h4 class="card-title">Edit Appointment</h4>
+                </div>
+                <div class="card-body">
+                    <div class="pt-4">
+                        <form method='POST'>
+                            <label class="text-black font-w500">Appointment Date</label>
+                            <input type="date" name="appointment_date" class="form-control" min={{today}} max={{limit}}>
+                            <label class="text-black font-w500">Appointment Time</label>
+                            {% set mx = shift.shift_end.strftime("%H:%M") %}
+                            {% set mn = shift.shift_start.strftime("%H:%M") %}
+                            <input type="time" name="appointment_time" class="form-control" id="appt" name="appt" min="{{mn}}" max="{{mx}}" value="13:30">
+                            <p><small>Doctor is available from {{shift.shift_start.strftime("%H:%M")}} till {{shift.shift_end.strftime("%H:%M")}}</small></p>
+                            <button type="submit" class="btn btn-primary">Edit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
