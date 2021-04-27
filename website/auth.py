@@ -123,7 +123,7 @@ def email_confirmation():
 def confirm_email(user):
     token = user.get_token()
     msg = Message('Email Confirmation',
-                sender=("MedBay Support", "noreply@medbay.org"),
+                sender=("MedBay Support", "waveydaveyonfire1@gmail.com"),
                 recipients=["sebire3932@hype68.com"])
     msg.body = f'''To confirm your email please follow the link below:
     {url_for('auth_view.verify_email', token=token, _external=True)}'''
