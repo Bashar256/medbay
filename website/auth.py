@@ -89,7 +89,7 @@ def register():
             flash('Account created!', category='success')
             return redirect(url_for('user_view.home'))
         return render_template("register.html")
-    create_stuff()
+    #create_stuff()
     return render_template("register.html")
 
 
