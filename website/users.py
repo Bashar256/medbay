@@ -632,12 +632,16 @@ def medical_staff_appointments(medical_staff_id):
     patients = []
     departments = []
     hospitals = []
+    diagnoses = []
+    lab_results = []
     for appointment in appointments:
         departments.append(Department.query.filter_by(id=appointment.department).first())
         patients.append(Patient.query.filter_by(id=appointment.patient).first())
         hospitals.append(Hospital.query.filter_by(id=appointment.hospital).first())
+        diagnoses.append(appointment.diagnoses)
+        lab_results.append(appointment.lab_results)
     
-    information = zip(appointments,hospitals,departments,patients)
+    information = zip(appointments,hospitals,departments,patients,diagnoses,lab_results)
     return information
 
 
