@@ -31,7 +31,7 @@
                                             <td><div class="d-flex align-items-center"> <span class="w-space-no">{{usr}}</span></div></td>
                                             <td>{{usr.email}}</td>
                                         {% endif %}
-                                        <td>{{lab_result.date.date()}}</td>
+                                        <td>{{lab_result.date.strftime("%d-%m-%y")}}</td>
                                         <td>
                                             <div class="d-flex">
                                                 <a href="/download/{{lab_result.path}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-file"></i></a>

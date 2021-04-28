@@ -115,18 +115,15 @@ def assign_shifts():
 @user_view.route("/home")
 @login_required
 def home():
-    print(request.from_values)
-    appointments = Appointment.query.filter_by(medical_staff=current_user.id).all()
-    if current_user.is_admin():
-        return render_template("home.html",user=current_user, sidebar=admin_sidebar)    
-    if current_user.is_management_staff():
+    if current_user.is_patient():
+        return render_template("home.html",user=current_user, sidebar=patient_sidebar)
+    elif current_user.is_management_staff():
         return render_template("home.html",user=current_user, sidebar=management_staff_sidebar)
     elif current_user.is_medical_staff():
-        return render_template("home.html",user=current_user, appointments=appointments, sidebar=medical_staff_sidebar)
-    
-    appointments = Appointment.query.filter_by(patient=current_user.id).all()
-    return render_template("home.html",user=current_user, appointments=appointments, sidebar=patient_sidebar)
-
+        return render_template("home.html",user=current_user, sidebar=medical_staff_sidebar)
+    elif current_user.is_admin():
+        return render_template("home.html",user=current_user, sidebar=admin_sidebar)    
+    abort(401)
 
 @user_view.route("/profile")
 @login_required
@@ -207,7 +204,7 @@ def edit_profile():
 
         if not count:
             flash("Your Information was changed", category="success")
-        db.session.commit()
+            db.session.commit()
         return redirect(url_for("user_view.profile"))
 
     elif current_user.is_patient():
@@ -234,9 +231,6 @@ def book_appointment():
     if current_user.is_patient(): 
         hospitals = Hospital.query.all()
         departments = Department.query.all()
-        print(request.content_type)
-        if request.content_type == 'application/json':
-           return jsonify({'hospital':hospitals})
         return render_template("book appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=patient_sidebar)
     abort(401)
 
@@ -371,50 +365,54 @@ def edit_appointment(appointment_id):
 @login_required
 def view_patients():
     if current_user.is_medical_staff():
-        patients_ids = db.session.query(patients).filter_by(medical_staff_id=current_user.id).all()
-        patients_obj = []
+        patients = current_user.patients
         appointments = []
-        count=0
-        for p_id in patients_ids:
-            patient = Patient.query.filter_by(id=p_id[0]).first()
-            if patient not in patients_obj:
-                patients_obj.append(patient) 
-                appointments.append(patients_obj[count].last_visit())
-            count = count + 1    
-        info = zip(patients_obj, appointments)
+        for patient in patients:
+            appointments.append(patient.last_visit(current_user.id))
+        print(appointments)
+        info = zip(patients, appointments)
         return render_template("patients.html", user=current_user, info=info, sidebar=medical_staff_sidebar)
     abort(401)
 
 @user_view.route("/upload", methods=["POST"])
 @login_required
 def upload_file():
-    if request.method == 'POST':
-        diganosis_file = request.files['diagnosis']
-        lab_result_file = request.files['lab_result']
-        patient_id = request.form.get("patient_id")
-        patient = Patient.query.filter_by(id=patient_id).first()
-        if diganosis_file.filename:
-            filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Diagnosis" + "_" + str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S")))
-            path = os.path.join(patient.diagnoses, filename)
-            diganosis_file.save(path)
-            new_diagnosis = Diagnosis(path=path, date=datetime.datetime.now(), medical_staff=current_user.id, patient=patient_id)
-            db.session.add(new_diagnosis)
-            db.session.commit()
-            flash("Diagnosis uploaded successfuly", category="success")
-            return redirect(url_for("user_view.view_patients"))
-        if lab_result_file:
-            filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Lab_result" + "_" + str(datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S")))
-            path = os.path.join(patient.lab_results, filename)
-            lab_result_file.save(path)
-            new_lab_result = Lab_Result(path=path, date=datetime.datetime.now(), medical_staff=current_user.id, patient=patient_id)
-            db.session.add(new_lab_result)
-            db.session.commit()
-            flash("Lab result uploaded successfuly", category="success")
-            return redirect(url_for("user_view.view_patients"))
+    if current_user.is_medical_staff():
+        if request.method == 'POST':
+            diganosis_file = request.files['diagnosis']
+            lab_result_file = request.files['lab_result']
+            patient_id = request.form.get("patient_id")
+            date_time = request.form.get("appointment")
+            date_time = date_time.split(' ')
+            date = date_time[0].split('-')
+            time = date_time[1].split(':')
+            appointment_date_time = datetime.datetime(int(date[0]), int(date[1]), int(date[2]), int(time[0]), int(time[1])) 
+            appointment = Appointment.query.filter(Appointment.medical_staff==current_user.id, Appointment.patient==patient_id, Appointment.appointment_date_time==appointment_date_time).first()
+            print(appointment)
+            patient = Patient.query.filter_by(id=patient_id).first()
+            if diganosis_file.filename:
+                filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Diagnosis" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")))
+                path = os.path.join(patient.diagnoses_file, filename)
+                diganosis_file.save(path)
+                new_diagnosis = Diagnosis(path=path, date=datetime.datetime.now(), medical_staff=current_user.id, patient=patient_id, appointment=appointment.id)
+                db.session.add(new_diagnosis)
+                db.session.commit()
+                flash("Diagnosis uploaded successfuly", category="success")
+                return redirect(url_for("user_view.view_patients"))
+            elif lab_result_file:
+                filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Lab_result" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")))
+                path = os.path.join(patient.lab_results_file, filename)
+                lab_result_file.save(path)
+                new_lab_result = Lab_Result(path=path, date=datetime.datetime.now(), medical_staff=current_user.id, patient=patient_id, appointment=appointment.id)
+                db.session.add(new_lab_result)
+                db.session.commit()
+                flash("Lab result uploaded successfuly", category="success")
+                return redirect(url_for("user_view.view_patients"))
 
-        flash('Plese select a file', category="error")
-        return redirect(url_for("user_view.view_patients")) 
-    abort(405)
+            flash('Plese select a file', category="error")
+            return redirect(url_for("user_view.view_patients")) 
+        abort(405)
+    abort(401)
 
 @user_view.route('/download/<path:filename>', methods=['GET', 'POST'])
 def download(filename):
@@ -430,7 +428,6 @@ def patient_details(patient_id):
             if patient_id == patient.id:
                 diagnoses = Diagnosis.query.filter(Diagnosis.patient==patient_id, Diagnosis.medical_staff==current_user.id).all()
                 information = patient_appointments(patient_id)
-
                 return render_template("patient details.html", user=current_user, medical_staff=current_user, information=information, diagnoses=diagnoses, patient=patient, today=today, sidebar=medical_staff_sidebar)
         return redirect(url_for('user_view.view_patients'))
     abort(401)
@@ -463,7 +460,6 @@ def lab_results(patient_id=None):
         return render_template("lab results.html", user=current_user, patient=patient, info=info, sidebar=medical_staff_sidebar)
     elif current_user.is_patient():
         info = patient_lab_results(current_user.id)
-        current_user.lab_results
         return render_template("lab results.html", user=current_user, info=info, sidebar=patient_sidebar)
     abort(401)
 
@@ -472,7 +468,12 @@ def lab_results(patient_id=None):
 @user_view.route("/diagnoses/<int:patient_id>", methods=["POST", "GET"])
 @login_required
 def diagnoses(patient_id=None):
-    if current_user.is_medical_staff():
+    if current_user.is_patient():
+        info = patient_diagnoses(current_user.id)
+        print(current_user.diagnoses)
+        return render_template("diagnoses.html", user=current_user, info=info, sidebar=patient_sidebar)
+
+    elif current_user.is_medical_staff():
         if request.method == "POST":
             diagnosis_id = request.form.get("diagnosis_id")
             diagnosis = Diagnosis.query.filter(Diagnosis.id==diagnosis_id, Diagnosis.medical_staff==current_user.id).first()
@@ -491,9 +492,6 @@ def diagnoses(patient_id=None):
             patients.append(patient)
         info = zip(diagnoses,patients)
         return render_template("diagnoses.html", user=current_user,  patient=patient, info=info, sidebar=medical_staff_sidebar)
-    elif current_user.is_patient():
-        info = patient_diagnoses(current_user.id)
-        return render_template("diagnoses.html", user=current_user, info=info, sidebar=patient_sidebar)
     abort(401)
 
 
@@ -617,13 +615,16 @@ def patient_appointments(patient_id):
     medical_staff = []
     departments = []
     hospitals = []
+    diagnoses = []
+    lab_results = []
     for appointment in appointments:
         departments.append(Department.query.filter_by(id=appointment.department).first())
         medical_staff.append(Medical_Staff.query.filter_by(id=appointment.medical_staff).first())
         hospitals.append(Hospital.query.filter_by(id=appointment.hospital).first())
-    
-    information = zip(appointments,hospitals,departments,medical_staff)
-    return information
+        diagnoses.append(appointment.diagnoses)
+        lab_results.append(appointment.lab_results)
+
+        return zip(appointments,hospitals,departments,medical_staff,diagnoses,lab_results)
 
 
 def medical_staff_appointments(medical_staff_id):
@@ -665,7 +666,9 @@ def patient_diagnoses(patient_id):
     diagnoses = Diagnosis.query.filter_by(patient=patient_id).all()
     medical_staff_objs = []
     for user_id in medical_staff_ids:
-        medical_staff_objs.append(Medical_Staff.query.filter_by(id=user_id[1]).first())
+        for diagnosis in diagnoses:
+            medical_staff_objs.append(Medical_Staff.query.filter_by(id=user_id[1]).first())
+    print(medical_staff_objs)
     return zip(diagnoses,medical_staff_objs)
 
 def get_path(path):

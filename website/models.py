@@ -46,6 +46,8 @@ class Appointment(db.Model):
     department = db.Column(db.Integer, db.ForeignKey('department.id'))
     medical_staff = db.Column(db.Integer, db.ForeignKey('medical_staff.id'))
     patient = db.Column(db.Integer, db.ForeignKey('patient.id'))
+    diagnoses = db.relationship('Diagnosis', backref='appointment_diagnosis')
+    lab_results = db.relationship('Lab_Result', backref='appointment_lab_result')
     
     def __repr__(self):
         return f"{self.appointment_date_time}"
@@ -97,6 +99,7 @@ class Diagnosis(db.Model):
     id = db.Column(db.Integer, primary_key=True) 
     path = db.Column(db.String(255, collation='NOCASE'))
     date = db.Column(db.DateTime(timezone=True), nullable=False)
+    appointment = db.Column(db.Integer, db.ForeignKey('appointment.id'))
     medical_staff = db.Column(db.Integer, db.ForeignKey('medical_staff.id'))
     patient = db.Column(db.Integer, db.ForeignKey('patient.id'))
 
@@ -107,6 +110,7 @@ class Lab_Result(db.Model):
     id = db.Column(db.Integer, primary_key=True) 
     path = db.Column(db.String(255, collation='NOCASE'))
     date = db.Column(db.DateTime(timezone=True), nullable=False)
+    appointment = db.Column(db.Integer, db.ForeignKey('appointment.id'))
     medical_staff = db.Column(db.Integer, db.ForeignKey('medical_staff.id'))
     patient = db.Column(db.Integer, db.ForeignKey('patient.id'))
 
@@ -273,10 +277,11 @@ class Patient(User):
 
     id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     patient_file = db.Column(db.String(255,collation='NOCASE'))
-    appointment = db.relationship('Appointment', backref='patient_appointment')
-    diagnosis = db.relationship('Diagnosis', backref='patient_diagnosis')
-    diagnoses = db.Column(db.String(255,collation='NOCASE'))
-    lab_results = db.Column(db.String(255,collation='NOCASE'))
+    appointments = db.relationship('Appointment', backref='patient_appointment')
+    diagnoses = db.relationship('Diagnosis', backref='patient_diagnosis')
+    lab_results = db.relationship('Lab_Result', backref='patient_lab_result')
+    diagnoses_file = db.Column(db.String(255,collation='NOCASE'))
+    lab_results_file = db.Column(db.String(255,collation='NOCASE'))
     bed = db.Column(db.Integer, db.ForeignKey('bed.id'), nullable=True)    
 
     def create_patient_file(self):
@@ -284,43 +289,36 @@ class Patient(User):
         path = "D:\Codes\WebApp\website\static\patients"
         name = "PatientNo"+str(self.id)
         directory = os.path.join(path, name)
-        if os.path.isdir(directory):
-            self.patient_file = directory
-        else:
+        if not os.path.isdir(directory):
             os.mkdir(directory)
-            self.patient_file = directory
+        self.patient_file = directory
         
         #Diagnoses folder
         path = self.patient_file
         name = "Diagnoses"
         directory = os.path.join(path, name)
-        if os.path.isdir(directory):
-            self.diagnoses = directory
-        else:
+        if not os.path.isdir(directory):
             os.mkdir(directory)
-            self.diagnoses = directory
+        self.diagnoses_file = directory
 
         #Lab Results folder
         path = self.patient_file
         name = "Lab results"
         directory = os.path.join(path, name)
-        if os.path.isdir(directory):
-            self.lab_results = directory
-        else:
+        if not os.path.isdir(directory):
             os.mkdir(directory)
-            self.lab_results = directory
+        self.lab_results_file = directory
 
-    def last_visit(self):
-        last = datetime.today()
+    def last_visit(self,medical_staff_id):
+        last_visit = datetime.today()
+        appointments = Appointment.query.filter(Appointment.patient==self.id, Appointment.medical_staff==medical_staff_id).all()
+        for appointment in appointments:
+            if appointment.appointment_date_time < last_visit:
+                last_visit = appointment.appointment_date_time
 
-        for app in self.appointment:
-            visit = Appointment.query.filter_by(id=app.id).first()
-            if visit.appointment_date_time < last:
-                last = visit.appointment_date_time
-
-        if last.date() == datetime.today().date() and last.hour == datetime.today().hour: 
+        if last_visit.date() == datetime.today().date() and last_visit.hour == datetime.today().hour: 
             return
-        return last.date()
+        return last_visit
 
 
 

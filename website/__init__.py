@@ -9,6 +9,7 @@ import os
 
 DB_NAME = "database.db"
 UPLOAD_FOLDER = "D:\Codes\WebApp\website\static\patients"
+ALT_UPLOAD_FOLDER = "website\static\patients"
 
 patient_sidebar = {'Book Appointment':'calendar-1', 'My Appointments':'notepad-2','Lab Results':'notepad-2','diagnoses':'heart'}
 medical_staff_sidebar = {'My Appointments':'television', 'Patients':'heart', 'Shifts':'pad'}

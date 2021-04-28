@@ -23,7 +23,7 @@
                                     {% for (patient, appointment) in info: %}
                                         <tr>
                                             <td><div class="d-flex align-items-center"> <span class="w-space-no">{{patient.first_name + ' ' + patient.last_name}}</span></div></td>
-                                            <td>{% if appointment: %}{{appointment}}{% else: %}<p>No previous appoinment</p>{% endif %}</td>
+                                            <td>{% if appointment: %}{{appointment.strftime("%d-%m-%y") }}{% else: %}<p>No previous appoinment</p>{% endif %}</td>
                                             <td><a href="/diagnoses/{{patient.id}}">Diagnoses</a></td>
                                             <td><div></div><a href="/lab results/{{patient.id}}">Lab Results</a></td>
                                             <td>
@@ -42,6 +42,7 @@
                                                                 <div class="modal-body">
                                                                     <div class="form-group">
                                                                         <input type="hidden" name="patient_id" value="{{patient.id}}"></input>
+                                                                        <input type="hidden" name="appointment" value="{{appointment}}"></input>
                                                                         <div class="input-group mb-3">
                                                                             <div class="custom-file">
                                                                                 <input type="file" name="diagnosis" class="custom-file-input">
