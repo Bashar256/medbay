@@ -9,8 +9,35 @@ import os
 import datetime
 from website.temp_create_objects import create_stuff
 from website.validate import validate_patient_register, validate_login
+import base64
+from flask_login import LoginManager
 
 auth_view = Blueprint("auth_view", __name__, static_folder="static", template_folder="templates")
+
+
+login_manager = LoginManager()
+login_manager.login_view = "auth_view.login_view"
+login_manager.init_app(app=app)
+@login_manager.user_loader
+def load_user(id):
+    return User.query.get(int(id))
+
+@login_manager.request_loader
+def load_user_request(request):
+    api_key = request.headers.get('authorization')
+    if api_key:
+        
+        api_key = api_key.replace('Basic ', '', 1)
+        try:
+            api_key = base64.b64decode(api_key).decode('utf-8')
+        except TypeError:
+            pass
+        user = User.query.filter_by(email=api_key).first()
+        if user:
+            return user
+
+    # finally, return None if both methods did not login the user
+    return None
 
 
 #Login View
@@ -28,6 +55,17 @@ def login_view():
         flash('Invalid Information', category='error')
 
     return render_template("login.html")
+
+# if request.method == 'POST':
+#         if validate_login(request):
+#             if request.mimetype=='application/json':
+#                 return jsonify({'status':'Login Successful!'})
+#             return redirect(url_for('user_view.home_view'))
+#         elif request.mimetype=='application/json':
+#             return jsonify({'status':'Incorrect email or password.'})
+#         flash('Invalid Information', category='error')
+        
+#     return render_template("login.html") 
 
 
 #Logout View
