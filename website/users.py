@@ -5,7 +5,7 @@ from website import admin_sidebar, patient_sidebar, medical_staff_sidebar, manag
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from website import db, UPLOAD_FOLDER
+from website import db, UPLOAD_FOLDER,app
 import datetime
 import os
 import base64
