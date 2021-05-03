@@ -5,10 +5,11 @@ from flask import Flask
 import os
 
 DB_NAME = "database.db"
-UPLOAD_FOLDER = "website\static"
+BASE = "website"
+UPLOAD_FOLDER = "static"
 PATIENTS_FOLDERS = "patients"
-
-directory = os.path.join(UPLOAD_FOLDER, PATIENTS_FOLDERS)
+base_directory = os.path.join(BASE, UPLOAD_FOLDER)
+directory = os.path.join(base_directory, PATIENTS_FOLDERS)
 if not os.path.isdir(directory):
     os.mkdir(directory)
 
