@@ -9,14 +9,14 @@
                 </div>
                 <div class="card-body">
                     <div id="accordion-one" class="accordion accordion-primary">
-                    {% for (appointment,hospital,department,usr) in information: %}
+                    {% for (appointment,hospital,department,usr,diagnoses,lab_results) in information: %}
                         {% if appointment.appointment_date_time > today: %}
                             <div class="accordion__item">
-                                <div class="accordion__header collapsed rounded-lg" data-toggle="collapse" data-target="#default_collapse{{loop.index0 + 1}}">
+                                <div class="accordion__header collapsed rounded-lg" data-toggle="collapse" data-target="#default_collapse{{loop.index}}">
                                     <span class="accordion__header--text">Appointment {{appointment.appointment_date_time.day}}/{{appointment.appointment_date_time.month}}/{{appointment.appointment_date_time.year}}</span>
                                     <span class="accordion__header--indicator"></span>
                                 </div>
-                                <div id="default_collapse{{loop.index0 + 1}}" class="collapse accordion__body" data-parent="#accordion-one">
+                                <div id="default_collapse{{loop.index}}" class="collapse accordion__body" data-parent="#accordion-one">
                                     <div class="accordion__body--text">
                                         <div class="pt-4">
                                             {% if user.is_patient(): %}
@@ -31,7 +31,7 @@
                                             <p>Appointment Time: {{appointment.appointment_date_time.hour}}:{{appointment.appointment_date_time.minute}}</p>
                                             {% if user.is_patient(): %}
                                                 <div class="text-center mt-4">
-                                                    <a href="/edit appointment/{{appointment.id}}"><button type="submit" class="btn btn-primary btn-block">Edit</button></a>
+                                                    <a href="/edit_appointment/{{appointment.id}}"><button type="submit" class="btn btn-primary btn-block">Edit</button></a>
                                                 </div>
                                                 <div class="text-center mt-4">
                                                     <button type="submit" class="btn btn-danger btn-block" data-toggle="modal" data-target="#DeleteAppointment{{appointment.id}}">Delete</button>

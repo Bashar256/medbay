@@ -1,139 +1,65 @@
+from website.models import  Hospital, Department, Appointment, Shift, Management_Staff, Medical_Staff, Patient, patients, Diagnosis, User, Lab_Result, Schedule, Schedules, Room, Bed
 from flask import Blueprint, Flask, render_template, url_for, redirect, request, flash, abort, Response, send_from_directory, send_file
+from website.validate import validate_staff_register, validate_shift_assignment, create_schedule, change_doctor_schedule, create_shift
+from website import admin_sidebar, patient_sidebar, medical_staff_sidebar, management_staff_sidebar, department_head_sidebar
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from werkzeug.security import generate_password_hash, check_password_hash
-from website.models import  Hospital, Department, Appointment, Shift, Management_Staff, Medical_Staff, Patient, patients, Diagnosis, User, Lab_Result, doctors_shifts
-from website import admin_sidebar, patient_sidebar, medical_staff_sidebar, management_staff_sidebar
 from website import db, UPLOAD_FOLDER
 import datetime
 import os
-from website.validate import validate_staff_register
 
 user_view = Blueprint("user_view", __name__, static_folder="static", template_folder="templates")
 today = datetime.datetime.today()
 
-@user_view.route("/shifts")
-@login_required
-def view_shifts():
-    if current_user.is_medical_staff() or current_user.is_management_staff():
-        shifts = []
-        dates = []
-        doctors = Medical_Staff.query.all()
-        for doctor in doctors:
-            days = db.session.query(doctors_shifts).filter_by(medical_staff_id=doctor.id).all()
-            for day in days:
-                if not day[2].date() in dates:
-                    dates.append(day[2].date())
-            shifts.append(doctor.shifts)
-        doctors_info = zip(doctors,shifts)
-        return render_template("shifts.html", user=current_user, doctors_info=doctors_info, dates=dates, sidebar=medical_staff_sidebar)
-    elif current_user.is_management_staff():
-        return render_template("shifts.html", user=current_user, sidebar=management_staff_sidebar)
 
-
-@user_view.route("/assign shifts", methods=['GET', 'POST'])
-@login_required
-def assign_shifts():
-    if current_user.is_management_staff():
-        if request.method == "POST":
-            pass
-        departments = Department.query.filter_by(hospital=current_user.hospital).all()
-        return render_template("assign shifts.html", user=current_user, departments=departments, sidebar=management_staff_sidebar)
-    abort(401)
-
-
-# @user_view.route("/Patients/PatientNo#<int:patient_id>/diagnoses/<str:filename>")
-# def download(patient_id, filename):
-#     file_path =  "/Patients/PatientNo#" + patient_id + "/diagnoses/" + filename
-#     return send_file(file_path, as_attachment=True, attachment_filename='')
-
-
-
-#@patient_view.route("/add_appointment", methods=["POST", "GET"])
-# @login_required
-# def add_appointment():
-#     if current_user == User:
-#         if request.method == "POST":
-#             hospital = request.form.get('hospital')
-#             department = request.form.get('department')
-#             patient = request.form.get('patient')
-#             medical_staff = request.form.get('medical_staff')
-#             time = request.form.get('time')
-#             new_appointment = Appointment(time=time, hospital=hosptial, department=department, patient=patient, medical_staff=medical_staff)
-#             db.session.add(new_appointment)
-#             db.session.commit()
-#             flash('Appointment Added!', category='success')
-#             return redirect(url_for('common_viewappointments'))
-#         else:
-#             return render_template("add_appointment.html")
-#     return redirect(url_for('common_view.appointments'))
-
-# @user_view.route("/diagnoses")
-# @login_required
-# def diagnoses():
-#     user = User.query.filter_by(roles=current_user.roles).first()
-#     if user.roles == 1:
-#         return redirect(url_for("home"))
-#     elif user.roles == 2:
-#         diagnoses = Diagnosis.query.filter_by(medical_staff=current_user.id).all()
-#         patients = User.query.filter_by(medical_staff=current_user.id).all()
-#         return render_template(url_for("diagnoses.html",diagnoses=diagnoses, patients=patients))
-        
-#     return render_template("home.html",user=user, sidebar=patient_sidebar)
-
-#     if current_user == User:
-#         if current_user.is_management():
-#             return redirect(url_for("home"))
-
-#         diagnoses = Diagnosis.query.filter_by(medical_staff=current_user.id).all()
-#         patients = User.query.filter_by(medical_staff=current_user.id).all()
-#         return render_template(url_for("diagnoses.html",diagnoses=diagnoses, patients=patients))
-    
-#     diagnoses = Diagnoses.query.filter_by(patient=current_user.id).all()
-#     patients = User.query.filter_by(patient=current_user.id).first()
-#     return render_template(url_for("diagnoses.html",diagnoses=diagnoses, patients=patients))
-    
-
-# @user_view.route("/appointments")
-# @login_required
-# def appointments():
-#     if current_user == User:
-#         if current_user.is_management():
-#             return render_template('home.html')
-
-#         appointments = Appointment.query.filter_by(medical_staff=current_user.id).all()
-#         patients = User.query.filter_by(medical_staff=current_user.id).all()
-#         return render_template(url_for("appointments.html",appointments=appointments, patients=patients))
-    
-#     appointments = Appointment.query.filter_by(patient=current_user.id).all()
-#     return render_template(url_for("diagnoses.html", appointments=appointments, patients=current_user))
-
-
-#Common view
-
+#Home View
 @user_view.route("/")
 @user_view.route("/home")
 @login_required
-def home():
+def home_view():
     if current_user.is_patient():
         return render_template("home.html",user=current_user, sidebar=patient_sidebar)
     elif current_user.is_management_staff():
         return render_template("home.html",user=current_user, sidebar=management_staff_sidebar)
     elif current_user.is_medical_staff():
-        return render_template("home.html",user=current_user, sidebar=medical_staff_sidebar)
+        if not current_user.is_department_head():
+            return render_template("home.html",user=current_user, sidebar=medical_staff_sidebar)
+        return render_template("home.html",user=current_user, sidebar=department_head_sidebar)
     elif current_user.is_admin():
         return render_template("home.html",user=current_user, sidebar=admin_sidebar)    
     abort(401)
 
+
+#About_Us View
+@user_view.route("/about_us")
+@login_required
+def about_us_view():
+    if current_user.is_patient():
+        return render_template("about_us.html",user=current_user, sidebar=patient_sidebar)    
+    elif current_user.is_medical_staff():
+        if not current_user.is_department_head():
+            return render_template("about_us.html",user=current_user, sidebar=medical_staff_sidebar)
+        return render_template("about_us.html",user=current_user, sidebar=department_head_sidebar)
+    elif current_user.is_management_staff():
+        return render_template("about_us.html",user=current_user, sidebar=management_staff_sidebar)
+    elif current_user.is_admin():
+        return render_template("about_us.html",user=current_user, sidebar=admin_sidebar)
+    abort(401) 
+
+
+#Profile View
 @user_view.route("/profile")
 @login_required
-def profile():
+def profile_view():
     if current_user.is_patient():
         information = patient_appointments(current_user.id)  
         return render_template("profile.html",user=current_user, information=information, today=today, sidebar=patient_sidebar)    
     elif current_user.is_medical_staff():
         information = medical_staff_appointments(current_user.id)
-        return render_template("profile.html",user=current_user, information=information, today=today, sidebar=medical_staff_sidebar)
+        if not current_user.is_department_head():
+            return render_template("profile.html",user=current_user, information=information, today=today, sidebar=medical_staff_sidebar)
+        return render_template("profile.html",user=current_user, information=information, today=today, sidebar=department_head_sidebar)
     elif current_user.is_management_staff():
         return render_template("profile.html",user=current_user, sidebar=management_staff_sidebar)
     elif current_user.is_admin():
@@ -141,9 +67,10 @@ def profile():
     abort(401)
 
 
-@user_view.route("/edit profile", methods=["POST", "GET"])
+#Edit_Profile View
+@user_view.route("/edit_profile", methods=["POST", "GET"])
 @login_required
-def edit_profile():
+def edit_profile_view():
     if request.method == 'POST':
         count = 0
         email = request.form.get('email')
@@ -163,6 +90,8 @@ def edit_profile():
                 flash("Email already exists", category="error")
             else:
                 user.email = email
+                user.confirmed = False
+                user.confirmed_on = None
                 count = count + 1
 
         if user.first_name != first_name:
@@ -194,71 +123,62 @@ def edit_profile():
                 user.phone_no = phone_no
                 count = count + 1
 
-        if not check_password_hash(user.password, password1):
-            if password2 != password3:
-                flash('Passwords don\'t match.', category='error')
-            elif len(password2) < 7:
-                flash('Password must be at least 7 characters.', category='error')
-            user.password = generate_password_hash(password2, method="sha256")
-            count = count + 1
+        if password1:
+            if check_password_hash(user.password, password1):
+                if password2 != password3:
+                    flash('Passwords don\'t match.', category='error')
+                elif len(password2) < 7:
+                    flash('Password must be at least 7 characters.', category='error')
+                user.password = generate_password_hash(password2, method="sha256")
+                count = count + 1
+            flash("Your must enter your old password correctly", category="error")
 
-        if not count:
-            flash("Your Information was changed", category="success")
+        if count != 0:
+            flash("Your Information was changed", category="update")
             db.session.commit()
-        return redirect(url_for("user_view.profile"))
+
+        return redirect(url_for("user_view.edit_profile_view"))
 
     elif current_user.is_patient():
-        return render_template("edit profile.html",user=current_user, sidebar=patient_sidebar)
+        return render_template("edit_profile.html",user=current_user, sidebar=patient_sidebar)
 
     elif current_user.is_medical_staff():
-        return render_template("edit profile.html",user=current_user, sidebar=medical_staff_sidebar)
-
+        if not current_user.is_department_head():
+            return render_template("edit_profile.html",user=current_user, sidebar=medical_staff_sidebar)
+        return render_template("edit_profile.html",user=current_user, sidebar=department_head_sidebar)
     elif current_user.is_management_staff():
-        return render_template("edit profile.html",user=current_user, sidebar=management_staff_sidebar)
+        return render_template("edit_profile.html",user=current_user, sidebar=management_staff_sidebar)
         
     elif current_user.is_admin():
-        return render_template("edit profile.html",user=current_user, sidebar=admin_sidebar)    
+        return render_template("edit_profile.html",user=current_user, sidebar=admin_sidebar)    
         
 
-#Common view END
-
-
-#Appointment booking
-
-@user_view.route("/book appointment")
+#Appointment_Booking View
+#Selecting Hospital
+@user_view.route("/book_appointment")
 @login_required
-def book_appointment():
+def book_appointment_view():
     if current_user.is_patient(): 
         hospitals = Hospital.query.all()
         departments = Department.query.all()
-        return render_template("book appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=patient_sidebar)
+        return render_template("book_appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=patient_sidebar)
     abort(401)
 
 
-@user_view.route("/book appointment/<int:hospital_id>/<int:department_id>/doctors")
+#Selecting Doctor
+@user_view.route("/book_appointment/<int:hospital_id>/<int:department_id>/doctors")
 @login_required
-def choose_medical_staff(hospital_id,department_id):
+def choose_medical_staff_view(hospital_id,department_id):
     if current_user.is_patient(): 
         medical_staff = Medical_Staff.query.filter(Medical_Staff.department==department_id, Medical_Staff.hospital==hospital_id)
         return render_template("doctors.html", user=current_user, hospital_id=hospital_id, department_id=department_id, medical_staff=medical_staff, sidebar=patient_sidebar)
     abort(401)
 
 
-
-#Appointment medical_staff details
-
-@user_view.route("/book appointment/<int:hospital_id>/<int:department_id>/staff details-<int:staff_id><string:role>", methods=["POST", "GET"])
+#Doctor Details
+@user_view.route("/book_appointment/<int:hospital_id>/<int:department_id>/staff_details_<int:staff_id><string:role>", methods=["POST", "GET"])
 @login_required
-def doctor_details(hospital_id, department_id, staff_id,role="md"): 
-    medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
-    # schedule = Schedule.query.filter_by(id=medical_staff.schedule).first()
-    # shifts_ids = db.session.query(shifts).filter_by(schedule_id=schedule.id).all()
-    shifts_objs = []
-    for shift_id in shifts_ids:
-        shift = Shift.query.filter_by(id=shift_id[0]).first()
-        if shift not in shifts_objs:
-            shifts_objs.append(shift)  
-    # print(schedule,shifts_ids)
+def doctor_details_view(hospital_id, department_id, staff_id,role="md"):  
     if current_user.is_patient():
         if request.method == 'POST':
             date = request.form.get('appointment_date')
@@ -272,13 +192,13 @@ def doctor_details(hospital_id, department_id, staff_id,role="md"):
 
             appointment = Appointment.query.filter(Appointment.appointment_date_time==appointment_date, Appointment.medical_staff==staff_id, Appointment.patient==current_user.id).all()
             if appointment:
-                flash("There is already an appointment at that time", category='error')
-                return redirect(url_for("user_view.doctor_details"))
+                flash("The doctor has an appointment at that time", category='warning')
+                return redirect(url_for("user_view.doctor_details_view"))
 
             appointment = Appointment.query.filter(Appointment.appointment_date_time==appointment_date, Appointment.patient==current_user.id).all()
             if appointment:
-                flash("There is an  appointment at that time", category='error')
-                return redirect(url_for("user_view.doctor_details"))
+                flash("You have an appointment at that time", category='warning')
+                return redirect(url_for("user_view.doctor_details_view"))
 
 
             new_appointment = Appointment(appointment_date_time=appointment_date, hospital=hospital_id, department=department_id, medical_staff=staff_id, patient=current_user.id)
@@ -286,50 +206,53 @@ def doctor_details(hospital_id, department_id, staff_id,role="md"):
             db.session.execute(patients.insert(), params={"patient_id":current_user.id, "medical_staff_id":staff_id, "timeout":appointment_date + datetime.timedelta(days=7) })
             db.session.add(new_appointment)
             db.session.commit()  
-            flash('Appointment created!', category='success')         
-
+            flash('Appointment created!', category='success')  
+                   
+        medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
+        schedule = Schedule.query.filter_by(id=medical_staff.schedule).first()
+        schedule_shifts = db.session.query(Schedules).filter_by(schedule_id=schedule.id).all()
+        shifts = []
+        for shift_id in schedule_shifts:
+            shift = Shift.query.filter_by(id=shift_id[1]).first()
+            if shift not in shifts:
+                shifts.append(shift) 
         closest_appointment = today + datetime.timedelta(days=1)
         appointment_limit = today + datetime.timedelta(days=30)
-        return render_template("staff details.html", user=current_user, today=today, closest_appointment=closest_appointment, appointment_limit=appointment_limit, shifts=shifts_objs, staff=medical_staff, sidebar=patient_sidebar)
+        return render_template("staff_details.html", user=current_user, today=today, closest_appointment=closest_appointment, appointment_limit=appointment_limit, shifts=shifts_objs, staff=medical_staff, sidebar=patient_sidebar)
 
     abort(401)
 
-#Appointment medical_staff details END
-#Appointment booking END
 
-
-#Appointments page
-
-@user_view.route("/my appointments", methods=["POST", "GET"])
+#My_Appointments View
+@user_view.route("/my_appointments", methods=["POST", "GET"])
 @login_required
-def my_appointments():
+def my_appointments_view():
     if current_user.is_patient():
         if request.method == "POST":
             appointment_id = request.form.get('appointment_id')
             appointment = Appointment.query.filter_by(id=appointment_id).first()
             if appointment:
-                flash("Appointment Deleted!", category='success')
+                flash("Appointment Deleted!", category='update')
                 db.session.delete(appointment)
                 db.session.commit()
-                return redirect(url_for("user_view.my_appointments"))
+                return redirect(url_for("user_view.my_appointments_view"))
 
             flash("Appointment Does not exist", category='error')
-            return redirect(url_for("user_view.my_appointments"))
+            return redirect(url_for("user_view.my_appointments_view"))
         information = patient_appointments(current_user.id)
-        # schedules = Shift.query.all()
-        return render_template("my appointments.html", user=current_user, information=information, shifts=shifts, today=today, sidebar=patient_sidebar)
+        return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=patient_sidebar)
 
     if current_user.is_medical_staff():
         information = medical_staff_appointments(current_user.id)
-        return render_template("my appointments.html", user=current_user, information=information, today=today, sidebar=medical_staff_sidebar)
+        if not current_user.is_department_head():
+            return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=medical_staff_sidebar)
+        return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=department_head_sidebar)
     
     abort(401)
 
-#Appointments page END
 
-
-
-@user_view.route("/edit appointment/<int:appoinment_id>", methods=["POST", "GET"])
+#Edit_Appointment View
+@user_view.route("/edit_appointment/<int:appoinment_id>", methods=["POST", "GET"])
 @login_required
 def edit_appointment(appointment_id):
     if current_user.is_patient():
@@ -342,41 +265,79 @@ def edit_appointment(appointment_id):
             appointment = Appointment.query.filter_by(id=appointment_id).first()
 
             if appointment:
-                flash("Appointment Changed", category='success')
+                flash("Appointment Changed", category='update')
                 appointment.appointment_date_time = appointment_date_time
                 db.session.query()
                 db.session.commit()
-                return redirect(url_for("user_view.my_appointments"))
+                return redirect(url_for("user_view.my_appointments_view"))
     
             flash("Appointment Does not exist", category='error')
-            return redirect(url_for("user_view.my_appointments"))
+            return redirect(url_for("user_view.my_appointments_view"))
         information = patient_appointments(current_user.id)
         shifts = Shift.query.all()
-        return render_template("edit appointment.html", user=current_user, information=information, shifts=shifts, today=today, sidebar=patient_sidebar)
+        return render_template("edit_appointment.html", user=current_user, information=information, shifts=shifts, today=today, sidebar=patient_sidebar)
 
     abort(401)
 
 
 
 
-#Patient Info
-	
-@user_view.route("/patients")
+#Doctor_Patients View 
+@user_view.route("/patients", methods=["GET", "POST"])
 @login_required
-def view_patients():
+def patients_view():
     if current_user.is_medical_staff():
+        if request.method == 'POST':
+            form_no = request.form.get("form_no")
+            if form_no == "1":
+                patient_id = request.form.get("patient_id")
+                patient = Patient.query.filter_by(id=patient_id).first()
+                if patient:           
+                    rooms = Room.query.filter_by(department=current_user.department).all()
+                    for room in rooms:
+                        if not room.is_full():
+                            for bed in room.beds:
+                                if not bed.occupied:
+                                    bed.occupy_bed(patient)
+                                    patient.bed = bed.id
+                                    db.session.commit()
+                                    flash("Patient admitted", category="success")
+                                    return redirect(url_for("user_view.patients_view"))
+                        
+                    flash("No free beds were found", category="error")
+                    return redirect(url_for("user_view.patients_view"))
+
+                flash("No such patient", category="error")
+                return redirect(url_for("user_view.patients_view"))
+            elif form_no == "2":
+                patient_id = request.form.get("patient_id")
+                patient = Patient.query.filter_by(id=patient_id).first()
+                if patient:
+                    bed = Bed.query.filter_by(id=patient.bed).first()
+                    if bed:
+                        bed.release_bed()
+                        patient.bed = None
+                        db.session.commit()
+                        flash("Patient disscharged", category="success")
+                        return redirect(url_for("user_view.patients_view"))               
+            flash("no such form", category="error")
+            return redirect(url_for("user_view.patients_view"))
         patients = current_user.patients
         appointments = []
         for patient in patients:
             appointments.append(patient.last_visit(current_user.id))
-        print(appointments)
         info = zip(patients, appointments)
-        return render_template("patients.html", user=current_user, info=info, sidebar=medical_staff_sidebar)
+        if not current_user.is_department_head():
+            return render_template("patients.html", user=current_user, info=info, sidebar=medical_staff_sidebar)
+        return render_template("patients.html", user=current_user, info=info, sidebar=department_head_sidebar)
+
     abort(401)
 
+
+#File_Upload View
 @user_view.route("/upload", methods=["POST"])
 @login_required
-def upload_file():
+def upload_file_view():
     if current_user.is_medical_staff():
         if request.method == 'POST':
             diganosis_file = request.files['diagnosis']
@@ -388,7 +349,6 @@ def upload_file():
             time = date_time[1].split(':')
             appointment_date_time = datetime.datetime(int(date[0]), int(date[1]), int(date[2]), int(time[0]), int(time[1])) 
             appointment = Appointment.query.filter(Appointment.medical_staff==current_user.id, Appointment.patient==patient_id, Appointment.appointment_date_time==appointment_date_time).first()
-            print(appointment)
             patient = Patient.query.filter_by(id=patient_id).first()
             if diganosis_file.filename:
                 filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Diagnosis" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")))
@@ -397,8 +357,9 @@ def upload_file():
                 new_diagnosis = Diagnosis(path=path, date=datetime.datetime.now(), medical_staff=current_user.id, patient=patient_id, appointment=appointment.id)
                 db.session.add(new_diagnosis)
                 db.session.commit()
-                flash("Diagnosis uploaded successfuly", category="success")
-                return redirect(url_for("user_view.view_patients"))
+                flash("Diagnosis uploaded successfully", category="success")
+                return redirect(url_for("user_view.patients_view"))
+
             elif lab_result_file:
                 filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Lab_result" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")))
                 path = os.path.join(patient.lab_results_file, filename)
@@ -407,38 +368,43 @@ def upload_file():
                 db.session.add(new_lab_result)
                 db.session.commit()
                 flash("Lab result uploaded successfuly", category="success")
-                return redirect(url_for("user_view.view_patients"))
+                return redirect(url_for("user_view.patients_view"))
 
-            flash('Plese select a file', category="error")
-            return redirect(url_for("user_view.view_patients")) 
+            flash('Plese select a file', category="warning")
+            return redirect(url_for("user_view.patients_view")) 
         abort(405)
     abort(401)
 
+
+#File_Download View
 @user_view.route('/download/<path:filename>', methods=['GET', 'POST'])
-def download(filename):
+def download_view(filename):
     if os.path.isfile(filename):
         return send_file(get_path(filename), as_attachment=True)
     abort(404)
 
-@user_view.route("/patient details<int:patient_id>")
+#Patient_Profile View
+@user_view.route("/patient_details<int:patient_id>")
 @login_required
-def patient_details(patient_id):
+def patient_details_view(patient_id):
     if current_user.is_medical_staff():
         for patient in current_user.patients:
             if patient_id == patient.id:
                 diagnoses = Diagnosis.query.filter(Diagnosis.patient==patient_id, Diagnosis.medical_staff==current_user.id).all()
                 information = patient_appointments(patient_id)
-                return render_template("patient details.html", user=current_user, medical_staff=current_user, information=information, diagnoses=diagnoses, patient=patient, today=today, sidebar=medical_staff_sidebar)
-        return redirect(url_for('user_view.view_patients'))
+                if not current_user.is_department_head():
+                    return render_template("patient_details.html", user=current_user, medical_staff=current_user, information=information, diagnoses=diagnoses, patient=patient, today=today, sidebar=medical_staff_sidebar)
+                return render_template("patient_details.html", user=current_user, medical_staff=current_user, information=information, diagnoses=diagnoses, patient=patient, today=today, sidebar=department_head_sidebar)
+
+        return redirect(url_for('user_view.patients_view'))
     abort(401)
 
-#Patient Info END
 
-
-@user_view.route("/lab results", methods=["POST", "GET"])
-@user_view.route("/lab results/<int:patient_id>", methods=["POST", "GET"])
+#Lab_Results View
+@user_view.route("/lab_results", methods=["POST", "GET"])
+@user_view.route("/lab_results/<int:patient_id>", methods=["POST", "GET"])
 @login_required
-def lab_results(patient_id=None):
+def lab_results_view(patient_id=None):
     if current_user.is_medical_staff():
         if request.method == "POST":
             lab_result_id = request.form.get("lab_result_id")
@@ -447,7 +413,7 @@ def lab_results(patient_id=None):
                 os.remove(lab_result.path)
                 db.session.delete(lab_result)
                 db.session.commit()
-                flash("Lab result deleted successfuly", category="success")
+                flash("Lab result deleted successfuly", category="update")
                 return redirect(request.url)
             flash("Already deleted or you're not allowed to delete this file", category="error")
             return redirect(request.url) 
@@ -457,20 +423,23 @@ def lab_results(patient_id=None):
         for i in range(len(results)):
             patients.append(patient)
         info = zip(results, patients)
-        return render_template("lab results.html", user=current_user, patient=patient, info=info, sidebar=medical_staff_sidebar)
+        if not current_user.is_department_head():
+            return render_template("lab_results.html", user=current_user, patient=patient, info=info, sidebar=medical_staff_sidebar)
+        return render_template("lab_results.html", user=current_user, patient=patient, info=info, sidebar=department_head_sidebar)
+
     elif current_user.is_patient():
         info = patient_lab_results(current_user.id)
-        return render_template("lab results.html", user=current_user, info=info, sidebar=patient_sidebar)
+        return render_template("lab_results.html", user=current_user, info=info, sidebar=patient_sidebar)
     abort(401)
 
 
+#Diagnoses View
 @user_view.route("/diagnoses", methods=["POST", "GET"])
 @user_view.route("/diagnoses/<int:patient_id>", methods=["POST", "GET"])
 @login_required
-def diagnoses(patient_id=None):
+def diagnoses_view(patient_id=None):
     if current_user.is_patient():
         info = patient_diagnoses(current_user.id)
-        print(current_user.diagnoses)
         return render_template("diagnoses.html", user=current_user, info=info, sidebar=patient_sidebar)
 
     elif current_user.is_medical_staff():
@@ -481,7 +450,7 @@ def diagnoses(patient_id=None):
                 os.remove(diagnosis.path)
                 db.session.delete(diagnosis)
                 db.session.commit()
-                flash("Diagnosis deleted successfuly", category="success")
+                flash("Diagnosis deleted successfuly", category="update")
                 return redirect(request.url)
             flash("Already deleted or you're not allowed to delete this file", category="error")
             return redirect(request.url) 
@@ -491,18 +460,17 @@ def diagnoses(patient_id=None):
         for i in range(len(diagnoses)):
             patients.append(patient)
         info = zip(diagnoses,patients)
-        return render_template("diagnoses.html", user=current_user,  patient=patient, info=info, sidebar=medical_staff_sidebar)
+        if not current_user.is_department_head():
+            return render_template("diagnoses.html", user=current_user,  patient=patient, info=info, sidebar=medical_staff_sidebar)
+        return render_template("diagnoses.html", user=current_user,  patient=patient, info=info, sidebar=department_head_sidebar)
+
     abort(401)
 
 
-@user_view.route("/rooms", methods=["POST", "GET"])
-@login_required
-def rooms():
-    pass
-
+#Departments View
 @user_view.route("/departments", methods=["POST", "GET"])
 @login_required
-def departments():
+def departments_view():
     if current_user.is_management_staff():
         if request.method == "POST":
             name = request.form.get('name')
@@ -510,13 +478,13 @@ def departments():
             department = Department.query.filter(Department.hospital==hospital.id, Department.name==name).first()
             if department:
                 flash('Department already exists!', category='error')
-                return redirect(url_for("user_view.departments"))
+                return redirect(url_for("user_view.departments_view"))
             
             new_department = Department(name=name, hospital=hospital.id)
             db.session.add(new_department)
             db.session.commit()
             flash('Department Added!', category='success')
-            return redirect(url_for('user_view.departments'))
+            return redirect(url_for('user_view.departments_view'))
         
         departments = Department.query.filter_by(hospital=current_user.hospital).all()
         medical_staff = Medical_Staff.query.filter_by(hospital=current_user.hospital).all()
@@ -526,90 +494,222 @@ def departments():
     abort(401)
     
 
+#Staff View
 @user_view.route("/staff", methods=["POST", "GET"])
 @login_required
-def staff():
-    if current_user.is_management_staff():
+def staff_view():
+    if current_user.is_medical_staff and current_user.is_department_head():
+        schedules = Schedule.query.filter_by(hospital=current_user.hospital).all()
+        medical_staff = Medical_Staff.query.filter_by(department=current_user.department).all()
+        management_staff = Management_Staff.query.all()
+        department = Department.query.filter_by(id=current_user.department).first()
+        hospital = Hospital.query.filter_by(id=current_user.hospital).first()
+        return render_template("staff.html", user=current_user, hospital=hospital, schedules=schedules, doctors=medical_staff, departments=department, management_staff=management_staff, sidebar=department_head_sidebar)
+
+    elif current_user.is_management_staff():
         if request.method == 'POST':
             if validate_staff_register(request):
                 flash("Staff Added Successfully", category="success")
-            return redirect(url_for("user_view.staff"))
-        shifts = Shift.query.filter_by(hospital=current_user.hospital).all()
+            return redirect(url_for("user_view.staff_view"))
+        schedules = Schedule.query.filter_by(hospital=current_user.hospital).all()
         medical_staff = Medical_Staff.query.all()
         management_staff = Management_Staff.query.all()
         departments = Department.query.filter_by(hospital=current_user.hospital).all()
         hospital = Hospital.query.filter_by(id=current_user.hospital).first()
-        return render_template("staff.html", user=current_user, hospital=hospital, shifts=shifts, doctors=medical_staff, departments=departments, management_staff=management_staff, sidebar=management_staff_sidebar)
+        return render_template("staff.html", user=current_user, hospital=hospital, schedules=schedules, doctors=medical_staff, departments=departments, management_staff=management_staff, sidebar=management_staff_sidebar)
+    abort(401)
 
 
-@user_view.route("/staff/staff details-<int:staff_id><string:role>")
+#Staff_Details View
+@user_view.route("/staff/staff_details_<int:staff_id><string:role>")
 @login_required
-def staff_details(staff_id,role):
+def staff_details_view(staff_id,role):
     if current_user.is_patient():
         return redirect(url_for("user_view.doctor_details"))
 
     elif current_user.is_medical_staff() and current_user.is_department_head():
         information = medical_staff_appointments(staff_id)
-        return render_template("staff details.html",user=current_user, information=information, shift=shift, staff=staff, sidebar=medical_staff_sidebar)
+        return render_template("staff_details.html",user=current_user, information=information, shift=shift, staff=staff, sidebar=medical_staff_sidebar)
 
     elif current_user.is_management_staff():
         staff = Management_Staff.query.filter_by(id=staff_id).first()
         if staff:
-            return render_template("staff details.html", user=current_user, staff=staff, sidebar=management_staff_sidebar)
+            return render_template("staff_details.html", user=current_user, staff=staff, sidebar=management_staff_sidebar)
         staff = Medical_Staff.query.filter_by(id=staff_id).first()
         if staff:
-            dates = []
-            days = db.session.query(doctors_shifts).filter_by(medical_staff_id=staff_id).all()
-            for day in days:
-                if not day[2].date() in dates:
-                    dates.append(day[2].date())
-            shifts=staff.shifts
+            # dates = []
+            # days = db.session.query(doctors_shifts).filter_by(medical_staff_id=staff_id).all()
+            # for day in days:
+            #     if not day[2].date() in dates:
+            #         dates.append(day[2].date())
+                    
+            #shifts=staff.shifts
             information = medical_staff_appointments(staff_id)
-            return render_template("staff details.html", user=current_user, shifts=shifts, dates=dates, information=information, staff=staff, today=today, sidebar=management_staff_sidebar)
+            return render_template("staff_details.html", user=current_user, information=information, staff=staff, today=today, sidebar=management_staff_sidebar)
         
     elif current_user.is_admin():
-        return render_template("staff details.html",user=current_user, shift=shift, staff=medical_staff, sidebar=admin_sidebar) 
+        return render_template("staff_details.html",user=current_user, shift=shift, staff=medical_staff, sidebar=admin_sidebar) 
             
     abort(401)
 
+
+#Rooms View
+@user_view.route("/rooms", methods=['GET', 'POST'])
+@login_required
+def rooms_view():
+    if current_user.is_management_staff():
+        if request.method == 'POST':
+            room_no = request.form.get("room_no")
+            no_of_beds = request.form.get("no_of_beds")
+            department_id = request.form.get("department_id")
+            hospital_id = current_user.hospital
+
+            department = Department.query.filter_by(id=department_id).first()
+            if department and department.hospital == hospital_id:
+                room = Room.query.filter_by(room_no=room_no).first()
+                if room and room.hospital == hospital_id:
+                    flash("Room already exists in this hospital", category="error")
+                    return redirect(url_for("user_view.rooms_view"))
+
+                new_room = Room(room_no=room_no, hospital=hospital_id, department=department_id, max_no_of_beds=no_of_beds)
+                db.session.add(new_room)
+                for i in range(int(no_of_beds)):
+                    new_bed = Bed(room=new_room.id, hospital=hospital_id)
+                    new_room.beds.append(new_bed)
+                    db.session.add(new_bed)
+                
+                db.session.commit()
+                flash("room and beds created!", category="success")
+                return redirect(url_for("user_view.rooms_view"))
+
+            flash("Department error",category="error")
+            return redirect(url_for("user_view.rooms_view"))
+
+        rooms = Room.query.all()
+        beds = []
+        for room in rooms:
+            beds.append(room.beds)
+    
+        hospitals = Hospital.query.all()
+        departments = Department.query.filter_by(hospital=current_user.hospital)
+        return render_template("rooms.html",user=current_user, hospitals=hospitals, departments=departments, rooms=rooms, beds=beds, sidebar=management_staff_sidebar)
+
+
+#Shifts View
+@user_view.route("/shifts", methods=['GET', 'POST'])
+@login_required
+def shifts_view():
+    if current_user.is_medical_staff():
+        if not current_user.is_department_head():
+            doctor_schedule = Schedule.query.filter_by(id=current_user.schedule).first()
+            doctors = doctor_schedule.medical_staff
+            for doctor in Medical_Staff.query.filter_by(department=current_user.department).all():
+                if doctor not in doctors: 
+                    doctors.append(doctor)
+            
+            schedules_types = []
+            for doctor in doctors:
+                schedules_types.append(doctor.schedule)
+
+            doctors_schedules = []
+            for schedule_type in schedules_types:
+                doctor_schedule = []
+                shifts = db.session.query(Schedules).filter_by(schedule_id=schedule_type).all()
+                for shift in shifts:
+                    doctor_schedule.append(Shift.query.filter_by(id=shift[1]).first()) 
+                doctors_schedules.append(doctor_schedule)
+            
+            all_shifts = Shift.query.all()
+            return render_template("shifts.html", user=current_user, all_shifts=all_shifts, doctors_schedules=zip(doctors, doctors_schedules), sidebar=medical_staff_sidebar)
+        
+        if request.method == 'POST':
+            if form_no == "4":
+                change_doctor_schedule(request)
+
+        all_schedules = Schedule.query.all()
+        doctors = Medical_Staff.query.filter_by(department=current_user.department).all()
+        schedules = []
+
+        for doctor in doctors:
+            doctor_shift = []
+            for shift in db.session.query(Schedules).filter_by(schedule_id=doctor.schedule).all():
+                doctor_shift.append(Shift.query.filter_by(id=shift[1]).first())
+            schedules.append(doctor_shift)
+
+        all_shifts = Shift.query.all() 
+        return render_template("shifts.html", user=current_user, all_schedules=all_schedules, all_shifts=all_shifts, doctors_schedules=zip(doctors, schedules), sidebar=department_head_sidebar)
+    
+    elif current_user.is_management_staff():
+        if request.method == 'POST':
+            form_no = request.form.get("form_no")
+            if form_no == "1":
+                create_schedule(request)
+                return redirect(url_for("user_view.shifts_view"))
+
+            elif form_no == "2":
+                create_shift(request)
+                return redirect(url_for("user_view.shifts_view"))
+
+            elif form_no == "3":
+                validate_shift_assignment(request)
+                return redirect(url_for("user_view.shifts_view"))
+
+            elif form_no == "4":
+                change_doctor_schedule(request)
+                return redirect(url_for("user_view.shifts_view"))
+
+        all_schedules = Schedule.query.all()
+        doctors = Medical_Staff.query.all()
+        schedules = []
+
+        for doctor in doctors:
+            doctor_shift = []
+            for shift in db.session.query(Schedules).filter_by(schedule_id=doctor.schedule).all():
+                doctor_shift.append(Shift.query.filter_by(id=shift[1]).first())
+            schedules.append(doctor_shift)
+
+        all_shifts = Shift.query.all() 
+        return render_template("shifts.html", user=current_user, all_schedules=all_schedules, all_shifts=all_shifts, doctors_schedules=zip(doctors, schedules), sidebar=management_staff_sidebar)
+    abort(401)
+
+
 #Custom error pages
-
-
 user_view.errorhandler(400)
 def bad_request(error):
-    return render_template("error-400.html"), 400
+    return render_template("error_400.html"), 400
+
 
 user_view.errorhandler(401)
 def unauthorized(error):
-    return render_template("error-401.html"), 401
+    return render_template("error_401.html"), 401
+
 
 user_view.errorhandler(403)
 def forbidden(error):
-    return render_template("error-403.html"), 403
+    return render_template("error_403.html"), 403
 
 
 user_view.errorhandler(404)
 def page_not_found(error):
-    return render_template("error-404.html"), 404
+    return render_template("error_404.html"), 404
 
 
 user_view.errorhandler(405)
 def method_not_allowed(error):
-    return render_template("error-405.html"), 405
+    return render_template("error_405.html"), 405
 
 
 user_view.errorhandler(500)
 def server_error(error):
-    return render_template("error-500.html"), 500
+    return render_template("error_500.html"), 500
 
 
 user_view.errorhandler(503)
 def service_unavaiable(error):
-    return render_template("error-503.html"), 503
-
-#Custom error pages END
+    return render_template("error_503.html"), 503
 
 
+#Custom functions
 def patient_appointments(patient_id):
     appointments = Appointment.query.filter_by(patient=patient_id).all()
     medical_staff = []
@@ -624,7 +724,7 @@ def patient_appointments(patient_id):
         diagnoses.append(appointment.diagnoses)
         lab_results.append(appointment.lab_results)
 
-        return zip(appointments,hospitals,departments,medical_staff,diagnoses,lab_results)
+    return zip(appointments,hospitals,departments,medical_staff,diagnoses,lab_results)
 
 
 def medical_staff_appointments(medical_staff_id):
@@ -645,12 +745,6 @@ def medical_staff_appointments(medical_staff_id):
     return information
 
 
-# def medical_staff_lab_results(medical_staff_id, patient_id):
-#     patient_id = db.session.query(patients).filter(medical_staff_id==medical_staff_id, patient_id==patient_id).first()
-#     patient_obj = Patient.query.filter_by(id=patient_id[0]).first()
-#     return patient_obj
-
-
 def patient_lab_results(patient_id):
     medical_staff_ids = db.session.query(patients).filter_by(patient_id=patient_id).all()
     results = Lab_Result.query.filter_by(patient=patient_id).all()
@@ -658,6 +752,7 @@ def patient_lab_results(patient_id):
     for user_id in medical_staff_ids:
         medical_staff_objs.append(Medical_Staff.query.filter_by(id=user_id[1]).first())
     return zip(results,medical_staff_objs)
+
 
 def medical_staffs_patient(medical_staff_id, patient_id):
     patient_id = db.session.query(patients).filter(medical_staff_id==medical_staff_id, patient_id==patient_id).first()
@@ -672,8 +767,8 @@ def patient_diagnoses(patient_id):
     for user_id in medical_staff_ids:
         for diagnosis in diagnoses:
             medical_staff_objs.append(Medical_Staff.query.filter_by(id=user_id[1]).first())
-    print(medical_staff_objs)
     return zip(diagnoses,medical_staff_objs)
+
 
 def get_path(path):
     return path.replace("\\", "/")

@@ -1,5 +1,5 @@
 from website import db
-from website.models import Hospital,Department,Appointment,User,Patient,Medical_Staff,Management_Staff,patients,Shift,doctors_shifts
+from website.models import Hospital,Department,Appointment,User,Patient,Medical_Staff,Management_Staff,patients,Shift,Schedule,Schedules
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import datetime
@@ -48,13 +48,13 @@ def create_stuff():
     db.session.add(new_patient)
     db.session.commit()
 
-    # new_patient = Schedule(hospital=1, name="A")
-    # db.session.add(new_patient)
-    # db.session.commit()
+    new_patient = Schedule(hospital=1, name="A")
+    db.session.add(new_patient)
+    db.session.commit()
 
-    # new_patient = Schedule(hospital=1, name="B")
-    # db.session.add(new_patient)
-    # db.session.commit()
+    new_patient = Schedule(hospital=1, name="B")
+    db.session.add(new_patient)
+    db.session.commit()
 
     start = datetime.time(11,0)
     end = datetime.time(19,0)
@@ -63,14 +63,7 @@ def create_stuff():
     shift1 = Shift(shift_start=start, shift_end=end, shift_type=shift)
     db.session.add(shift1)
     db.session.commit()
-    # db.session.execute(shifts.insert(), params={"shift_id":shift1.id, "schedule_id":2, "shift_day":today%7 })
-    # db.session.execute(shifts.insert(), params={"shift_id":shift1.id, "schedule_id":1, "shift_day":(today+1)%7 })
-    # db.session.execute(shifts.insert(), params={"shift_id":shift1.id, "schedule_id":2, "shift_day":(today+2)%7 })
-    # db.session.execute(shifts.insert(), params={"shift_id":shift1.id, "schedule_id":2, "shift_day":(today+3)%7 })
-    # db.session.execute(shifts.insert(), params={"shift_id":shift1.id, "schedule_id":1, "shift_day":(today+4)%7 })
-    # db.session.execute(shifts.insert(), params={"shift_id":shift1.id, "schedule_id":2, "shift_day":(today+5)%7 })
-    # db.session.execute(shifts.insert(), params={"shift_id":shift1.id, "schedule_id":1, "shift_day":(today+6)%7 })
-    # db.session.commit()
+
     start = datetime.time(7,0)
     end = datetime.time(15,0)
     shift = 'morning'
@@ -78,13 +71,19 @@ def create_stuff():
     shift2 = Shift(shift_start=start, shift_end=end, shift_type=shift)
     db.session.add(shift2)
     db.session.commit()
-    # db.session.execute(shifts.insert(), params={"shift_id":shift2.id, "schedule_id":1, "shift_day":today%7 })
-    # db.session.execute(shifts.insert(), params={"shift_id":shift2.id, "schedule_id":2, "shift_day":(today+1)%7 })
-    # db.session.execute(shifts.insert(), params={"shift_id":shift2.id, "schedule_id":1, "shift_day":(today+2)%7 })
-    # db.session.execute(shifts.insert(), params={"shift_id":shift2.id, "schedule_id":1, "shift_day":(today+3)%7 })
-    # db.session.execute(shifts.insert(), params={"shift_id":shift2.id, "schedule_id":2, "shift_day":(today+4)%7 })
-    # db.session.execute(shifts.insert(), params={"shift_id":shift2.id, "schedule_id":1, "shift_day":(today+5)%7 })
-    # db.session.execute(shifts.insert(), params={"shift_id":shift2.id, "schedule_id":2, "shift_day":(today+6)%7 })
+
+    db.session.execute(Schedules.insert(), params={"shift_id":shift2.id, "schedule_id":2})
+    db.session.execute(Schedules.insert(), params={"shift_id":shift2.id, "schedule_id":2})
+    db.session.execute(Schedules.insert(), params={"shift_id":shift1.id, "schedule_id":2})
+    db.session.execute(Schedules.insert(), params={"shift_id":shift1.id, "schedule_id":2})
+    db.session.execute(Schedules.insert(), params={"shift_id":shift1.id, "schedule_id":2})
+
+    db.session.execute(Schedules.insert(), params={"shift_id":shift1.id, "schedule_id":1})
+    db.session.execute(Schedules.insert(), params={"shift_id":shift1.id, "schedule_id":1})
+    db.session.execute(Schedules.insert(), params={"shift_id":shift1.id, "schedule_id":1})
+    db.session.execute(Schedules.insert(), params={"shift_id":shift2.id, "schedule_id":1})
+    db.session.execute(Schedules.insert(), params={"shift_id":shift2.id, "schedule_id":1})
+
     db.session.commit()
 
     email = 'doctor1@gmail.com'
@@ -95,9 +94,9 @@ def create_stuff():
     phone_no = '+962111111111'
     dob = '2000-01-01'
 
-    new_patient = Medical_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='md', hospital=1, department=1, registered_on=datetime.datetime.now())
+    new_patient = Medical_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='md', hospital=1, department=1, schedule=2, registered_on=datetime.datetime.now())
     db.session.add(new_patient)
-    db.session.execute(doctors_shifts.insert(), params={"shift_id":1, "medical_staff_id":3, "day":datetime.datetime.today()})
+    # db.session.execute(doctors_shifts.insert(), params={"shift_id":1, "medical_staff_id":3, "day":datetime.datetime.today()})
     db.session.commit()
 
 
@@ -111,9 +110,8 @@ def create_stuff():
 
     new_patient = Medical_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='md', hospital=1, department=2, registered_on=datetime.datetime.now())
     db.session.add(new_patient)
-    db.session.execute(doctors_shifts.insert(), params={"shift_id":2, "medical_staff_id":4, "day":datetime.datetime.today()})    
+    # db.session.execute(doctors_shifts.insert(), params={"shift_id":2, "medical_staff_id":4, "day":datetime.datetime.today()})    
     db.session.commit()
-
 
     email = 'patient1@gmail.com'
     first_name = 'patient1'

@@ -25,12 +25,16 @@
                                             <td><div class="d-flex align-items-center"> <span class="w-space-no">{{patient.first_name + ' ' + patient.last_name}}</span></div></td>
                                             <td>{% if appointment: %}{{appointment.strftime("%d-%m-%y") }}{% else: %}<p>No previous appoinment</p>{% endif %}</td>
                                             <td><a href="/diagnoses/{{patient.id}}">Diagnoses</a></td>
-                                            <td><div></div><a href="/lab results/{{patient.id}}">Lab Results</a></td>
+                                            <td><div></div><a href="/lab_results/{{patient.id}}">Lab Results</a></td>
                                             <td>
                                                 <div class="d-flex">
-                                                    <button onclick="window.location.href='/patient details{{patient.id}}'" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-user"></i></button>
+                                                    <button onclick="window.location.href='/patient_details{{patient.id}}'" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-user"></i></button>
                                                     <button type="submit" data-toggle="modal" data-target="#upload{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-file"></i></button>
-                                                    <button type="submit" data-toggle="modal" data-target="#bed{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-bed"></i></button>
+                                                    {% if not patient.bed: %}
+                                                        <button type="submit" data-toggle="modal" data-target="#occupybed{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-bed"></i></butto>
+                                                    {% else: %}
+                                                        <button type="submit" data-toggle="modal" data-target="#releasebed{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-eject"></i></button>
+                                                    {% endif %}
                                                 </div>
                                                 <div class="modal fade" id="upload{{patient.id}}">
                                                     <div class="modal-dialog" role="document">
@@ -43,6 +47,7 @@
                                                                     <div class="form-group">
                                                                         <input type="hidden" name="patient_id" value="{{patient.id}}"></input>
                                                                         <input type="hidden" name="appointment" value="{{appointment}}"></input>
+                                                                        <input type="hidden" name="form_no" value="1"></input>
                                                                         <div class="input-group mb-3">
                                                                             <div class="custom-file">
                                                                                 <input type="file" name="diagnosis" class="custom-file-input">
@@ -59,6 +64,50 @@
                                                                 </div>
                                                                 <div class="modal-footer">
                                                                     <button type="submit" class="btn btn-primary">Upload</button>
+                                                                    <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                                <div class="modal fade" id="occupybed{{patient.id}}">
+                                                    <div class="modal-dialog" role="document">
+                                                        <form method='POST'>
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Admit to hospital</h5>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="form-group">
+                                                                        <input type="hidden" name="patient_id" value="{{patient.id}}"></input>
+                                                                        <input type="hidden" name="form_no" value="1"></input>
+                                                                        Are you sure you want to admit the patient to the hospital ?
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="submit" class="btn btn-primary">Confirm</button>
+                                                                    <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                                <div class="modal fade" id="releasebed{{patient.id}}">
+                                                    <div class="modal-dialog" role="document">
+                                                        <form method='POST'>
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Release from hospital</h5>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="form-group">
+                                                                        <input type="hidden" name="patient_id" value="{{patient.id}}"></input>
+                                                                        <input type="hidden" name="form_no" value="2"></input>
+                                                                        Are you sure you want to disscharge the patient from the hospital ?
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="submit" class="btn btn-primary">Confirm</button>
                                                                     <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
                                                                 </div>
                                                             </div>

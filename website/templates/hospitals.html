@@ -2,9 +2,8 @@
 {% block title %}Hospitals{% endblock %}
 {% block body %}
     <div class="form-head d-flex mb-3  mb-lg-5   align-items-start">
-        <a href="javascript:void(0)" class="btn btn-danger" data-toggle="modal" data-target="#addDoctorModal">+New Hospital</a>
+        <a href="javascript:void(0)" class="btn btn-danger" data-toggle="modal" data-target="#addDoctorModal">+ Hospital</a>
     </div>
-    <!-- Add Hospital -->
     <div class="modal fade" id="addDoctorModal">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -31,32 +30,32 @@
     <div class="row">
         <div class="col-xl-12">
             <div id="accordion-one" class="accordion doctor-list ">
-        {% for hospital in hospitals: %}
-            <div class="accordion__item">
-                <div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#default_collapseOne">
-                    <span class="form-group">{{hospital.name}}</span>
-                    <span class="accordion__header-line flex-grow-1"></span>
-                    <span class="accordion__header--indicator style_two"></span>
-                </div>
-                <div id="default_collapseOne" class="collapse accordion__body show" data-parent="#accordion-one">
-                    <div class="widget-media best-doctor pt-4">
-                        <div class="timeline row">
-                            {% for department in departments: %}
-                                {% if department.hospital == hospital.id%}
-                                    <div class="col-lg-6">
-                                        <div class="timeline-panel bg-white p-4 mb-4">
-                                            <div class="media-body">
-                                                <a href="doctors.html"><h4 class="mb-2">{{department}}</h4></a>
+                {% for hospital in hospitals: %}
+                    <div class="accordion__item">
+                        <div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#default_collapseOne">
+                            <span class="form-group">{{hospital.name}}</span>
+                            <span class="accordion__header-line flex-grow-1"></span>
+                            <span class="accordion__header--indicator style_two"></span>
+                        </div>
+                        <div id="default_collapseOne" class="collapse accordion__body show" data-parent="#accordion-one">
+                            <div class="widget-media best-doctor pt-4">
+                                <div class="timeline row">
+                                    {% for department in departments: %}
+                                        {% if department.hospital == hospital.id%}
+                                            <div class="col-lg-6">
+                                                <div class="timeline-panel bg-white p-4 mb-4">
+                                                    <div class="media-body">
+                                                        <a href="doctors.html"><h4 class="mb-2">{{department}}</h4></a>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                {% endif %}
-                            {% endfor %}	
+                                        {% endif %}
+                                    {% endfor %}	
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        {% endfor %}
+                {% endfor %}
             </div>
         </div>
     </div>

@@ -1,46 +1,26 @@
-# # Importing Require Module
-
-# from wtforms import Form, BooleanField, StringField, PasswordField, validators, TextAreaField, IntegerField, DateField, SelectField
-# from wtforms.validators import DataRequired
-
-# # Creating Login Form contains email and password
-# class LoginForm(Form):
-#     email = StringField("Email", validators=[validators.Length(min=7, max=50), validators.DataRequired(message="Please Enter Your Email")])
-#     password = PasswordField("Password", validators=[validators.DataRequired(message="Please Enter Your Password")])
-
-# # Creating Registration Form contains username, name, email, password and confirm password.
-
-# class RegisterForm(Form):
-#     first_name = StringField("First Name", validators=[validators.Length(min=3, max=25), validators.DataRequired(message="Please Enter Your First Name")], render_kw={"placeholder": "First Name"})
-#     last_name = StringField("Last Name", validators=[validators.Length(min=3, max=25), validators.DataRequired(message="Please Enter Your Last Name")], render_kw={"placeholder": "Last Name"})
-#     gender = SelectField(u'Gender', choices=[('M', 'Male'), ('F', 'Female')])
-#     phone_no = StringField("Phone_No", validators=[validators.Length(13)], render_kw={"value": "+9627"})
-#     date_of_birth = DateField("Date Of Birth", validators=[validators.DataRequired(message="Please Enter Your Birthdate")],format='%Y-%M-%D')
-#     email = StringField("Email", validators=[validators.Email(message="Please Enter A Valid Email Address")], render_kw={"placeholder": "Email"})
-#     password = PasswordField("Password", validators=[
-#         validators.DataRequired(message="Please Enter A Password"),
-#         validators.EqualTo(fieldname="confirm", message="Your Passwords Do Not Match")
-#     ], render_kw={"placeholder": "Password"})
-#     confirm = PasswordField("Confirm Password", validators=[validators.DataRequired(message="Please Confirm Your Password")], render_kw={"placeholder": "Confirm Password"})
+from website.models import Patient, User,Medical_Staff,Management_Staff, Schedule, Shift, Schedules
 from werkzeug.security import check_password_hash,generate_password_hash
-from website.models import Patient, User,Medical_Staff,Management_Staff
+from flask_login import current_user
 from flask import flash
-from flask_login import login_user, current_user
-import datetime
 from website import db
+import datetime
 
 def validate_login(request):
-    email = request.form.get('email')
-    password = request.form.get('password')
+    if request.mimetype=='application/json':
+        data=request.json
+        email = data['email']
+        password = data['password']
+    else:
+        email = request.form.get('email')
+        password = request.form.get('password')
 
     user = User.query.filter_by(email=email).first()
 
     if user:
         if check_password_hash(user.password, password):
-            flash('Logged in successfully!', category='success')
-            login_user(user, remember=True)
-            return True
-    return False
+            flash('Logged in successfully!', category='login')
+            return user
+    return None
 
 
 def validate_patient_register(request):
@@ -70,8 +50,8 @@ def validate_patient_register(request):
     elif len(phone_no) != 13:
         flash("Enter a correct phone number format", category="error")
     else:
-        return True
-    return False
+        return Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p', registered_on=datetime.datetime.now())
+    return 
 
 
 def validate_staff_register(request):
@@ -85,8 +65,9 @@ def validate_staff_register(request):
     dob = request.form.get('dob')
     role = request.form.get('role')
     department = request.form.get('department')
-    shift = request.form.get('shift')
+    schedule = request.form.get('schedule')
     submit = request.form.get('submit')
+    dpt_head = request.form.get('dpt_head')
 
     staff = User.query.filter_by(email=email).first()
 
@@ -105,15 +86,113 @@ def validate_staff_register(request):
     elif len(phone_no) != 13:
         flash("Enter a correct phone number format", category="error")
     else:
-        print(submit,role)
         if submit == "Create Management Staff" and role.lower() == "ms":
             new_staff = Management_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=current_user.hospital, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now())
         elif submit == "Create Medical Staff" and role.lower() == 'md':
-            new_staff = Medical_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=current_user.hospital, department=department, shift=shift, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now())
+            if dpt_head.lower() == 'false':
+                department_head = False
+            elif dpt_head.lower() == 'true':
+                department_head = True
+            else:
+                flash("Please specify if the doctor is a department head", category="error")
+                return False
+            new_staff = Medical_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=current_user.hospital, department=department, schedule=schedule, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), department_head=department_head)
         else:
-            flash("Please Submit fro m the correct form and Specify role", category="error")
+            flash("Please Submit from the correct form and Specify role", category="error")
             return False
         db.session.add(new_staff)
         db.session.commit()
         return True
     return False
+
+
+def validate_shift_assignment(request):
+    shift1 = request.form.get("shift1")
+    shift2 = request.form.get("shift2")
+    shift3 = request.form.get("shift3")
+    shift4 = request.form.get("shift4")
+    shift5 = request.form.get("shift5")
+    schedule_id = request.form.get("schedule")
+    schedule = Schedule.query.filter_by(id=schedule_id).first()
+
+    if schedule:
+        try:
+            db.session.query(Schedules).filter_by(schedule_id=schedule_id).delete()
+        except:
+            db.session.rollback() 
+        try:
+            db.session.execute(Schedules.insert(), params={"shift_id":shift1, "schedule_id":schedule_id})
+            db.session.execute(Schedules.insert(), params={"shift_id":shift2, "schedule_id":schedule_id})
+            db.session.execute(Schedules.insert(), params={"shift_id":shift3, "schedule_id":schedule_id})
+            db.session.execute(Schedules.insert(), params={"shift_id":shift4, "schedule_id":schedule_id})
+            db.session.execute(Schedules.insert(), params={"shift_id":shift5, "schedule_id":schedule_id})
+            db.session.commit()
+            flash("Shifts Assigned to schedule",category='success')
+            return 
+        except:
+            db.session.rollback()
+            flash("Undifined Shift",category='error')
+            return 
+
+    flash("Shifts not assigned",category='error')
+    return 
+
+def create_schedule(request):
+    schedule_name = request.form.get("schedule_name")
+    if not Schedule.query.filter_by(name=schedule_name).first():
+        new_schedule = Schedule(name=schedule_name, hospital=current_user.hospital)
+        db.session.add(new_schedule)
+        db.session.commit()
+        flash('Schedule created successfully', category='success')
+        return 
+    
+    flash('Schedule already exists', category='error')
+    return
+
+
+def change_doctor_schedule(request):
+    schedule_id = request.form.get("schedule_id")
+    doctor_id = request.form.get("doctor_id")
+    doctor = Medical_Staff.query.filter_by(id=doctor_id).first()
+    if doctor:
+        if doctor.schedule == schedule_id:
+            flash("Schedule Already selected", category="info")
+            return
+        schedule = Schedule.query.filter_by(id=schedule_id).first()
+        if schedule:
+            doctor_schedule = Schedule.query.filter_by(id=doctor.schedule).first()
+            if doctor not in schedule.medical_staff:
+                schedule.medical_staff.append(doctor)
+            doctor.schedule = schedule_id
+            if doctor in doctor_schedule.medical_staff:
+                doctor_schedule.medical_staff.remove(doctor)
+            flash("Schedule Changed", category="update")
+            db.session.commit()
+            return
+
+        flash("This schedule doesn't exist", category="error")
+        return
+
+    flash("This doctor doesn't exist", category="error")
+    return
+
+    flash("No such form", category="error")
+    return
+
+def create_shift(request):
+    shift_name = request.form.get("shift_name")
+    start = request.form.get("shift_start")
+    end = request.form.get("shift_end")
+    if not Shift.query.filter_by(shift_type=shift_name).first():
+        end = end.split(":")
+        start = start.split(":")
+        shift_start = datetime.time(int(start[0]),int(start[1]))
+        shift_end = datetime.time(int(end[0]),int(end[1]))
+        new_shift = Shift(shift_type=shift_name, shift_start=shift_start, shift_end=shift_end, hospital=current_user.hospital)
+        db.session.add(new_shift)
+        db.session.commit()
+        flash('Shift created successfully', category='success')
+        return
+
+    flash('A shift with the same name already exists', category='error')
+    return

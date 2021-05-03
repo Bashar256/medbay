@@ -1,20 +1,22 @@
-from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from datetime import timedelta
 from flask_login import LoginManager
-from flask_user import UserManager
-from os import path
 from flask_mail import Mail
+from flask import Flask
 import os
 
 DB_NAME = "database.db"
-UPLOAD_FOLDER = "D:\Codes\WebApp\website\static\patients"
-ALT_UPLOAD_FOLDER = "website\static\patients"
+UPLOAD_FOLDER = "website\static"
+PATIENTS_FOLDERS = "patients"
 
-patient_sidebar = {'Book Appointment':'calendar-1', 'My Appointments':'notepad-2','Lab Results':'notepad-2','diagnoses':'heart'}
+directory = os.path.join(UPLOAD_FOLDER, PATIENTS_FOLDERS)
+if not os.path.isdir(directory):
+    os.mkdir(directory)
+
+patient_sidebar = {'My Appointments':'calendar-1','Lab Results':'notepad-2','diagnoses':'heart'}
 medical_staff_sidebar = {'My Appointments':'television', 'Patients':'heart', 'Shifts':'pad'}
+department_head_sidebar = {'My Appointments':'television', 'staff':'notepad-2', 'Patients':'heart', 'Shifts':'pad', 'Rooms':'reading'}
 management_staff_sidebar = {'Departments':'network', 'staff':'notepad-2', 'Shifts':'pad', 'Rooms':'reading'}
-admin_sidebar = {'Hospitals':'television', 'Departments':'network', 'staff':'notepad-2', 'Rooms':'reading', 'Patients':'notepad-2'}
+admin_sidebar = {'Hospitals':'television', 'staff':'networking', 'Rooms':'reading', 'Patients':'heart'}
 
 os.environ['SECRET_KEY_FLASK'] =  'SecretKey'
 
@@ -27,7 +29,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 db = SQLAlchemy(app=app)
 db.init_app(app)
 
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_SERVER'] = "smtp.gmail.com"
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
@@ -57,7 +59,7 @@ with app.app_context():
     db.create_all(app=app)
 
 login_manager = LoginManager()
-login_manager.login_view = 'auth_view.login'
+login_manager.login_view = "auth_view.login_view"
 login_manager.init_app(app=app)
 @login_manager.user_loader
 def load_user(id):
