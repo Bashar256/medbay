@@ -5,7 +5,7 @@ from website import admin_sidebar, patient_sidebar, medical_staff_sidebar, manag
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from website import db, UPLOAD_FOLDER,app
+from website import db, UPLOAD_FOLDER, app
 import datetime
 import os
 import base64
@@ -33,9 +33,11 @@ def load_user_request(request):
             pass
         user = User.query.filter_by(email=api_key).first()
         if user:
+            print("TRUE")
             return user
 
     # finally, return None if both methods did not login the user
+    print("False")
     return None
 
 

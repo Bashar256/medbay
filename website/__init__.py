@@ -59,12 +59,12 @@ from .models import User
 with app.app_context():
     db.create_all(app=app)
 
-login_manager = LoginManager()
-login_manager.login_view = "auth_view.login_view"
-login_manager.init_app(app=app)
-@login_manager.user_loader
-def load_user(id):
-    return User.query.get(int(id))
+# login_manager = LoginManager()
+# login_manager.login_view = "auth_view.login_view"
+# login_manager.init_app(app=app)
+# @login_manager.user_loader
+# def load_user(id):
+#     return User.query.get(int(id))
 
 
 from website import users, auth
