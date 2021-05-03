@@ -159,7 +159,7 @@ def edit_profile_view():
 @user_view.route("/book_appointment")
 @login_required
 def book_appointment_view():
-        if current_user.is_patient(): 
+    if current_user.is_patient(): 
         hospitals = Hospital.query.all()
         departments = Department.query.all()
         
