@@ -1,16 +1,16 @@
-from flask import Blueprint, Flask, redirect, url_for, render_template, request, flash, session
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, login_required, logout_user, current_user
 from website.models import User, Patient, Management_Staff, Medical_Staff, Hospital, Department, Shift, Appointment,patients
+from flask import Blueprint, Flask, redirect, url_for, render_template, request, flash, session, jsonify
+from flask_login import login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from website.validate import validate_patient_register, validate_login
+from website.temp_create_objects import create_stuff
+from flask_login import LoginManager
+from website import db, mail,app
 from flask_mail import Message
 from threading import Thread
-from website import db, mail,app
-import os
 import datetime
-from website.temp_create_objects import create_stuff
-from website.validate import validate_patient_register, validate_login
 import base64
-from flask_login import LoginManager
+import os
 
 auth_view = Blueprint("auth_view", __name__, static_folder="static", template_folder="templates")
 
