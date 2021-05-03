@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 from website import db, UPLOAD_FOLDER
 import datetime
 import os
+from website.auth import load_user_request
 
 user_view = Blueprint("user_view", __name__, static_folder="static", template_folder="templates")
 today = datetime.datetime.today()
@@ -158,11 +159,18 @@ def edit_profile_view():
 @user_view.route("/book_appointment")
 @login_required
 def book_appointment_view():
-    if current_user.is_patient(): 
+        if current_user.is_patient(): 
         hospitals = Hospital.query.all()
         departments = Department.query.all()
-        return render_template("book_appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=patient_sidebar)
-    abort(401)
+        
+        if request.mimetype == 'application/json':
+            if load_user_request(request):
+                Host_name = []
+                for name in hospitals:
+                    Host_name.append({"name":str(name)})
+                return jsonify(Host_name) 
+        print(departments)
+        return render_template("book appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=patient_sidebar)
 
 
 #Selecting Doctor
