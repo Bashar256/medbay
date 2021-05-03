@@ -53,7 +53,7 @@ def register_view():
             flash('Account created successfully !', category='register')
             return redirect(url_for('user_view.home_view'))
         return render_template("register.html")
-    create_stuff()
+    #create_stuff()
     return render_template("register.html")
 
 
