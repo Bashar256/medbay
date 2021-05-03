@@ -5,13 +5,40 @@ from website import admin_sidebar, patient_sidebar, medical_staff_sidebar, manag
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from website.auth import load_user_request
-from website import db, UPLOAD_FOLDER
+from website import db, UPLOAD_FOLDER, app
 import datetime
 import os
+import base64
+from flask_login import LoginManager
 
 user_view = Blueprint("user_view", __name__, static_folder="static", template_folder="templates")
 today = datetime.datetime.today()
+
+login_manager = LoginManager()
+login_manager.login_view = "auth_view.login_view"
+login_manager.init_app(app=app)
+@login_manager.user_loader
+def load_user(id):
+    return User.query.get(int(id))
+
+@login_manager.request_loader
+def load_user_request(request):
+    api_key = request.headers.get('authorization')
+    if api_key:
+        
+        api_key = api_key.replace('Basic ', '', 1)
+        try:
+            api_key = base64.b64decode(api_key).decode('utf-8')
+        except TypeError:
+            pass
+        user = User.query.filter_by(email=api_key).first()
+        if user:
+            print("TRUE")
+            return user
+
+    # finally, return None if both methods did not login the user
+    print("False")
+    return None
 
 
 #Home View
