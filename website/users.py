@@ -1,14 +1,14 @@
 from website.models import  Hospital, Department, Appointment, Shift, Management_Staff, Medical_Staff, Patient, patients, Diagnosis, User, Lab_Result, Schedule, Schedules, Room, Bed
-from flask import Blueprint, Flask, render_template, url_for, redirect, request, flash, abort, Response, send_from_directory, send_file
+from flask import Blueprint, Flask, render_template, url_for, redirect, request, flash, abort, Response, send_from_directory, send_file, jsonify
 from website.validate import validate_staff_register, validate_shift_assignment, create_schedule, change_doctor_schedule, create_shift
 from website import admin_sidebar, patient_sidebar, medical_staff_sidebar, management_staff_sidebar, department_head_sidebar
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
+from website.auth import load_user_request
 from website import db, UPLOAD_FOLDER
 import datetime
 import os
-from website.auth import load_user_request
 
 user_view = Blueprint("user_view", __name__, static_folder="static", template_folder="templates")
 today = datetime.datetime.today()
