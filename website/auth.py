@@ -105,7 +105,7 @@ def register_view_phone():
             
         if status=='Success':
             new_patient =  Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p', last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
-            #new_patient.create_patient_file()
+            new_patient.create_patient_file()
             db.session.add(new_patient)
             db.session.commit()
             login_user(new_patient, remember=True, duration=SESSION_TIMEOUT)
