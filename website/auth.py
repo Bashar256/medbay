@@ -131,7 +131,7 @@ def reset_password_view():
                         sender=("MedBay Support", "noreply@medbay.org"),
                         recipients=["dgkxsktjectbd@nucleant.org"])
             msg.body = f'''To change your password please follow the link below:
-            {url_for('auth_view.reset_token', token=token, _external=True)}'''
+            {url_for('auth_view.reset_token_view', token=token, _external=True)}'''
             Thread(target=send_email, args=[msg]).start()
             if request.mimetype=='application/json':
                 return jsonify({'status':'An Email was sent with the reset link'})
