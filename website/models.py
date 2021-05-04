@@ -14,7 +14,7 @@ class Hospital(db.Model):
     
     id = db.Column(db.Integer, primary_key=True) 
     name = db.Column(db.String(100, collation='NOCASE'), nullable=False, server_default='', unique=True)
-    department = db.relationship('Department', backref='hospital_department')
+    departments = db.relationship('Department', backref='hospital_department')
     managers = db.relationship('Management_Staff', backref='hospital_managers')
     medical_staff = db.relationship('Medical_Staff', backref='hospital_medical_staff')
     shifts = db.relationship("Shift", backref="hospital_shifts")
