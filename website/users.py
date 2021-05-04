@@ -205,12 +205,14 @@ def book_appointment_view_department():
         departments = Department.query.all()
         dept_name=[]
         dept_id=[]
+        dept_hosp=[]
         if request.mimetype == 'application/json':
             if load_user_request(request):
                 for department in departments:
                     dept_name.append(str(department))
                     dept_id.append(department.id)
-                return  jsonify({'name':dept_name,'id':dept_id})
+                    dept_hosp.append(department.hospital)
+                return  jsonify({'name':dept_name,'id':dept_id,'hospital':dept_hosp})
     abort(401)
 # for department in departments:
 #     dept_name.append({'name':str(department)})
