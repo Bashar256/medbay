@@ -208,8 +208,8 @@ def book_appointment_view_department():
             if load_user_request(request):
                 for department in departments:
                     dept_name.append({'name':str(department)})
-                    dept_id.append({'id':str(department.id)})
-                return jsonify(dept_name), jsonify(dept_id)
+                    dept_id.append({'id':department.id})
+                return  jsonify(dept_id)
     abort(401)
 
 
