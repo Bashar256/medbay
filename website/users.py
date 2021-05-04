@@ -206,7 +206,7 @@ def book_appointment_view_department():
         
         if request.mimetype == 'application/json':
             if load_user_request(request):
-                for i in departments:
+                for i in departments.id:
                     print(i) 
     abort(401)
 
