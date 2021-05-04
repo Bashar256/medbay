@@ -205,8 +205,8 @@ def book_appointment_view_department():
         
         if request.mimetype == 'application/json':
             if load_user_request(request):
-                for hospital in hospitals:
-                    print(hospital) 
+                for department in departments:
+                    print(department.id) 
     abort(401)
 
 
