@@ -2,7 +2,7 @@ from website.models import User, Patient, Management_Staff, Medical_Staff, Hospi
 from flask import Blueprint, Flask, redirect, url_for, render_template, request, flash, session, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from website.validate import validate_patient_register, validate_login, validate_patient_register_phone
+from website.validate import validate_patient_register, validate_login
 from website.temp_create_objects import create_stuff
 from flask_login import LoginManager
 from website import db, mail,app
