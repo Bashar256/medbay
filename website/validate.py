@@ -2,7 +2,7 @@ from website.models import Patient, User,Medical_Staff,Management_Staff, Schedul
 from werkzeug.security import check_password_hash,generate_password_hash
 from flask_login import current_user
 from flask import flash
-from website import db
+from website import db,BAD_LOGINS_LIMIT
 import datetime
 
 def validate_login(request):
@@ -17,10 +17,30 @@ def validate_login(request):
     user = User.query.filter_by(email=email).first()
 
     if user:
+        if datetime.datetime.now() >= (user.last_login_attempt + datetime.timedelta(minutes=5)):
+            user.block_login = False
+            user.last_login_attempt = datetime.datetime.now()
+
+        if user.block_login:
+            flash("Please wait for the 5 min block to end", category="warning")
+            return 
+
         if check_password_hash(user.password, password):
             flash('Logged in successfully!', category='login')
             return user
-    return None
+
+        if datetime.datetime.now() < (user.last_login_attempt + datetime.timedelta(minutes=5)):
+            user.last_login_attempt = datetime.datetime.now()
+            user.bad_logins = user.bad_logins + 1
+
+        if user.bad_logins >= BAD_LOGINS_LIMIT:
+            flash("To many bad attempts access will be blocked for 5 mins", category="warning")
+            user.block_login = True
+            user.bad_logins = 0
+            
+        db.session.commit()
+    flash('Invalid Information', category='error')
+    return 
 
 
 def validate_patient_register(request):

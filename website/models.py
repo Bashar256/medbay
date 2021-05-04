@@ -219,10 +219,10 @@ class User(db.Model, UserMixin):
     registered_on = db.Column(db.DateTime, nullable=False, default=datetime.now())
     confirmed = db.Column(db.Boolean, nullable=False, default=False)
     confirmed_on = db.Column(db.DateTime, nullable=True)
-    # bad_logins = db.Column(db.Integer, nullable=False, default=0)
-    # last_login_attempt = db.Column(db.DateTime, nullable=True)
-    # last_login = db.Column(db.DateTime, nullable=True)
-    # block_login = db.Column(db.DateTime, nullable=True)
+    bad_logins = db.Column(db.Integer, nullable=False, default=0)
+    last_login_attempt = db.Column(db.DateTime, nullable=True)
+    last_login = db.Column(db.DateTime, nullable=False)
+    block_login = db.Column(db.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"{self.first_name}"

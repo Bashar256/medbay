@@ -8,6 +8,8 @@ DB_NAME = "database.db"
 BASE = "website"
 UPLOAD_FOLDER = "static"
 PATIENTS_FOLDERS = "patients"
+BAD_LOGINS_LIMIT = 5
+
 base_directory = os.path.join(BASE, UPLOAD_FOLDER)
 directory = os.path.join(base_directory, PATIENTS_FOLDERS)
 if not os.path.isdir(directory):

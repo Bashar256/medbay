@@ -33,11 +33,9 @@ def load_user_request(request):
             pass
         user = User.query.filter_by(email=api_key).first()
         if user:
-            print("TRUE")
             return user
 
     # finally, return None if both methods did not login the user
-    print("False")
     return None
 
 
@@ -196,7 +194,6 @@ def book_appointment_view():
                 for name in hospitals:
                     Host_name.append({"name":str(name)})
                 return jsonify(Host_name) 
-        print(departments)
         return render_template("book appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=patient_sidebar)
     abort(401)
 

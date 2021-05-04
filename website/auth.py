@@ -47,13 +47,15 @@ def login_view():
         user = validate_login(request)
         if user:
             login_user(user, remember=True)
+            user.last_login = datetime.datetime.now()
+            user.last_login_attempt = datetime.datetime.now()
+            user.bad_logins = 0
             if request.mimetype=='application/json':
                 return jsonify({'status':'Login Successful!'})
             return redirect(url_for('user_view.home_view'))
         elif request.mimetype=='application/json':
             return jsonify({'status':'Incorrect email or password.'})
-        flash('Invalid Information', category='error')
-
+    
     return render_template("login.html")
 
 # if request.method == 'POST':
@@ -91,7 +93,7 @@ def register_view():
             flash('Account created successfully !', category='register')
             return redirect(url_for('user_view.home_view'))
         return render_template("register.html")
-    #create_stuff()
+    create_stuff()
     return render_template("register.html")
 
 
