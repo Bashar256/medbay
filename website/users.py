@@ -198,7 +198,7 @@ def book_appointment_view():
                     Host_name.append({"name":str(name)})
                 return jsonify(Host_name) 
         print(departments)
-        return render_template("book appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=patient_sidebar)
+        return render_template("book_appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=patient_sidebar)
     abort(401)
 
 
