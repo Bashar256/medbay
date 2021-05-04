@@ -202,7 +202,7 @@ def book_appointment_view_department():
     if current_user.is_patient(): 
         hospitals = Hospital.query.all()
         departments = Department.query.all()
-        dept_name=[]
+        dept_name1=[]
         dept_id=[]
         if request.mimetype == 'application/json':
             if load_user_request(request):
