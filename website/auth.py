@@ -4,14 +4,14 @@ from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from website.validate import validate_patient_register, validate_login
 from website.temp_create_objects import create_stuff
+from website import db, mail, app, SESSION_TIMEOUT
+from website.users import load_user_request
 from flask_login import LoginManager
-from website import db, mail,app
 from flask_mail import Message
 from threading import Thread
 import datetime
 import base64
 import os
-from website.users import load_user_request
 
 auth_view = Blueprint("auth_view", __name__, static_folder="static", template_folder="templates")
 
@@ -22,10 +22,11 @@ def login_view():
     if request.method == 'POST':
         user = validate_login(request)
         if user:
-            login_user(user, remember=True)
+            login_user(user, remember=True, duration=SESSION_TIMEOUT)
             user.last_login = datetime.datetime.now()
             user.last_login_attempt = datetime.datetime.now()
             user.bad_logins = 0
+            db.session.commit()
             if request.mimetype=='application/json':
                 return jsonify({'status':'Login Successful!'})
             return redirect(url_for('user_view.home_view'))
@@ -37,7 +38,7 @@ def login_view():
 
 
 #Logout View
-@auth_view.route("/logout",methods=["POST"])
+@auth_view.route("/logout",methods=["POST", "GET"])
 @login_required
 def logout_view():
     if request.mimetype == 'application/json':

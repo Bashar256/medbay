@@ -1,15 +1,14 @@
 from website.models import  Hospital, Department, Appointment, Shift, Management_Staff, Medical_Staff, Patient, patients, Diagnosis, User, Lab_Result, Schedule, Schedules, Room, Bed
+from website import db, app, UPLOAD_FOLDER, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR
 from flask import Blueprint, Flask, render_template, url_for, redirect, request, flash, abort, Response, send_from_directory, send_file, jsonify
 from website.validate import validate_staff_register, validate_shift_assignment, create_schedule, change_doctor_schedule, create_shift
-from website import admin_sidebar, patient_sidebar, medical_staff_sidebar, management_staff_sidebar, department_head_sidebar
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from website import db, UPLOAD_FOLDER, app
-import datetime
-import os
-import base64
 from flask_login import LoginManager
+import datetime
+import base64
+import os
 
 user_view = Blueprint("user_view", __name__, static_folder="static", template_folder="templates")
 today = datetime.datetime.today()
@@ -46,15 +45,15 @@ def load_user_request(request):
 @login_required
 def home_view():
     if current_user.is_patient():
-        return render_template("home.html",user=current_user, sidebar=patient_sidebar)
+        return render_template("home.html",user=current_user, sidebar=PATIENT_SIDEBAR)
     elif current_user.is_management_staff():
-        return render_template("home.html",user=current_user, sidebar=management_staff_sidebar)
+        return render_template("home.html",user=current_user, sidebar=MANAGEMENT_STAFF_SIDEBAR)
     elif current_user.is_medical_staff():
         if not current_user.is_department_head():
-            return render_template("home.html",user=current_user, sidebar=medical_staff_sidebar)
-        return render_template("home.html",user=current_user, sidebar=department_head_sidebar)
+            return render_template("home.html",user=current_user, sidebar=MEDICAL_STAFF_SIDEBAR)
+        return render_template("home.html",user=current_user, sidebar=DEPARTMENT_HEAD_SIDEBAR)
     elif current_user.is_admin():
-        return render_template("home.html",user=current_user, sidebar=admin_sidebar)    
+        return render_template("home.html",user=current_user, sidebar=ADMIN_SIDEBAR)    
     abort(401)
 
 
@@ -63,15 +62,15 @@ def home_view():
 @login_required
 def about_us_view():
     if current_user.is_patient():
-        return render_template("about_us.html",user=current_user, sidebar=patient_sidebar)    
+        return render_template("about_us.html",user=current_user, sidebar=PATIENT_SIDEBAR)    
     elif current_user.is_medical_staff():
         if not current_user.is_department_head():
-            return render_template("about_us.html",user=current_user, sidebar=medical_staff_sidebar)
-        return render_template("about_us.html",user=current_user, sidebar=department_head_sidebar)
+            return render_template("about_us.html",user=current_user, sidebar=MEDICAL_STAFF_SIDEBAR)
+        return render_template("about_us.html",user=current_user, sidebar=DEPARTMENT_HEAD_SIDEBAR)
     elif current_user.is_management_staff():
-        return render_template("about_us.html",user=current_user, sidebar=management_staff_sidebar)
+        return render_template("about_us.html",user=current_user, sidebar=MANAGEMENT_STAFF_SIDEBAR)
     elif current_user.is_admin():
-        return render_template("about_us.html",user=current_user, sidebar=admin_sidebar)
+        return render_template("about_us.html",user=current_user, sidebar=ADMIN_SIDEBAR)
     abort(401) 
 
 
@@ -81,16 +80,16 @@ def about_us_view():
 def profile_view():
     if current_user.is_patient():
         information = patient_appointments(current_user.id)  
-        return render_template("profile.html",user=current_user, information=information, today=today, sidebar=patient_sidebar)    
+        return render_template("profile.html",user=current_user, information=information, today=today, sidebar=PATIENT_SIDEBAR)    
     elif current_user.is_medical_staff():
         information = medical_staff_appointments(current_user.id)
         if not current_user.is_department_head():
-            return render_template("profile.html",user=current_user, information=information, today=today, sidebar=medical_staff_sidebar)
-        return render_template("profile.html",user=current_user, information=information, today=today, sidebar=department_head_sidebar)
+            return render_template("profile.html",user=current_user, information=information, today=today, sidebar=MEDICAL_STAFF_SIDEBAR)
+        return render_template("profile.html",user=current_user, information=information, today=today, sidebar=DEPARTMENT_HEAD_SIDEBAR)
     elif current_user.is_management_staff():
-        return render_template("profile.html",user=current_user, sidebar=management_staff_sidebar)
+        return render_template("profile.html",user=current_user, sidebar=MANAGEMENT_STAFF_SIDEBAR)
     elif current_user.is_admin():
-        return render_template("profile.html",user=current_user, sidebar=admin_sidebar)
+        return render_template("profile.html",user=current_user, sidebar=ADMIN_SIDEBAR)
     abort(401)
 
 
@@ -167,17 +166,17 @@ def edit_profile_view():
         return redirect(url_for("user_view.edit_profile_view"))
 
     elif current_user.is_patient():
-        return render_template("edit_profile.html",user=current_user, sidebar=patient_sidebar)
+        return render_template("edit_profile.html",user=current_user, sidebar=PATIENT_SIDEBAR)
 
     elif current_user.is_medical_staff():
         if not current_user.is_department_head():
-            return render_template("edit_profile.html",user=current_user, sidebar=medical_staff_sidebar)
-        return render_template("edit_profile.html",user=current_user, sidebar=department_head_sidebar)
+            return render_template("edit_profile.html",user=current_user, sidebar=MEDICAL_STAFF_SIDEBAR)
+        return render_template("edit_profile.html",user=current_user, sidebar=DEPARTMENT_HEAD_SIDEBAR)
     elif current_user.is_management_staff():
-        return render_template("edit_profile.html",user=current_user, sidebar=management_staff_sidebar)
+        return render_template("edit_profile.html",user=current_user, sidebar=MANAGEMENT_STAFF_SIDEBAR)
         
     elif current_user.is_admin():
-        return render_template("edit_profile.html",user=current_user, sidebar=admin_sidebar)    
+        return render_template("edit_profile.html",user=current_user, sidebar=ADMIN_SIDEBAR)    
         
 
 #Appointment_Booking View
@@ -195,7 +194,7 @@ def book_appointment_view():
                 for name in hospitals:
                     Host_name.append({"name":str(name)})
                 return jsonify(Host_name) 
-        return render_template("book_appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=patient_sidebar)
+        return render_template("book_appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=PATIENT_SIDEBAR)
     abort(401)
 
 
@@ -205,7 +204,7 @@ def book_appointment_view():
 def choose_medical_staff_view(hospital_id,department_id):
     if current_user.is_patient(): 
         medical_staff = Medical_Staff.query.filter(Medical_Staff.department==department_id, Medical_Staff.hospital==hospital_id)
-        return render_template("doctors.html", user=current_user, hospital_id=hospital_id, department_id=department_id, medical_staff=medical_staff, sidebar=patient_sidebar)
+        return render_template("doctors.html", user=current_user, hospital_id=hospital_id, department_id=department_id, medical_staff=medical_staff, sidebar=PATIENT_SIDEBAR)
     abort(401)
 
 
@@ -252,7 +251,7 @@ def doctor_details_view(hospital_id, department_id, staff_id,role="md"):
                 shifts.append(shift) 
         closest_appointment = today + datetime.timedelta(days=1)
         appointment_limit = today + datetime.timedelta(days=30)
-        return render_template("staff_details.html", user=current_user, today=today, closest_appointment=closest_appointment, appointment_limit=appointment_limit, shifts=shifts_objs, staff=medical_staff, sidebar=patient_sidebar)
+        return render_template("staff_details.html", user=current_user, today=today, closest_appointment=closest_appointment, appointment_limit=appointment_limit, shifts=shifts_objs, staff=medical_staff, sidebar=PATIENT_SIDEBAR)
 
     abort(401)
 
@@ -274,13 +273,13 @@ def my_appointments_view():
             flash("Appointment Does not exist", category='error')
             return redirect(url_for("user_view.my_appointments_view"))
         information = patient_appointments(current_user.id)
-        return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=patient_sidebar)
+        return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=PATIENT_SIDEBAR)
 
     if current_user.is_medical_staff():
         information = medical_staff_appointments(current_user.id)
         if not current_user.is_department_head():
-            return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=medical_staff_sidebar)
-        return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=department_head_sidebar)
+            return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=MEDICAL_STAFF_SIDEBAR)
+        return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=DEPARTMENT_HEAD_SIDEBAR)
     
     abort(401)
 
@@ -309,7 +308,7 @@ def edit_appointment(appointment_id):
             return redirect(url_for("user_view.my_appointments_view"))
         information = patient_appointments(current_user.id)
         shifts = Shift.query.all()
-        return render_template("edit_appointment.html", user=current_user, information=information, shifts=shifts, today=today, sidebar=patient_sidebar)
+        return render_template("edit_appointment.html", user=current_user, information=information, shifts=shifts, today=today, sidebar=PATIENT_SIDEBAR)
 
     abort(401)
 
@@ -362,8 +361,8 @@ def patients_view():
             appointments.append(patient.last_visit(current_user.id))
         info = zip(patients, appointments)
         if not current_user.is_department_head():
-            return render_template("patients.html", user=current_user, info=info, sidebar=medical_staff_sidebar)
-        return render_template("patients.html", user=current_user, info=info, sidebar=department_head_sidebar)
+            return render_template("patients.html", user=current_user, info=info, sidebar=MEDICAL_STAFF_SIDEBAR)
+        return render_template("patients.html", user=current_user, info=info, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     abort(401)
 
@@ -427,8 +426,8 @@ def patient_details_view(patient_id):
                 diagnoses = Diagnosis.query.filter(Diagnosis.patient==patient_id, Diagnosis.medical_staff==current_user.id).all()
                 information = patient_appointments(patient_id)
                 if not current_user.is_department_head():
-                    return render_template("patient_details.html", user=current_user, medical_staff=current_user, information=information, diagnoses=diagnoses, patient=patient, today=today, sidebar=medical_staff_sidebar)
-                return render_template("patient_details.html", user=current_user, medical_staff=current_user, information=information, diagnoses=diagnoses, patient=patient, today=today, sidebar=department_head_sidebar)
+                    return render_template("patient_details.html", user=current_user, medical_staff=current_user, information=information, diagnoses=diagnoses, patient=patient, today=today, sidebar=MEDICAL_STAFF_SIDEBAR)
+                return render_template("patient_details.html", user=current_user, medical_staff=current_user, information=information, diagnoses=diagnoses, patient=patient, today=today, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
         return redirect(url_for('user_view.patients_view'))
     abort(401)
@@ -458,12 +457,12 @@ def lab_results_view(patient_id=None):
             patients.append(patient)
         info = zip(results, patients)
         if not current_user.is_department_head():
-            return render_template("lab_results.html", user=current_user, patient=patient, info=info, sidebar=medical_staff_sidebar)
-        return render_template("lab_results.html", user=current_user, patient=patient, info=info, sidebar=department_head_sidebar)
+            return render_template("lab_results.html", user=current_user, patient=patient, info=info, sidebar=MEDICAL_STAFF_SIDEBAR)
+        return render_template("lab_results.html", user=current_user, patient=patient, info=info, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     elif current_user.is_patient():
         info = patient_lab_results(current_user.id)
-        return render_template("lab_results.html", user=current_user, info=info, sidebar=patient_sidebar)
+        return render_template("lab_results.html", user=current_user, info=info, sidebar=PATIENT_SIDEBAR)
     abort(401)
 
 
@@ -474,7 +473,7 @@ def lab_results_view(patient_id=None):
 def diagnoses_view(patient_id=None):
     if current_user.is_patient():
         info = patient_diagnoses(current_user.id)
-        return render_template("diagnoses.html", user=current_user, info=info, sidebar=patient_sidebar)
+        return render_template("diagnoses.html", user=current_user, info=info, sidebar=PATIENT_SIDEBAR)
 
     elif current_user.is_medical_staff():
         if request.method == "POST":
@@ -495,8 +494,8 @@ def diagnoses_view(patient_id=None):
             patients.append(patient)
         info = zip(diagnoses,patients)
         if not current_user.is_department_head():
-            return render_template("diagnoses.html", user=current_user,  patient=patient, info=info, sidebar=medical_staff_sidebar)
-        return render_template("diagnoses.html", user=current_user,  patient=patient, info=info, sidebar=department_head_sidebar)
+            return render_template("diagnoses.html", user=current_user,  patient=patient, info=info, sidebar=MEDICAL_STAFF_SIDEBAR)
+        return render_template("diagnoses.html", user=current_user,  patient=patient, info=info, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     abort(401)
 
@@ -519,7 +518,7 @@ def hospitals_view():
             return redirect(url_for('user_view.hospitals_view'))
         hospitals = Hospital.query.all()
         departments= Department.query.all()
-        return render_template("hospitals.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=admin_sidebar)
+        return render_template("hospitals.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=ADMIN_SIDEBAR)
     abort(401)
 
 
@@ -546,7 +545,7 @@ def departments_view():
         medical_staff = Medical_Staff.query.filter_by(hospital=current_user.hospital).all()
         management_staff = Management_Staff.query.filter_by(hospital=current_user.hospital).all()
         hospital = Hospital.query.filter_by(id=current_user.hospital).first()
-        return render_template("departments.html", user=current_user, hospital=hospital, management_staff=management_staff, doctors=medical_staff, departments=departments, sidebar=management_staff_sidebar)
+        return render_template("departments.html", user=current_user, hospital=hospital, management_staff=management_staff, doctors=medical_staff, departments=departments, sidebar=MANAGEMENT_STAFF_SIDEBAR)
     abort(401)
     
 
@@ -560,7 +559,7 @@ def staff_view():
         management_staff = Management_Staff.query.all()
         department = Department.query.filter_by(id=current_user.department).first()
         hospital = Hospital.query.filter_by(id=current_user.hospital).first()
-        return render_template("staff.html", user=current_user, hospital=hospital, schedules=schedules, doctors=medical_staff, departments=department, management_staff=management_staff, sidebar=department_head_sidebar)
+        return render_template("staff.html", user=current_user, hospital=hospital, schedules=schedules, doctors=medical_staff, departments=department, management_staff=management_staff, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     elif current_user.is_management_staff():
         if request.method == 'POST':
@@ -572,7 +571,7 @@ def staff_view():
         management_staff = Management_Staff.query.all()
         departments = Department.query.filter_by(hospital=current_user.hospital).all()
         hospital = Hospital.query.filter_by(id=current_user.hospital).first()
-        return render_template("staff.html", user=current_user, hospital=hospital, schedules=schedules, doctors=medical_staff, departments=departments, management_staff=management_staff, sidebar=management_staff_sidebar)
+        return render_template("staff.html", user=current_user, hospital=hospital, schedules=schedules, doctors=medical_staff, departments=departments, management_staff=management_staff, sidebar=MANAGEMENT_STAFF_SIDEBAR)
 
     elif current_user.is_admin():
         if request.method == 'POST':
@@ -582,7 +581,7 @@ def staff_view():
         management_staff = Management_Staff.query.all()
         hospitals = Hospital.query.all()
         admins = User.query.filter_by(role=current_user.role).all()
-        return render_template("staff.html", user=current_user, hospitals=hospitals, admins=admins, management_staff=management_staff, sidebar=admin_sidebar)    
+        return render_template("staff.html", user=current_user, hospitals=hospitals, admins=admins, management_staff=management_staff, sidebar=ADMIN_SIDEBAR)    
     abort(401)
 
 
@@ -595,20 +594,20 @@ def staff_details_view(staff_id,role):
 
     elif current_user.is_medical_staff() and current_user.is_department_head():
         information = medical_staff_appointments(staff_id)
-        return render_template("staff_details.html",user=current_user, information=information, shift=shift, staff=staff, sidebar=medical_staff_sidebar)
+        return render_template("staff_details.html",user=current_user, information=information, shift=shift, staff=staff, sidebar=MEDICAL_STAFF_SIDEBAR)
 
     elif current_user.is_management_staff():
         staff = Management_Staff.query.filter_by(id=staff_id).first()
         if staff:
-            return render_template("staff_details.html", user=current_user, staff=staff, sidebar=management_staff_sidebar)
+            return render_template("staff_details.html", user=current_user, staff=staff, sidebar=MANAGEMENT_STAFF_SIDEBAR)
         staff = Medical_Staff.query.filter_by(id=staff_id).first()
         if staff:
             information = medical_staff_appointments(staff_id)
-            return render_template("staff_details.html", user=current_user, information=information, staff=staff, today=today, sidebar=management_staff_sidebar)
+            return render_template("staff_details.html", user=current_user, information=information, staff=staff, today=today, sidebar=MANAGEMENT_STAFF_SIDEBAR)
         
     elif current_user.is_admin():
         staff = User.query.filter(User.id==staff_id,  User.role==current_user.role).first()
-        return render_template("staff_details.html",user=current_user, staff=staff, sidebar=admin_sidebar) 
+        return render_template("staff_details.html",user=current_user, staff=staff, sidebar=ADMIN_SIDEBAR) 
             
     abort(401)
 
@@ -657,7 +656,7 @@ def rooms_view():
         my_hospital = Hospital.query.filter_by(id=current_user.hospital).first()
         departments = Department.query.filter_by(hospital=current_user.hospital).all()
         
-        return render_template("rooms.html",user=current_user, hospitals=hospitals, my_hospital=my_hospital, departments=departments, sidebar=management_staff_sidebar)
+        return render_template("rooms.html",user=current_user, hospitals=hospitals, my_hospital=my_hospital, departments=departments, sidebar=MANAGEMENT_STAFF_SIDEBAR)
 
     elif current_user.is_admin():
         rooms = Room.query.all()
@@ -666,7 +665,7 @@ def rooms_view():
             beds.append(room.beds)
     
         hospitals = Hospital.query.all()
-        return render_template("rooms.html",user=current_user, hospitals=hospitals, rooms=rooms, beds=beds, sidebar=admin_sidebar)
+        return render_template("rooms.html",user=current_user, hospitals=hospitals, rooms=rooms, beds=beds, sidebar=ADMIN_SIDEBAR)
 
     abort(401)
 
@@ -696,7 +695,7 @@ def shifts_view():
                 doctors_schedules.append(doctor_schedule)
             
             all_shifts = Shift.query.filter_by(hospital=current_user.hospital).all()
-            return render_template("shifts.html", user=current_user, all_shifts=all_shifts, doctors_schedules=zip(doctors, doctors_schedules), sidebar=medical_staff_sidebar)
+            return render_template("shifts.html", user=current_user, all_shifts=all_shifts, doctors_schedules=zip(doctors, doctors_schedules), sidebar=MEDICAL_STAFF_SIDEBAR)
         
         if request.method == 'POST':
             if form_no == "4":
@@ -713,7 +712,7 @@ def shifts_view():
             schedules.append(doctor_shift)
 
         all_shifts = Shift.query.filter_by(hospital=current_user.hospital).all()
-        return render_template("shifts.html", user=current_user, all_schedules=all_schedules, all_shifts=all_shifts, doctors_schedules=zip(doctors, schedules), sidebar=department_head_sidebar)
+        return render_template("shifts.html", user=current_user, all_schedules=all_schedules, all_shifts=all_shifts, doctors_schedules=zip(doctors, schedules), sidebar=DEPARTMENT_HEAD_SIDEBAR)
     
     elif current_user.is_management_staff():
         if request.method == 'POST':
@@ -745,7 +744,7 @@ def shifts_view():
             schedules.append(doctor_shift)
 
         all_shifts = Shift.query.filter_by(hospital=current_user.hospital).all() 
-        return render_template("shifts.html", user=current_user, all_schedules=all_schedules, all_shifts=all_shifts, doctors_schedules=zip(doctors, schedules), sidebar=management_staff_sidebar)
+        return render_template("shifts.html", user=current_user, all_schedules=all_schedules, all_shifts=all_shifts, doctors_schedules=zip(doctors, schedules), sidebar=MANAGEMENT_STAFF_SIDEBAR)
     abort(401)
 
 

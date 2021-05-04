@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from datetime import timedelta
 from flask_mail import Mail
 from flask import Flask
 import os
@@ -9,17 +10,18 @@ BASE = "website"
 UPLOAD_FOLDER = "static"
 PATIENTS_FOLDERS = "patients"
 BAD_LOGINS_LIMIT = 5
+SESSION_TIMEOUT = timedelta(minutes=15)
+
+PATIENT_SIDEBAR = {'My Appointments':'calendar-1','Lab Results':'notepad-2','diagnoses':'heart'}
+MEDICAL_STAFF_SIDEBAR = {'My Appointments':'television', 'Patients':'heart', 'Shifts':'pad'}
+DEPARTMENT_HEAD_SIDEBAR = {'My Appointments':'television', 'Staff':'notepad-2', 'Patients':'heart', 'Shifts':'pad', 'Rooms':'reading'}
+MANAGEMENT_STAFF_SIDEBAR = {'Departments':'network', 'Staff':'notepad-2', 'Shifts':'pad', 'Rooms':'reading'}
+ADMIN_SIDEBAR = {'Hospitals':'television', 'Staff':'networking', 'Rooms':'reading'}
 
 base_directory = os.path.join(BASE, UPLOAD_FOLDER)
 directory = os.path.join(base_directory, PATIENTS_FOLDERS)
 if not os.path.isdir(directory):
     os.mkdir(directory)
-
-patient_sidebar = {'My Appointments':'calendar-1','Lab Results':'notepad-2','diagnoses':'heart'}
-medical_staff_sidebar = {'My Appointments':'television', 'Patients':'heart', 'Shifts':'pad'}
-department_head_sidebar = {'My Appointments':'television', 'Staff':'notepad-2', 'Patients':'heart', 'Shifts':'pad', 'Rooms':'reading'}
-management_staff_sidebar = {'Departments':'network', 'Staff':'notepad-2', 'Shifts':'pad', 'Rooms':'reading'}
-admin_sidebar = {'Hospitals':'television', 'Staff':'networking', 'Rooms':'reading'}
 
 os.environ['SECRET_KEY_FLASK'] =  'SecretKey'
 
@@ -42,7 +44,6 @@ mail = Mail(app)
 
 from .auth import auth_view
 from .users import user_view, bad_request, unauthorized,forbidden, page_not_found, method_not_allowed, server_error, service_unavaiable
-#from .admin import admin_view
 
 app.register_error_handler(400, bad_request)
 app.register_error_handler(401, unauthorized)
@@ -54,7 +55,6 @@ app.register_error_handler(503, service_unavaiable)
 
 app.register_blueprint(auth_view, url_prefix="/")
 app.register_blueprint(user_view, url_prefix="/")
-#app.register_blueprint(admin_view, url_prefix="/admin")   
 
 from .models import User
 

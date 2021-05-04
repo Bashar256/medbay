@@ -21,6 +21,7 @@ def validate_login(request):
         if datetime.datetime.now() >= (user.last_login_attempt + datetime.timedelta(minutes=5)):
             user.block_login = False
             user.last_login_attempt = datetime.datetime.now()
+            user.bad_logins = 0
 
         if user.block_login:
             flash("Please wait for the 5 min block to end", category="warning")
