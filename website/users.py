@@ -207,11 +207,11 @@ def book_appointment_view_department():
         if request.mimetype == 'application/json':
             if load_user_request(request):
                 for department in departments:
-                    dept_name.append(str(department))
+                    dept_name1.append(str(department))
                     dept_id.append(department.id)
-                print(dept_name)
+                print(dept_name1)
                 print("SENT")
-                return  jsonify({'name':dept_name,'id':dept_id})
+                return  jsonify({'name':dept_name1,'id':dept_id})
     abort(401)
 # for department in departments:
 #     dept_name.append({'name':str(department)})
