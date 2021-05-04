@@ -35,7 +35,7 @@ def login_view():
 
 
 #Logout View
-@auth_view.route("/logout")
+@auth_view.route("/logout",methods=["POST"])
 @login_required
 def logout_view():
     if request.mimetype == 'application/json':
