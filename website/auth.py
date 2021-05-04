@@ -32,16 +32,6 @@ def login_view():
 
     return render_template("login.html")
 
-# if request.method == 'POST':
-#         if validate_login(request):
-#             if request.mimetype=='application/json':
-#                 return jsonify({'status':'Login Successful!'})
-#             return redirect(url_for('user_view.home_view'))
-#         elif request.mimetype=='application/json':
-#             return jsonify({'status':'Incorrect email or password.'})
-#         flash('Invalid Information', category='error')
-        
-#     return render_template("login.html") 
 
 
 #Logout View
