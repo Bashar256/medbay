@@ -2,7 +2,7 @@ from website.models import User, Patient, Management_Staff, Medical_Staff, Hospi
 from flask import Blueprint, Flask, redirect, url_for, render_template, request, flash, session, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from website.validate import validate_patient_register, validate_login
+from website.validate import validate_patient_register, validate_login, validate_patient_register_phone
 from website.temp_create_objects import create_stuff
 from flask_login import LoginManager
 from website import db, mail,app
@@ -15,32 +15,7 @@ import os
 auth_view = Blueprint("auth_view", __name__, static_folder="static", template_folder="templates")
 
 
-# login_manager = LoginManager()
-# login_manager.login_view = "auth_view.login_view"
-# login_manager.init_app(app=app)
-# @login_manager.user_loader
-# def load_user(id):
-#     return User.query.get(int(id))
 
-# @login_manager.request_loader
-# def load_user_request(request):
-#     api_key = request.headers.get('authorization')
-#     if api_key:
-        
-#         api_key = api_key.replace('Basic ', '', 1)
-#         try:
-#             api_key = base64.b64decode(api_key).decode('utf-8')
-#         except TypeError:
-#             pass
-#         user = User.query.filter_by(email=api_key).first()
-#         if user:
-#             return user
-
-#     # finally, return None if both methods did not login the user
-#     return None
-
-
-#Login View
 @auth_view.route("/login", methods=["POST", "GET"])
 def login_view():
     if request.method == 'POST':
@@ -81,6 +56,9 @@ def logout_view():
 @auth_view.route("/register", methods=["POST", "GET"])
 def register_view():
     if request.method == 'POST':
+        if request.mimetype=='application/json':
+            status=validate_patient_register_phone(request)
+            return jsonify({'status':status})
         new_patient = validate_patient_register(request) 
         if new_patient:
             new_patient.create_patient_file()
@@ -90,6 +68,16 @@ def register_view():
             confirm_email(new_patient)
             flash('Account created successfully !', category='register')
             return redirect(url_for('user_view.home_view'))
+        return render_template("register.html")
+    #create_stuff()
+    return render_template("register.html")
+
+    if request.method == 'POST':
+        if request.mimetype=='application/json':
+            status=validate_patient_register_phone(request)
+            return jsonify({'status':status})
+        if validate_patient_register(request):
+            return redirect(url_for('user_view.home'))
         return render_template("register.html")
     #create_stuff()
     return render_template("register.html")

@@ -53,6 +53,51 @@ def validate_patient_register(request):
         return Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p', registered_on=datetime.datetime.now())
     return 
 
+def validate_patient_register_phone(request):
+    data=request.json
+    email = data['email']
+    first_name = data['firstname']
+    last_name = data['lastname']
+    password1 = data['password1']
+    password2 = data['password2']
+    gender = data['gender']
+    phone_no = data['phone_no']
+    dob = data['dob']
+    print(email)
+    print(first_name)
+    print(last_name)
+    print(password1)
+    print(password2)
+    print(gender)
+    print(phone_no)
+    print(dob)
+
+    patient = Patient.query.filter_by(email=email).first()
+    
+    if patient:
+        status='Email already exists.'
+    elif len(email) < 4:
+        status='Email must be greater than 3 characters.'
+    elif len(first_name) < 2:
+        status='First name must be greater than 1 character.'
+    elif len(last_name) < 2:
+        status='Last name must be greater than 1 character.'
+    elif password1 != password2:
+        status='Passwords don\'t match.'
+    elif len(password1) < 7:
+        status='Password must be at least 7 characters.'
+    elif len(phone_no) != 13:
+        status='Enter a correct phone number format'
+    else:
+        new_patient = Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p')
+        new_patient.create_patient_file()
+        db.session.add(new_patient)
+        db.session.commit()
+        login_user(new_patient, remember=True)
+        confirm_email(new_patient)
+        return 'Success'
+    return status
+
 
 def validate_staff_register(request):
     email = request.form.get('email')
