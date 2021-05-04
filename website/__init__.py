@@ -6,9 +6,6 @@ from flask import Flask
 import os
 
 DB_NAME = "database.db"
-BASE = "website"
-UPLOAD_FOLDER = "static"
-PATIENTS_FOLDERS = "patients"
 BAD_LOGINS_LIMIT = 5
 SESSION_TIMEOUT = timedelta(minutes=15)
 
@@ -18,12 +15,13 @@ DEPARTMENT_HEAD_SIDEBAR = {'My Appointments':'television', 'Staff':'notepad-2', 
 MANAGEMENT_STAFF_SIDEBAR = {'Departments':'network', 'Staff':'notepad-2', 'Shifts':'pad', 'Rooms':'reading'}
 ADMIN_SIDEBAR = {'Hospitals':'television', 'Staff':'networking', 'Rooms':'reading'}
 
-base_directory = os.path.join(BASE, UPLOAD_FOLDER)
-UPLOAD_DIRECTORY = os.path.join(base_directory, PATIENTS_FOLDERS)
+BASE = "website"
+UPLOAD_FOLDER = "static"
+PATIENTS_FOLDERS = "patients"
+BASE_DIRECTORY = os.path.join(BASE, UPLOAD_FOLDER)
+UPLOAD_DIRECTORY = os.path.join(BASE_DIRECTORY, PATIENTS_FOLDERS)
 if not os.path.isdir(UPLOAD_DIRECTORY):
     os.mkdir(UPLOAD_DIRECTORY)
-
-os.environ['SECRET_KEY_FLASK'] =  'SecretKey'
 
 app = Flask(__name__, static_folder='static')
 app.secret_key = '0930444342a12c461c38d7c0837e39eff978504b64b1d765'
