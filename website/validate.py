@@ -1,6 +1,6 @@
 from website.models import Patient, User,Medical_Staff,Management_Staff, Schedule, Shift, Schedules, Hospital
 from werkzeug.security import check_password_hash,generate_password_hash
-from flask_login import current_user
+from flask_login import current_user,login_user
 from flask import flash
 from website import db
 import datetime
@@ -63,14 +63,7 @@ def validate_patient_register_phone(request):
     gender = data['gender']
     phone_no = data['phone_no']
     dob = data['dob']
-    print(email)
-    print(first_name)
-    print(last_name)
-    print(password1)
-    print(password2)
-    print(gender)
-    print(phone_no)
-    print(dob)
+
 
     patient = Patient.query.filter_by(email=email).first()
     
