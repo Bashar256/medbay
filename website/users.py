@@ -197,6 +197,18 @@ def book_appointment_view():
         return render_template("book_appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=PATIENT_SIDEBAR)
     abort(401)
 
+@user_view.route("/book_appointment_department")
+@login_required
+def book_appointment_view():
+    if current_user.is_patient(): 
+        hospitals = Hospital.query.all()
+        departments = Department.query.all()
+        
+        if request.mimetype == 'application/json':
+            if load_user_request(request):
+                return jsonify(departments) 
+    abort(401)
+
 
 #Selecting Doctor
 @user_view.route("/book_appointment/<int:hospital_id>/<int:department_id>/doctors")
