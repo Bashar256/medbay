@@ -29,6 +29,7 @@ def load_user_request(request):
         api_key = api_key.replace('Basic ', '', 1)
         try:
             api_key = base64.b64decode(api_key).decode('utf-8')
+            print(api_key)
         except TypeError:
             pass
         user = User.query.filter_by(email=api_key).first()
@@ -194,7 +195,7 @@ def book_appointment_view():
                 for name in hospitals:
                     Host_name.append({"name":str(name)})
                 return jsonify(Host_name) 
-        return render_template("book appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=patient_sidebar)
+        return render_template("book_appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=patient_sidebar)
     abort(401)
 
 

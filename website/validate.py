@@ -1,9 +1,10 @@
 from website.models import Patient, User,Medical_Staff,Management_Staff, Schedule, Shift, Schedules, Hospital
 from werkzeug.security import check_password_hash,generate_password_hash
-from flask_login import current_user
+from flask_login import current_user,login_user
 from flask import flash
 from website import db,BAD_LOGINS_LIMIT
 import datetime
+
 
 def validate_login(request):
     if request.mimetype=='application/json':
@@ -72,6 +73,38 @@ def validate_patient_register(request):
     else:
         return Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p', registered_on=datetime.datetime.now())
     return 
+
+# def validate_patient_register_phone(request):
+#     data=request.json
+#     email = data['email']
+#     first_name = data['firstname']
+#     last_name = data['lastname']
+#     password1 = data['password1']
+#     password2 = data['password2']
+#     gender = data['gender']
+#     phone_no = data['phone_no']
+#     dob = data['dob']
+
+
+#     patient = Patient.query.filter_by(email=email).first()
+    
+#     if patient:
+#         status='Email already exists.'
+#     elif len(email) < 4:
+#         status='Email must be greater than 3 characters.'
+#     elif len(first_name) < 2:
+#         status='First name must be greater than 1 character.'
+#     elif len(last_name) < 2:
+#         status='Last name must be greater than 1 character.'
+#     elif password1 != password2:
+#         status='Passwords don\'t match.'
+#     elif len(password1) < 7:
+#         status='Password must be at least 7 characters.'
+#     elif len(phone_no) != 13:
+#         status='Enter a correct phone number format'
+#     else:
+#         return Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p')
+#     return status
 
 
 def validate_staff_register(request):
