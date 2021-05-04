@@ -111,7 +111,7 @@ def register_view_phone():
             db.session.add(new_patient)
             db.session.commit()
             login_user(new_patient, remember=True)
-            confirm_email(new_patient)
+            #confirm_email(new_patient)
         return jsonify({'status':status})
 
 
