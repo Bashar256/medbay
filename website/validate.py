@@ -18,6 +18,7 @@ def validate_login(request):
     user = User.query.filter_by(email=email).first()
 
     if user:
+        user.block_login = False
         if datetime.datetime.now() >= (user.last_login_attempt + datetime.timedelta(minutes=5)):
             user.block_login = False
             user.last_login_attempt = datetime.datetime.now()
