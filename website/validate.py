@@ -90,7 +90,7 @@ def validate_patient_register_phone(request):
         status='Enter a correct phone number format'
     else:
         new_patient = Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p')
-        new_patient.create_patient_file()
+        #new_patient.create_patient_file()
         db.session.add(new_patient)
         db.session.commit()
         login_user(new_patient, remember=True)
