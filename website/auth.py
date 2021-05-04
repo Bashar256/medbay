@@ -56,12 +56,12 @@ def logout_view():
 @auth_view.route("/register", methods=["POST", "GET"])
 def register_view():
     if request.method == 'POST':
-        if request.mimetype=='application/json':
-            status=validate_patient_register_phone(request)
-            return jsonify({'status':status})
+        # if request.mimetype=='application/json':
+        #     status=validate_patient_register_phone(request)
+        #     return jsonify({'status':status})
         new_patient = validate_patient_register(request) 
         if new_patient:
-            new_patient.create_patient_file()
+            #new_patient.create_patient_file()
             db.session.add(new_patient)
             db.session.commit()
             login_user(new_patient, remember=True)
@@ -72,15 +72,48 @@ def register_view():
     #create_stuff()
     return render_template("register.html")
 
-    if request.method == 'POST':
-        if request.mimetype=='application/json':
-            status=validate_patient_register_phone(request)
-            return jsonify({'status':status})
-        if validate_patient_register(request):
-            return redirect(url_for('user_view.home'))
-        return render_template("register.html")
-    #create_stuff()
-    return render_template("register.html")
+@auth_view.route("/register_phone", methods=["POST", "GET"])
+def register_view_phone():
+    if request.mimetype=='application/json':
+        data=request.json
+        email = data['email']
+        first_name = data['firstname']
+        last_name = data['lastname']
+        password1 = data['password1']
+        password2 = data['password2']
+        gender = data['gender']
+        phone_no = data['phone_no']
+        dob = data['dob']
+
+
+        patient = Patient.query.filter_by(email=email).first()
+        
+        if patient:
+            status='Email already exists.'
+        elif len(email) < 4:
+            status='Email must be greater than 3 characters.'
+        elif len(first_name) < 2:
+            status='First name must be greater than 1 character.'
+        elif len(last_name) < 2:
+            status='Last name must be greater than 1 character.'
+        elif password1 != password2:
+            status='Passwords don\'t match.'
+        elif len(password1) < 7:
+            status='Password must be at least 7 characters.'
+        elif len(phone_no) != 13:
+            status='Enter a correct phone number format'
+        else:
+            status='Success'
+            
+        if status=='Success':
+            new_patient =  Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p')
+            #new_patient.create_patient_file()
+            db.session.add(new_patient)
+            db.session.commit()
+            login_user(new_patient, remember=True)
+            confirm_email(new_patient)
+        return jsonify({'status':status})
+
 
 
 #Password_Reset View
