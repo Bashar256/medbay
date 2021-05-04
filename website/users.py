@@ -206,7 +206,8 @@ def book_appointment_view_department():
         
         if request.mimetype == 'application/json':
             if load_user_request(request):
-                return jsonify(departments) 
+                for i in departments:
+                    print(i) 
     abort(401)
 
 
