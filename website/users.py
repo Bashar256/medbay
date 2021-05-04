@@ -28,7 +28,6 @@ def load_user_request(request):
         api_key = api_key.replace('Basic ', '', 1)
         try:
             api_key = base64.b64decode(api_key).decode('utf-8')
-            print(api_key)
         except TypeError:
             pass
         user = User.query.filter_by(email=api_key).first()
@@ -207,7 +206,7 @@ def book_appointment_view_department():
         if request.mimetype == 'application/json':
             if load_user_request(request):
                 for hospital in hospitals:
-                    print(hospital.id) 
+                    print(hospital) 
     abort(401)
 
 
