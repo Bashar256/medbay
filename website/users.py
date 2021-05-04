@@ -188,6 +188,9 @@ def book_appointment_view():
         departments = Department.query.all()
         Hosp_name = []
         Hosp_id=[]
+        for hospital in hospitals:
+            print(hospital.department)
+
         if request.mimetype == 'application/json':
             if load_user_request(request):
                 for hospital in hospitals:
