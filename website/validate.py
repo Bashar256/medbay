@@ -4,7 +4,7 @@ from flask_login import current_user,login_user
 from flask import flash
 from website import db
 import datetime
-from website.auth import confirm_email
+
 
 def validate_login(request):
     if request.mimetype=='application/json':
