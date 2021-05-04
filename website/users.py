@@ -207,11 +207,17 @@ def book_appointment_view_department():
         if request.mimetype == 'application/json':
             if load_user_request(request):
                 for department in departments:
-                    dept_name.append({'name':str(department)})
-                    dept_id.append({'id':department.id})
-                return  jsonify(dept_id)
+                    dept_name.append(str(department)})
+                    dept_id.append(department.id)
+                return  jsonify({'name':dept_name,'id':dept_id})
     abort(401)
-
+# for department in departments:
+#     dept_name.append({'name':str(department)})
+#     dept_id.append({'id':department.id})
+###############################
+# for department in departments:
+#     dept_name.append(str(department)})
+#     dept_id.append(department.id)
 
 #Selecting Doctor
 @user_view.route("/book_appointment/<int:hospital_id>/<int:department_id>/doctors")
