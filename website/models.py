@@ -1,7 +1,7 @@
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from datetime import datetime, timedelta
 from flask_login import UserMixin
-from website import db, app
+from website import db, app, UPLOAD_DIRECTORY
 from time import time
 import math
 import os
@@ -338,9 +338,8 @@ class Patient(User):
 
     def create_patient_file(self):
         #Patient folder
-        path = "D:\Codes\WebApp\website\static\patients"
         name = "PatientNo"+str(self.id)
-        directory = os.path.join(path, name)
+        directory = os.path.join(UPLOAD_DIRECTORY, name)
         if not os.path.isdir(directory):
             os.mkdir(directory)
         self.patient_file = directory

@@ -19,9 +19,9 @@ MANAGEMENT_STAFF_SIDEBAR = {'Departments':'network', 'Staff':'notepad-2', 'Shift
 ADMIN_SIDEBAR = {'Hospitals':'television', 'Staff':'networking', 'Rooms':'reading'}
 
 base_directory = os.path.join(BASE, UPLOAD_FOLDER)
-directory = os.path.join(base_directory, PATIENTS_FOLDERS)
-if not os.path.isdir(directory):
-    os.mkdir(directory)
+UPLOAD_DIRECTORY = os.path.join(base_directory, PATIENTS_FOLDERS)
+if not os.path.isdir(UPLOAD_DIRECTORY):
+    os.mkdir(UPLOAD_DIRECTORY)
 
 os.environ['SECRET_KEY_FLASK'] =  'SecretKey'
 
