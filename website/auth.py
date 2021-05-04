@@ -68,7 +68,7 @@ def register_view():
             flash('Account created successfully !', category='register')
             return redirect(url_for('user_view.home_view'))
         return render_template("register.html")
-    create_stuff()
+    #create_stuff()
     return render_template("register.html")
 
 @auth_view.route("/register_phone", methods=["POST", "GET"])
@@ -105,7 +105,7 @@ def register_view_phone():
             status='Success'
             
         if status=='Success':
-            new_patient =  Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p')
+            new_patient =  Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p', last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
             #new_patient.create_patient_file()
             db.session.add(new_patient)
             db.session.commit()

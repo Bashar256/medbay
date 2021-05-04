@@ -73,7 +73,7 @@ def validate_patient_register(request):
     elif len(phone_no) != 13:
         flash("Enter a correct phone number format", category="error")
     else:
-        return Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p', registered_on=datetime.datetime.now())
+        return Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p', registered_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
     return 
 
 # def validate_patient_register_phone(request):
