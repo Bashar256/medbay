@@ -27,21 +27,14 @@ class Hospital(db.Model):
     def hospital_beds_stats(self,hospital_id):
         total_beds = 0
         available_beds = 0
-        occupied_beds = 0
-        stats = []
         if self.id == hospital_id:
             for room in self.rooms:
                 total_beds = total_beds + room.max_no_of_beds
                 for bed in room.beds:
-                    if bed.occupied:
-                        occupied_beds = occupied_beds + 1
-                    else:
+                    if not bed.occupied:
                         available_beds = available_beds + 1
-        #stats = zip(total_beds,available_beds,occupied_beds)
-        stats.append(total_beds)
-        stats.append(available_beds)
-        stats.append(occupied_beds)
-        return stats
+
+        return total_beds,available_beds
 
 
 #Department Table
@@ -57,6 +50,18 @@ class Department(db.Model):
 
     def __repr__(self):
         return f"{self.name}"
+
+    def department_beds_stats(self,department_id):
+        total_beds = 0
+        available_beds = 0
+        if self.id == department_id:
+            for room in self.rooms:
+                total_beds = total_beds + room.max_no_of_beds
+                for bed in room.beds:
+                    if not bed.occupied:
+                        available_beds = available_beds + 1
+                        
+        return total_beds,available_beds
 
 
 #Appointment Table
@@ -92,11 +97,11 @@ class Schedule(db.Model):
     __tablename__ = 'schedule'
     
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(1,collation='NOCASE'), nullable=False, default='A', unique=True)
+    name = db.Column(db.String(20,collation='NOCASE'), nullable=False, default='A')
     hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'))
     medical_staff = db.relationship('Medical_Staff', backref="schedule_medical_staff")
     shifts = db.relationship('Shift', secondary=Schedules, lazy='subquery', backref=db.backref('medical_staff_shifts', lazy=True))
-
+    tuple(db.UniqueConstraint('name', 'hospital'))
     def __gt__(self, other):
         return self.name > other.name
 
@@ -108,8 +113,9 @@ class Shift(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     shift_start = db.Column(db.Time(timezone=True), nullable=False)
     shift_end = db.Column(db.Time(timezone=True), nullable=False)
-    shift_type = db.Column(db.String(20,collation='NOCASE'), nullable=False, unique=True)
+    name = db.Column(db.String(20,collation='NOCASE'), nullable=False)
     hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'))
+    tuple(db.UniqueConstraint('name', 'hospital'))
 
 
 #Diagnosis Table
@@ -154,6 +160,17 @@ class Room(db.Model):
             if bed.occupied:
                 count = count + 1
         return count == self.max_no_of_beds
+
+    def room_stats(self, room_id):
+        total_beds = 0
+        available_beds = 0
+        if self.id == room_id:
+            total_beds = len(self.beds)
+            for bed in self.beds:
+                if not bed.occupied:
+                    available_beds = available_beds + 1
+
+        return total_beds, available_beds
 
 
 #Bed Table

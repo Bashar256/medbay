@@ -1,113 +1,197 @@
 {% extends 'base.html' %}
 {% block title %}Rooms{% endblock %}
 {% block body %}
-    <div class="form-head d-flex mb-3  mb-lg-5   align-items-start">
-        <a href="javascript:void(0)" class="btn btn-danger" data-toggle="modal" data-target="#addDoctorModal">+ Room</a>
-    </div>
-    <!-- Add Hospital -->
-    <div class="modal fade" id="addDoctorModal">
-        <div class="modal-dialog" role="document">
-            <form method='POST'>
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Add Room</h5>
-                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label class="mb-1"><strong>Department</strong></label>
-                            <select name='department_id' class="form-control ">
-                                {% for department in departments: %}
-                                    <option value="{{department.id}}">{{department.name}}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="text-black font-w500">Room Number</label>
-                            <input type="text" class="form-control" name='room_no' required>
-                        </div>
-                        <div class="form-group">
-                            <label class="text-black font-w500">Number of beds in the room</label>
-                            <input type="number" class="form-control" name='no_of_beds' min=1 max=6 required>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary">Add</button>
-                            <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-            </form>
+    {% if user.is_management_staff(): %}
+        <div class="form-head d-flex mb-3  mb-lg-5   align-items-start">
+            <a href="javascript:void(0)" class="btn btn-danger" data-toggle="modal" data-target="#addroom">+ Room</a>
         </div>
-    </div>
+        <!-- Add Room -->
+        <div class="modal fade" id="addroom">
+            <div class="modal-dialog" role="document">
+                <form method='POST'>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Add Room</h5>
+                            <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label class="mb-1"><strong>Department</strong></label>
+                                <select name='department_id' class="form-control ">
+                                    {% for department in departments: %}
+                                        <option value="{{department.id}}">{{department.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="text-black font-w500">Room Number</label>
+                                <input type="text" class="form-control" name='room_no' required>
+                            </div>
+                            <div class="form-group">
+                                <label class="text-black font-w500">Number of beds in the room</label>
+                                <input type="number" class="form-control" name='no_of_beds' min=1 max=4 required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">Add</button>
+                                <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
     <div class="row">
         <div class="col-xl-12">
-            <div id="accordion-one" class="accordion doctor-list ">
-                {% for hospital in hospitals: %}
+            <div id="accordion-one" class="accordion doctor-list">
+                {% if user.is_management_staff(): %}
                     <div class="accordion__item">
-                        <div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#hospital_collapse{{hospital.id}}">
-                            <span class="form-group">{{hospital.name}}</span>
+                        <div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#hospital_collapse{{my_hospital.id}}">
+                            <span class="form-group">{{my_hospital.name}}</span>
                             <span class="accordion__header-line flex-grow-1"></span>
                             <span class="accordion__header--indicator style_two"></span>
                         </div>
-                        <div id="hospital_collapse{{hospital.id}}" class="collapse accordion__body show" data-parent="#accordion-one">
-                            <div class="widget-media best-doctor pt-4">
-                                <div class="timeline row">
-                                    {% for room in rooms: %}
-                                        {% if room.hospital == hospital.id %}
-                                            {% if user.hospital == hospital.id %}
-                                                <div class="col-lg-6">
-                                                    <div class="timeline-panel bg-white p-4 mb-4">
-                                                        <div class="media-body">
-                                                            <a><h4 class="mb-2">{{room.room_no}}</h4></a>
+                        <div id="hospital_collapse{{my_hospital.id}}" class="collapse accordion__body show" data-parent="#accordion-one">
+                            <div class="col-xl-12">
+                                <div class="widget-media best-doctor pt-4">
+                                    <div class="timeline row">
+                                        {% set beds = my_hospital.hospital_beds_stats(my_hospital.id) %}
+                                        <div class="col-xl-3 col-lg-6 col-sm-6">
+                                            <div class="widget-stat card bg-info">
+                                                <div class="card-body p-4">
+                                                    <div class="media">
+                                                        <span class="mr-3">
+                                                            <i class="flaticon-381-heart"></i>
+                                                        </span>
+                                                        <div class="media-body text-white text-right">
+                                                            <p class="mb-1">Total Beds</p>
+                                                            <h3 class="text-white">{{beds[0]}}</h3>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            {% endif %}
-                                        {% endif %}
-                                    {% endfor %}
-                                    {% set beds = hospital.hospital_beds_stats(hospital.id) %}
-                                    <div class="col-xl-3 col-lg-6 col-sm-6">
-                                        <div class="widget-stat card bg-info">
-                                            <div class="card-body p-4">
-                                                <div class="media">
-                                                    <span class="mr-3">
-                                                        <i class="flaticon-381-heart"></i>
-                                                    </span>
-                                                    <div class="media-body text-white text-right">
-                                                        <p class="mb-1">Total Beds</p>
-                                                        <h3 class="text-white">{{beds[0]}}</h3>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-lg-6 col-sm-6">
+                                            <div class="widget-stat card bg-success">
+                                                <div class="card-body p-4">
+                                                    <div class="media">
+                                                        <span class="mr-3">
+                                                            <i class="flaticon-381-unlocked"></i>
+                                                        </span>
+                                                        <div class="media-body text-white text-right">
+                                                            <p class="mb-1">Available</p>
+                                                            <h3 class="text-white">{{beds[1]}}</h3>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>	
+                                        <div class="col-xl-3 col-lg-6 col-sm-6">
+                                            <div class="widget-stat card bg-danger">
+                                                <div class="card-body  p-4">
+                                                    <div class="media">
+                                                        <span class="mr-3">
+                                                            <i class="flaticon-381-lock"></i>
+                                                        </span>
+                                                        <div class="media-body text-white text-right">
+                                                            <p class="mb-1">Occupied</p>
+                                                            <h3 class="text-white">{{beds[0] - beds[1]}}</h3>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-xl-3 col-lg-6 col-sm-6">
-                                        <div class="widget-stat card bg-success">
-                                            <div class="card-body p-4">
-                                                <div class="media">
-                                                    <span class="mr-3">
-                                                        <i class="flaticon-381-unlocked"></i>
-                                                    </span>
-                                                    <div class="media-body text-white text-right">
-                                                        <p class="mb-1">Available</p>
-                                                        <h3 class="text-white">{{beds[1]}}</h3>
+                                </div>
+                                <div id="accordion-two" class="accordion doctor-list ">
+                                    {% for department in departments: %}
+                                        <div class="accordion__item">
+                                            <div class="accordion__header collapse rounded-lg" data-toggle="collapse" data-target="#department_collapse{{department.id}}">
+                                                <span class="form-group">{{department.name}}</span>
+                                                <span class="accordion__header-line flex-grow-1"></span>
+                                                <span class="accordion__header--indicator style_two"></span>
+                                            </div>
+                                            <div id="department_collapse{{department.id}}" class="collapse accordion__body" data-parent="#accordion-two">
+                                                <div class="widget-media best-doctor pt-4">
+                                                    <div class="timeline row">
+                                                        {% for room in department.rooms: %}
+                                                            <div class="col-lg-6">
+                                                                <div class="timeline-panel bg-white p-4 mb-4">
+                                                                    <div class="media-body">
+                                                                        {% set beds = room.room_stats(room.id) %}
+                                                                        <h4 class="mt-2">
+                                                                            Room Number: {{room.room_no}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                                            Beds: {{beds[1]}}/{{beds[0]}}
+                                                                        </h4>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        {% endfor %}
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>	
-                                    <div class="col-xl-3 col-lg-6 col-sm-6">
-                                        <div class="widget-stat card bg-danger">
-                                            <div class="card-body  p-4">
-                                                <div class="media">
-                                                    <span class="mr-3">
-                                                        <i class="flaticon-381-lock"></i>
-                                                    </span>
-                                                    <div class="media-body text-white text-right">
-                                                        <p class="mb-1">Occupied</p>
-                                                        <h3 class="text-white">{{beds[2]}}</h3>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                {% for hospital in hospitals: %}
+                    {% if user.is_management_staff() and user.hospital != hospital.id %}
+                        <div class="accordion__item">
+                            <div class="accordion__header collapse rounded-lg" data-toggle="collapse" data-target="#hospital_collapse{{hospital.id}}">
+                                <span class="form-group">{{hospital.name}}</span>
+                                <span class="accordion__header-line flex-grow-1"></span>
+                                <span class="accordion__header--indicator style_two"></span>
+                            </div>
+                            <div id="hospital_collapse{{hospital.id}}" class="collapse accordion__body" data-parent="#accordion-one">
+                                <div class="widget-media best-doctor pt-4">
+                                    <div class="timeline row">
+                                        {% set beds = hospital.hospital_beds_stats(hospital.id) %}
+                                        <div class="col-xl-3 col-lg-6 col-sm-6">
+                                            <div class="widget-stat card bg-info">
+                                                <div class="card-body p-4">
+                                                    <div class="media">
+                                                        <span class="mr-3">
+                                                            <i class="flaticon-381-heart"></i>
+                                                        </span>
+                                                        <div class="media-body text-white text-right">
+                                                            <p class="mb-1">Total Beds</p>
+                                                            <h3 class="text-white">{{beds[0]}}</h3>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-lg-6 col-sm-6">
+                                            <div class="widget-stat card bg-success">
+                                                <div class="card-body p-4">
+                                                    <div class="media">
+                                                        <span class="mr-3">
+                                                            <i class="flaticon-381-unlocked"></i>
+                                                        </span>
+                                                        <div class="media-body text-white text-right">
+                                                            <p class="mb-1">Available</p>
+                                                            <h3 class="text-white">{{beds[1]}}</h3>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>	
+                                        <div class="col-xl-3 col-lg-6 col-sm-6">
+                                            <div class="widget-stat card bg-danger">
+                                                <div class="card-body  p-4">
+                                                    <div class="media">
+                                                        <span class="mr-3">
+                                                            <i class="flaticon-381-lock"></i>
+                                                        </span>
+                                                        <div class="media-body text-white text-right">
+                                                            <p class="mb-1">Occupied</p>
+                                                            <h3 class="text-white">{{beds[0] - beds[1]}}</h3>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -116,7 +200,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    {% endif %}   
                 {% endfor %}
             </div>
         </div>

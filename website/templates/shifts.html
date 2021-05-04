@@ -2,7 +2,7 @@
 {% block title %}Shifts{% endblock %}
 {% block body %}
     {% set days = ("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday") %}
-    {% if user.is_management_staff(): %}
+    {% if user.is_management_staff() or (user.is_medical_staff() and user.is_department_head()): %}
         <div class="row page-titles mx-0">
             <div class="col-sm-6 p-md-0">
                 <div class="welcome-text">
@@ -86,7 +86,7 @@
                                     <label class="mb-1"><strong>{{days[i]}}</strong></label>
                                     <select name="shift{{loop.index}}" id="shift" class="form-control">
                                         {% for shift in all_shifts: %}
-                                            <option value="{{shift.id}}">{{shift.shift_type}}</option>
+                                            <option value="{{shift.id}}">{{shift.name}}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -110,7 +110,7 @@
                 <div class="card-body">
                     <div class="table-responsive">
                         {% for shift in all_shifts: %}
-                            <small>{{shift.shift_type}}: {{shift.shift_start.strftime("%H:%M")}}-{{shift.shift_end.strftime("%H:%M")}} </small><br>
+                            <small>{{shift.name}}: {{shift.shift_start.strftime("%H:%M")}}-{{shift.shift_end.strftime("%H:%M")}} </small><br>
                         {% endfor %}
                         <table class="table table-bordered table-striped" style="min-width: 480px;">
                             <thead>
@@ -130,7 +130,7 @@
                                         <tr>
                                             <th class="text-nowrap text-dark" scope="row">Dr.{{ doctor.first_name + " " + doctor.last_name }}</th>
                                             {% for shift in schedule: %}
-                                                <td class="text-center text-dark">{{shift.shift_type}}</td>
+                                                <td class="text-center text-dark">{{shift.name}}</td>
                                             {% endfor %}
                                             <td>
                                                 <form method="POST">
@@ -154,7 +154,7 @@
                                         <tr>
                                             <th class="text-nowrap text-dark" scope="row">Dr.{{ doctor.first_name + " " + doctor.last_name }}</th>
                                             {% for shift in schedule: %}
-                                                <td class="text-center text-dark">{{shift.shift_type}}</td>
+                                                <td class="text-center text-dark">{{shift.name}}</td>
                                             {% endfor %}
                                         </tr>
                                     {% endfor %}

@@ -56,7 +56,7 @@
                             </div>
                             <div class="card-body">
                                 <div id="accordion-one" class="accordion accordion-primary">                          
-                                    {% for (appointment,hospital,department,usr) in information: %}
+                                    {% for (appointment,hospital,department,usr,diagnoses,lab_results) in information: %}
                                         {% if appointment.appointment_date_time < today: %}
                                             <div class="accordion__item">
                                                 <div class="accordion__header collapsed rounded-lg" data-toggle="collapse" data-target="#default_collapse{{loop.index}}">
@@ -79,7 +79,21 @@
                                                             {% set days = ("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday") %}
                                                             <p>Appointment Day: {{days[appointment.appointment_date_time.weekday()]}}</p>
                                                             <p>Appointment Time: {{appointment.appointment_date_time.hour}}:{{appointment.appointment_date_time.minute}}</p>
-                                                            <!--<p>Diagnosis:<a href="/website/patients/PatientNo#5/Diagnoses" target="blank"><button class='btn btn-default'>Download</button></a></p>-->
+                                                            <p>Diagnoses:
+                                                                {% if not diagnoses: %}
+                                                                No diagnoses
+                                                                {% endif %}
+                                                                {% for diagnosis in diagnoses: %}
+                                                                    <a href="download/{{diagnosis.path}}" target="blank"><button class='btn btn-default'>Download{{loop.index}}</button></a>
+                                                                {% endfor %}
+                                                            </p>
+                                                            <p>Lab Results: 
+                                                                {% if not lab_results: %}
+                                                                    No Lab Results
+                                                                {% endif %}
+                                                                {% for lab_result in lab_results: %}
+                                                                    <a href="download/{{lab_result.path}}" target="blank"><button class='btn btn-default'>Download{{loop.index}}</button></a>
+                                                                {% endfor %}
                                                         </div>
                                                     </div>
                                                 </div>

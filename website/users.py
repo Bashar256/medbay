@@ -198,6 +198,7 @@ def book_appointment_view():
                 return jsonify(Host_name) 
         print(departments)
         return render_template("book appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=patient_sidebar)
+    abort(401)
 
 
 #Selecting Doctor
@@ -502,6 +503,28 @@ def diagnoses_view(patient_id=None):
     abort(401)
 
 
+#Hospitals View
+@user_view.route("/hospitals", methods=["POST", "GET"])
+@login_required
+def hospitals_view():
+    if current_user.is_admin():
+        if request.method == "POST":
+            name = request.form.get('name')
+            new_hospital = Hospital.query.filter_by(name=name).first()
+            if new_hospital:
+                flash('Hospital already exists!', category='error')
+                return redirect(url_for('user_view.hospitals_view'))
+            new_hospital = Hospital(name=name)
+            db.session.add(new_hospital)
+            db.session.commit()
+            flash('Hospital Added!', category='success')
+            return redirect(url_for('user_view.hospitals_view'))
+        hospitals = Hospital.query.all()
+        departments= Department.query.all()
+        return render_template("hospitals.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=admin_sidebar)
+    abort(401)
+
+
 #Departments View
 @user_view.route("/departments", methods=["POST", "GET"])
 @login_required
@@ -533,7 +556,7 @@ def departments_view():
 @user_view.route("/staff", methods=["POST", "GET"])
 @login_required
 def staff_view():
-    if current_user.is_medical_staff and current_user.is_department_head():
+    if current_user.is_medical_staff() and current_user.is_department_head():
         schedules = Schedule.query.filter_by(hospital=current_user.hospital).all()
         medical_staff = Medical_Staff.query.filter_by(department=current_user.department).all()
         management_staff = Management_Staff.query.all()
@@ -552,6 +575,16 @@ def staff_view():
         departments = Department.query.filter_by(hospital=current_user.hospital).all()
         hospital = Hospital.query.filter_by(id=current_user.hospital).first()
         return render_template("staff.html", user=current_user, hospital=hospital, schedules=schedules, doctors=medical_staff, departments=departments, management_staff=management_staff, sidebar=management_staff_sidebar)
+
+    elif current_user.is_admin():
+        if request.method == 'POST':
+            if validate_staff_register(request):
+                flash("User Added Successfully", category="success")
+            return redirect(url_for("user_view.staff_view"))
+        management_staff = Management_Staff.query.all()
+        hospitals = Hospital.query.all()
+        admins = User.query.filter_by(role=current_user.role).all()
+        return render_template("staff.html", user=current_user, hospitals=hospitals, admins=admins, management_staff=management_staff, sidebar=admin_sidebar)    
     abort(401)
 
 
@@ -572,18 +605,12 @@ def staff_details_view(staff_id,role):
             return render_template("staff_details.html", user=current_user, staff=staff, sidebar=management_staff_sidebar)
         staff = Medical_Staff.query.filter_by(id=staff_id).first()
         if staff:
-            # dates = []
-            # days = db.session.query(doctors_shifts).filter_by(medical_staff_id=staff_id).all()
-            # for day in days:
-            #     if not day[2].date() in dates:
-            #         dates.append(day[2].date())
-                    
-            #shifts=staff.shifts
             information = medical_staff_appointments(staff_id)
             return render_template("staff_details.html", user=current_user, information=information, staff=staff, today=today, sidebar=management_staff_sidebar)
         
     elif current_user.is_admin():
-        return render_template("staff_details.html",user=current_user, shift=shift, staff=medical_staff, sidebar=admin_sidebar) 
+        staff = User.query.filter(User.id==staff_id,  User.role==current_user.role).first()
+        return render_template("staff_details.html",user=current_user, staff=staff, sidebar=admin_sidebar) 
             
     abort(401)
 
@@ -599,9 +626,13 @@ def rooms_view():
             department_id = request.form.get("department_id")
             hospital_id = current_user.hospital
 
+            if int(no_of_beds) > 4 or int(no_of_beds) < 1:
+                flash("Room can have between 1 and 4 beds", category="error")
+                return redirect(url_for("user_view.rooms_view"))
+
             department = Department.query.filter_by(id=department_id).first()
             if department and department.hospital == hospital_id:
-                room = Room.query.filter_by(room_no=room_no).first()
+                room = Room.query.filter(Room.room_no==room_no, Room.department==department_id).first()
                 if room and room.hospital == hospital_id:
                     flash("Room already exists in this hospital", category="error")
                     return redirect(url_for("user_view.rooms_view"))
@@ -613,6 +644,9 @@ def rooms_view():
                     new_room.beds.append(new_bed)
                     db.session.add(new_bed)
                 
+                hospital = Hospital.query.filter_by(id=hospital_id).first()
+                department.rooms.append(new_room)
+                hospital.rooms.append(new_room)
                 db.session.commit()
                 flash("room and beds created!", category="success")
                 return redirect(url_for("user_view.rooms_view"))
@@ -620,14 +654,23 @@ def rooms_view():
             flash("Department error",category="error")
             return redirect(url_for("user_view.rooms_view"))
 
+
+        hospitals = Hospital.query.all()
+        my_hospital = Hospital.query.filter_by(id=current_user.hospital).first()
+        departments = Department.query.filter_by(hospital=current_user.hospital).all()
+        
+        return render_template("rooms.html",user=current_user, hospitals=hospitals, my_hospital=my_hospital, departments=departments, sidebar=management_staff_sidebar)
+
+    elif current_user.is_admin():
         rooms = Room.query.all()
         beds = []
         for room in rooms:
             beds.append(room.beds)
     
         hospitals = Hospital.query.all()
-        departments = Department.query.filter_by(hospital=current_user.hospital)
-        return render_template("rooms.html",user=current_user, hospitals=hospitals, departments=departments, rooms=rooms, beds=beds, sidebar=management_staff_sidebar)
+        return render_template("rooms.html",user=current_user, hospitals=hospitals, rooms=rooms, beds=beds, sidebar=admin_sidebar)
+
+    abort(401)
 
 
 #Shifts View
@@ -654,14 +697,14 @@ def shifts_view():
                     doctor_schedule.append(Shift.query.filter_by(id=shift[1]).first()) 
                 doctors_schedules.append(doctor_schedule)
             
-            all_shifts = Shift.query.all()
+            all_shifts = Shift.query.filter_by(hospital=current_user.hospital).all()
             return render_template("shifts.html", user=current_user, all_shifts=all_shifts, doctors_schedules=zip(doctors, doctors_schedules), sidebar=medical_staff_sidebar)
         
         if request.method == 'POST':
             if form_no == "4":
                 change_doctor_schedule(request)
 
-        all_schedules = Schedule.query.all()
+        all_schedules = Schedule.query.filter_by(hospital=current_user.hospital).all()
         doctors = Medical_Staff.query.filter_by(department=current_user.department).all()
         schedules = []
 
@@ -671,7 +714,7 @@ def shifts_view():
                 doctor_shift.append(Shift.query.filter_by(id=shift[1]).first())
             schedules.append(doctor_shift)
 
-        all_shifts = Shift.query.all() 
+        all_shifts = Shift.query.filter_by(hospital=current_user.hospital).all()
         return render_template("shifts.html", user=current_user, all_schedules=all_schedules, all_shifts=all_shifts, doctors_schedules=zip(doctors, schedules), sidebar=department_head_sidebar)
     
     elif current_user.is_management_staff():
@@ -693,8 +736,8 @@ def shifts_view():
                 change_doctor_schedule(request)
                 return redirect(url_for("user_view.shifts_view"))
 
-        all_schedules = Schedule.query.all()
-        doctors = Medical_Staff.query.all()
+        all_schedules = Schedule.query.filter_by(hospital=current_user.hospital).all()
+        doctors = Medical_Staff.query.filter_by(hospital=current_user.hospital).all()
         schedules = []
 
         for doctor in doctors:
@@ -703,7 +746,7 @@ def shifts_view():
                 doctor_shift.append(Shift.query.filter_by(id=shift[1]).first())
             schedules.append(doctor_shift)
 
-        all_shifts = Shift.query.all() 
+        all_shifts = Shift.query.filter_by(hospital=current_user.hospital).all() 
         return render_template("shifts.html", user=current_user, all_schedules=all_schedules, all_shifts=all_shifts, doctors_schedules=zip(doctors, schedules), sidebar=management_staff_sidebar)
     abort(401)
 

@@ -15,9 +15,9 @@ if not os.path.isdir(directory):
 
 patient_sidebar = {'My Appointments':'calendar-1','Lab Results':'notepad-2','diagnoses':'heart'}
 medical_staff_sidebar = {'My Appointments':'television', 'Patients':'heart', 'Shifts':'pad'}
-department_head_sidebar = {'My Appointments':'television', 'staff':'notepad-2', 'Patients':'heart', 'Shifts':'pad', 'Rooms':'reading'}
-management_staff_sidebar = {'Departments':'network', 'staff':'notepad-2', 'Shifts':'pad', 'Rooms':'reading'}
-admin_sidebar = {'Hospitals':'television', 'staff':'networking', 'Rooms':'reading', 'Patients':'heart'}
+department_head_sidebar = {'My Appointments':'television', 'Staff':'notepad-2', 'Patients':'heart', 'Shifts':'pad', 'Rooms':'reading'}
+management_staff_sidebar = {'Departments':'network', 'Staff':'notepad-2', 'Shifts':'pad', 'Rooms':'reading'}
+admin_sidebar = {'Hospitals':'television', 'Staff':'networking', 'Rooms':'reading'}
 
 os.environ['SECRET_KEY_FLASK'] =  'SecretKey'
 
@@ -40,7 +40,7 @@ mail = Mail(app)
 
 from .auth import auth_view
 from .users import user_view, bad_request, unauthorized,forbidden, page_not_found, method_not_allowed, server_error, service_unavaiable
-from .admin import admin_view
+#from .admin import admin_view
 
 app.register_error_handler(400, bad_request)
 app.register_error_handler(401, unauthorized)
@@ -52,7 +52,7 @@ app.register_error_handler(503, service_unavaiable)
 
 app.register_blueprint(auth_view, url_prefix="/")
 app.register_blueprint(user_view, url_prefix="/")
-app.register_blueprint(admin_view, url_prefix="/admin")   
+#app.register_blueprint(admin_view, url_prefix="/admin")   
 
 from .models import User
 

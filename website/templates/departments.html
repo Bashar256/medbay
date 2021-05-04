@@ -1,48 +1,48 @@
 {% extends 'base.html' %}
 {% block title %}Departments{% endblock %}
 {% block body %}
-    {% if user.is_management_staff() or user.is_medical_staff(): %}
+    {% if user.is_management_staff() or user.is_admin_user(): %}
         <div class="row page-titles mx-0">
             <div class="col-sm-6 p-md-0">
                 <div class="welcome-text">
                     <span>{{hospital.name}}</span>
-                    <a href="javascript:void(0)" class="btn btn-danger" data-toggle="modal" data-target="#addDoctorModal">+New Department</a>
+                    <a href="javascript:void(0)" class="btn btn-danger" data-toggle="modal" data-target="#adddepartment">+ Department</a>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="adddepartment">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Department</h5>
+                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form method='POST'>
+                            {% if user.is_admin(): %}
+                                <div class="form-group">
+                                    <label class="mb-1"><strong>Hospital</strong></label>
+                                    <select name='hospital' id="hospital" class="form-control ">
+                                        {% for hospital in hospitals: %}
+                                        <option value="{{hospital.id}}">{{hospital}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            {% endif %}
+                            <div class="form-group">
+                                <label class="text-black font-w500">Department Name</label>
+                                <input type="text" class="form-control" id='name' name='name' required >
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">Create Department</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     {% endif %}
-    <div class="modal fade" id="addDoctorModal">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Department</h5>
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form method='POST'>
-                        {% if user.is_admin(): %}
-                            <div class="form-group">
-                                <label class="mb-1"><strong>Hospital</strong></label>
-                                <select name='hospital' id="hospital" class="form-control ">
-                                    {% for hospital in hospitals: %}
-                                    <option value="{{hospital.id}}">{{hospital}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        {% endif %}
-                        <div class="form-group">
-                            <label class="text-black font-w500">Department Name</label>
-                            <input type="text" class="form-control" id='name' name='name' required >
-                        </div>
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary">Create Department</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
     <div class="row">
         <div class="col-xl-12">
             <div id="accordion-one" class="accordion doctor-list ">

@@ -2,191 +2,185 @@
 {% block title %}Staff{% endblock %}
 {% block body %}
     <div class="bootstrap-modal">
-        <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addMedicalStaff">+New Medical Staff</button>
-        <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addManagementStaff">+New Management Staff</button>
-        {% if user.is_admin(): %}
-            <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addAdmin">+New Admin</button>
+        <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addManagementStaff">+ Management Staff</button>
+        {% if user.is_management_staff(): %}
+            <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addMedicalStaff">+ Medical Staff</button>
+        {% elif user.is_admin(): %}
+            <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addAdmin">+ Admin</button>
         {% endif %}
     </div>
-    <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" id="addMedicalStaff" style="display: none;" aria-modal="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Medical Staff</h5>
-                    <button type="button" class="close" data-dismiss="modal"><span>×</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form method='POST'>
-                        <div class="form-group">
-                            <label class="mb-1"><strong>Name</strong></label>
-                            <div class="row">
-                                <div class="col-sm-6">
-                                    <input type="text" class="form-control" name='firstname' id='firstname' placeholder="First Name" required>
-                                </div>
-                                <div class="col-sm-6 mt-2 mt-sm-0">
-                                    <input type="text" class="form-control" name='lastname' id='lastname' placeholder="Last Name" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-sm-6">
-                                <label class="mb-1"><strong>Gender</strong></label>
-                                <select name='gender' id="gender" class="form-control ">
-                                    <option value="M">Male</option>
-                                    <option value="F">Female</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-sm-6 mt-2 mt-sm-0">
-                                <label class="mb-1"><strong>Date of birth</strong></label>
-                                <input type="date" class="form-control" name='dob' min="1900-01-01" id="datePickerId">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="mb-1"><strong>Phone number</strong></label>
-                            <input type="tel" class="form-control" name='phone_no' id='phone_no' value="+962" maxlength="13">
-                        </div>
-                        <div class="form-group">
-                            <label class="mb-1"><strong>Email</strong></label>
-                            <input type="email" class="form-control" name="email" id ='email' placeholder="Email" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="mb-1"><strong>Password</strong></label>
-                            <div class="row">
-                                <div class="col-sm-6">
-                                    <input type="password" class="form-control" name='password1' id='password1' placeholder="Password" required>
-                                </div>
-                                <div class="col-sm-6 mt-2 mt-sm-0">
-                                    <input type="password" class="form-control" name='password2' id='password2' placeholder="Confirm Password" required>
-                                </div>
-                            </div>
-                        </div>
-                        {% if user.is_admin(): %}
-                            <div class="form-group">
-                                <label class="text-black font-w500">Hospital</label>
-                                <select name='department' id="department" class="form-control ">
-                                    {% for hospital in hospitals: %}
-                                        <option value="{{hospital.id}}">{{hospital}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        {% endif %}
-                        <div class="form-group">
-                            <label class="text-black font-w500">Department</label>
-                            <select name='department' id="department" class="form-control ">
-                                {% for department in departments: %}
-                                    <option value="{{department.id}}">{{department}}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="text-black font-w500">Specialty</label>
-                            <input type="text" class="form-control" name='specialty' id='specialty'>
-                        </div>
-                        <div class="form-group mb-0">
-                            <label class="text-black font-w500">Department Head</label>
-                            <div class="radio">
-                                <label><input type="radio" name="dpt_head" value="true"> Yes </label>
-                            </div>
-                            <div class="radio">
-                                <label><input type="radio" name="dpt_head" value="false" checked> No </label>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-sm-6">
-                                <label class="mb-1"><strong>Schedule</strong></label>
-                                <select name='schedule' class="form-control ">
-                                    {% for schedule in schedules: %}
-                                        <option value="{{schedule.id}}">{{schedule.name}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        <input type="hidden" class="form-control" name='role' value="md" >
-                </div>
-                    <div class="modal-footer">
-                        <input type="submit" name="submit" value="Create Medical Staff" class="btn btn-primary"></input>
+    {% if user.is_management_staff(): %}
+        <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" id="addMedicalStaff" style="display: none;" aria-modal="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Medical Staff</h5>
+                        <button type="button" class="close" data-dismiss="modal"><span>×</span>
+                        </button>
                     </div>
-                </form>
+                    <div class="modal-body">
+                        <form method='POST'>
+                            <div class="form-group">
+                                <label class="mb-1"><strong>Name</strong></label>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <input type="text" class="form-control" name='firstname' id='firstname' placeholder="First Name" required>
+                                    </div>
+                                    <div class="col-sm-6 mt-2 mt-sm-0">
+                                        <input type="text" class="form-control" name='lastname' id='lastname' placeholder="Last Name" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-6">
+                                    <label class="mb-1"><strong>Gender</strong></label>
+                                    <select name='gender' id="gender" class="form-control ">
+                                        <option value="M">Male</option>
+                                        <option value="F">Female</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-6 mt-2 mt-sm-0">
+                                    <label class="mb-1"><strong>Date of birth</strong></label>
+                                    <input type="date" class="form-control" name='dob' min="1900-01-01" id="datePickerId">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="mb-1"><strong>Phone number</strong></label>
+                                <input type="tel" class="form-control" name='phone_no' id='phone_no' value="+962" maxlength="13">
+                            </div>
+                            <div class="form-group">
+                                <label class="mb-1"><strong>Email</strong></label>
+                                <input type="email" class="form-control" name="email" id ='email' placeholder="Email" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="mb-1"><strong>Password</strong></label>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <input type="password" class="form-control" name='password1' id='password1' placeholder="Password" required>
+                                    </div>
+                                    <div class="col-sm-6 mt-2 mt-sm-0">
+                                        <input type="password" class="form-control" name='password2' id='password2' placeholder="Confirm Password" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="text-black font-w500">Department</label>
+                                <select name='department' id="department" class="form-control ">
+                                    {% for department in departments: %}
+                                        <option value="{{department.id}}">{{department}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="text-black font-w500">Specialty</label>
+                                <input type="text" class="form-control" name='specialty' id='specialty'>
+                            </div>
+                            <div class="form-group mb-0">
+                                <label class="text-black font-w500">Department Head</label>
+                                <div class="radio">
+                                    <label><input type="radio" name="dpt_head" value="true"> Yes </label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="dpt_head" value="false" checked> No </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-6">
+                                    <label class="mb-1"><strong>Schedule</strong></label>
+                                    <select name='schedule' class="form-control ">
+                                        {% for schedule in schedules: %}
+                                            <option value="{{schedule.id}}">{{schedule.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <input type="hidden" class="form-control" name='role' value="md" >
+                    </div>
+                        <div class="modal-footer">
+                            <input type="submit" name="submit" value="Create Medical Staff" class="btn btn-primary"></input>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>        
+    {% elif user.is_management_staff() or user.is_admin(): %}
+        <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" id="addManagementStaff" style="display: none;" aria-modal="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Management Staff</h5>
+                        <button type="button" class="close" data-dismiss="modal"><span>×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form method='POST'>
+                            <div class="form-group">
+                                <label class="mb-1"><strong>Name</strong></label>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <input type="text" class="form-control" name='firstname' id='firstname' placeholder="First Name" required>
+                                    </div>
+                                    <div class="col-sm-6 mt-2 mt-sm-0">
+                                        <input type="text" class="form-control" name='lastname' id='lastname' placeholder="Last Name" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-6">
+                                    <label class="mb-1"><strong>Gender</strong></label>
+                                    <select name='gender' id="gender" class="form-control ">
+                                        <option value="M">Male</option>
+                                        <option value="F">Female</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-6 mt-2 mt-sm-0">
+                                    <label class="mb-1"><strong>Date of birth</strong></label>
+                                    <input type="date" class="form-control" name='dob' min="1900-01-01" id="datePickerId">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="mb-1"><strong>Phone number</strong></label>
+                                <input type="tel" class="form-control" name='phone_no' id='phone_no' value="+962" maxlength="13">
+                            </div>
+                            <div class="form-group">
+                                <label class="mb-1"><strong>Email</strong></label>
+                                <input type="email" class="form-control" name="email" id ='email' placeholder="Email" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="mb-1"><strong>Password</strong></label>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <input type="password" class="form-control" name='password1' id='password1' placeholder="Password" required>
+                                    </div>
+                                    <div class="col-sm-6 mt-2 mt-sm-0">
+                                        <input type="password" class="form-control" name='password2' id='password2' placeholder="Confirm Password" required>
+                                    </div>
+                                </div>
+                            </div>
+                            {% if user.is_admin(): %}
+                                <div class="form-group">
+                                    <label class="text-black font-w500">Hospital</label>
+                                    <select name='hospital_id' class="form-control ">
+                                        {% for hospital in hospitals: %}
+                                            <option value="{{hospital.id}}">{{hospital}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            {% endif %}
+                            <input type="hidden" class="form-control" name='role' value="ms" >
+                    </div>
+                        <div class="modal-footer">
+                            <input type="submit" name="submit" value="Create Management Staff" class="btn btn-primary"></input>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>        
-    <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" id="addManagementStaff" style="display: none;" aria-modal="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Management Staff</h5>
-                    <button type="button" class="close" data-dismiss="modal"><span>×</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form method='POST'>
-                        <div class="form-group">
-                            <label class="mb-1"><strong>Name</strong></label>
-                            <div class="row">
-                                <div class="col-sm-6">
-                                    <input type="text" class="form-control" name='firstname' id='firstname' placeholder="First Name" required>
-                                </div>
-                                <div class="col-sm-6 mt-2 mt-sm-0">
-                                    <input type="text" class="form-control" name='lastname' id='lastname' placeholder="Last Name" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-sm-6">
-                                <label class="mb-1"><strong>Gender</strong></label>
-                                <select name='gender' id="gender" class="form-control ">
-                                    <option value="M">Male</option>
-                                    <option value="F">Female</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-sm-6 mt-2 mt-sm-0">
-                                <label class="mb-1"><strong>Date of birth</strong></label>
-                                <input type="date" class="form-control" name='dob' min="1900-01-01" id="datePickerId">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="mb-1"><strong>Phone number</strong></label>
-                            <input type="tel" class="form-control" name='phone_no' id='phone_no' value="+962" maxlength="13">
-                        </div>
-                        <div class="form-group">
-                            <label class="mb-1"><strong>Email</strong></label>
-                            <input type="email" class="form-control" name="email" id ='email' placeholder="Email" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="mb-1"><strong>Password</strong></label>
-                            <div class="row">
-                                <div class="col-sm-6">
-                                    <input type="password" class="form-control" name='password1' id='password1' placeholder="Password" required>
-                                </div>
-                                <div class="col-sm-6 mt-2 mt-sm-0">
-                                    <input type="password" class="form-control" name='password2' id='password2' placeholder="Confirm Password" required>
-                                </div>
-                            </div>
-                        </div>
-                        {% if user.is_admin(): %}
-                            <div class="form-group">
-                                <label class="text-black font-w500">Hospital</label>
-                                <select name='department' id="department" class="form-control ">
-                                    {% for hospital in hospitals: %}
-                                        <option value="{{hospital.id}}">{{hospital}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        {% endif %}
-                        <input type="hidden" class="form-control" name='role' value="ms" >
-                </div>
-                    <div class="modal-footer">
-                        <input type="submit" name="submit" value="Create Management Staff" class="btn btn-primary"></input>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    {% endif %}
     {% if user.is_admin(): %}
         <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" id="addAdmin" style="display: none;" aria-modal="true">
             <div class="modal-dialog modal-lg">
@@ -282,19 +276,19 @@
                     {% for hospital in hospitals: %}
                         <div class="accordion__item">
                             <div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#hospital_collapse{{hospital.id}}">
-                                <span class="form-group">{{hospital.name}}</span>
+                                <span class="form-group">{{hospital.name}} Management</span>
                                 <span class="accordion__header-line flex-grow-1"></span>
                                 <span class="accordion__header--indicator style_two"></span>
                             </div>
                             <div id="hospital_collapse{{hospital.id}}" class="collapse accordion__body show" data-parent="#accordion-one">
                                 <div class="widget-media best-doctor pt-4">
                                     <div class="timeline row">
-                                        {% for department in departments: %}
-                                            {% if department.hospital == hospital.id %}
+                                        {% for manager in management_staff: %}
+                                            {% if manager.hospital == hospital.id %}
                                                 <div class="col-lg-6">
                                                     <div class="timeline-panel bg-white p-4 mb-4">
                                                         <div class="media-body">
-                                                            <a href="/staff/staff_details_{{manager.id}}{{manager.role}}"><h4 class="mb-2">{{department}}</h4></a>
+                                                            <a href="/staff/staff_details_{{manager.id}}{{manager.role}}"><h4 class="mb-2">{{manager.first_name + " " + manager.last_name}}</h4></a>
                                                         </div>
                                                     </div>
                                                 </div>

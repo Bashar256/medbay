@@ -32,7 +32,7 @@ def create_stuff():
     phone_no = '+962111111111'
     dob = '2000-01-01'
 
-    new_patient = User(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='a', registered_on=datetime.datetime.now())
+    new_patient = User(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='a', registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now())
     db.session.add(new_patient)
     db.session.commit()
 
@@ -44,7 +44,7 @@ def create_stuff():
     phone_no = '+962111111111'
     dob = '2000-01-01'
 
-    new_patient = Management_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='ms', hospital=1, registered_on=datetime.datetime.now())
+    new_patient = Management_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='ms', hospital=1, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now())
     db.session.add(new_patient)
     db.session.commit()
 
@@ -58,17 +58,17 @@ def create_stuff():
 
     start = datetime.time(11,0)
     end = datetime.time(19,0)
-    shift = 'afternoon'
+    shift = 'Afternoon'
 
-    shift1 = Shift(shift_start=start, shift_end=end, shift_type=shift)
+    shift1 = Shift(shift_start=start, shift_end=end, name=shift, hospital=1)
     db.session.add(shift1)
     db.session.commit()
 
     start = datetime.time(7,0)
     end = datetime.time(15,0)
-    shift = 'morning'
+    shift = 'Morning'
 
-    shift2 = Shift(shift_start=start, shift_end=end, shift_type=shift)
+    shift2 = Shift(shift_start=start, shift_end=end, name=shift, hospital=1)
     db.session.add(shift2)
     db.session.commit()
 
@@ -94,7 +94,7 @@ def create_stuff():
     phone_no = '+962111111111'
     dob = '2000-01-01'
 
-    new_patient = Medical_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='md', hospital=1, department=1, schedule=2, registered_on=datetime.datetime.now())
+    new_patient = Medical_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='md', hospital=1, department=1, schedule=2, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now())
     db.session.add(new_patient)
     # db.session.execute(doctors_shifts.insert(), params={"shift_id":1, "medical_staff_id":3, "day":datetime.datetime.today()})
     db.session.commit()
@@ -108,7 +108,7 @@ def create_stuff():
     phone_no = '+962111111111'
     dob = '2000-01-01'
 
-    new_patient = Medical_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='md', hospital=1, department=2, registered_on=datetime.datetime.now())
+    new_patient = Medical_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='md', hospital=1, department=2, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now())
     db.session.add(new_patient)
     # db.session.execute(doctors_shifts.insert(), params={"shift_id":2, "medical_staff_id":4, "day":datetime.datetime.today()})    
     db.session.commit()
