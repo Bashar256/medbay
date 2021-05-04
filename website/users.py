@@ -193,7 +193,8 @@ def book_appointment_view():
                 for hospital in hospitals:
                     Hosp_name.append(str(hospital))
                     Hosp_id.append(hospital.id)
-                return jsonify({'name':Hosp_name,'id':Hosp_id}) 
+                    print(hospital.department)
+                #return jsonify({'name':Hosp_name,'id':Hosp_id}) 
         return render_template("book_appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=PATIENT_SIDEBAR)
     abort(401)
 ##hello
