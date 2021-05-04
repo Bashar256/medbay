@@ -11,6 +11,7 @@ from threading import Thread
 import datetime
 import base64
 import os
+from website.users import load_user_request
 
 auth_view = Blueprint("auth_view", __name__, static_folder="static", template_folder="templates")
 
@@ -47,9 +48,14 @@ def login_view():
 @auth_view.route("/logout")
 @login_required
 def logout_view():
+    if request.mimetype == 'application/json':
+        if load_user_request(request):
+            logout_user()
+            return jsonify({'status':'Logged out sucessfully!'})
     flash("Logged out successefully!", "logout")
     logout_user()
     return redirect(url_for('auth_view.login_view'))
+
 
 
 #Registration View
