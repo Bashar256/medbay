@@ -196,7 +196,7 @@ def book_appointment_view():
                 return jsonify({'name':Hosp_name,'id':Hosp_id}) 
         return render_template("book_appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=PATIENT_SIDEBAR)
     abort(401)
-
+##hello
 @user_view.route("/book_appointment_department")
 @login_required
 def book_appointment_view_department():
