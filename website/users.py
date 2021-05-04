@@ -199,7 +199,7 @@ def book_appointment_view():
 
 @user_view.route("/book_appointment_department")
 @login_required
-def book_appointment_view():
+def book_appointment_view_department():
     if current_user.is_patient(): 
         hospitals = Hospital.query.all()
         departments = Department.query.all()
