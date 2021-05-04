@@ -189,9 +189,9 @@ def book_appointment_view():
         
         if request.mimetype == 'application/json':
             if load_user_request(request):
-                Host_name = []
+                Hosp_name = []
                 for name in hospitals:
-                    Host_name.append({"name":str(name)})
+                    Hosp_name.append({"name":str(name)})
                 return jsonify(Host_name) 
         return render_template("book_appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=PATIENT_SIDEBAR)
     abort(401)
@@ -202,11 +202,14 @@ def book_appointment_view_department():
     if current_user.is_patient(): 
         hospitals = Hospital.query.all()
         departments = Department.query.all()
-        
+        dept_name=[]
+        dept_id=[]
         if request.mimetype == 'application/json':
             if load_user_request(request):
                 for department in departments:
-                    print(department.id) 
+                    dept_name.append(department)
+                    dept_id.append(department.id)
+                    return jsonify{'name':dept_name}
     abort(401)
 
 
