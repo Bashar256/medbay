@@ -84,7 +84,6 @@ def register_view_phone():
         phone_no = data['phone_no']
         dob = data['dob']
 
-
         patient = Patient.query.filter_by(email=email).first()
         
         if patient:
@@ -203,7 +202,7 @@ def confirm_email(user):
                 sender=("MedBay Support", "noreply@medbay.org"),
                 recipients=["sebire3932@hype68.com"])
     msg.body = f'''To confirm your email please follow the link below:
-    {url_for('auth_view.verify_email', token=token, _external=True)}'''
+    {url_for('auth_view.verify_email_view', token=token, _external=True)}'''
     Thread(target=send_email, args=[msg]).start()
 
 
