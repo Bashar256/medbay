@@ -116,7 +116,11 @@ def register_view_phone():
 @auth_view.route("/reset_password", methods=["POST", "GET"])
 def reset_password_view():
     if request.method == "POST":
-        email = request.form.get("email")
+        if request.mimetype=='application/json':
+            data=request.json
+            email = data['email']
+        else:
+            email = request.form.get("email")
         user = User.query.filter_by(email=email).first()
         if user:
             token = user.get_token()
@@ -126,9 +130,13 @@ def reset_password_view():
             msg.body = f'''To change your password please follow the link below:
             {url_for('auth_view.reset_token', token=token, _external=True)}'''
             Thread(target=send_email, args=[msg]).start()
+            if request.mimetype=='application/json':
+                return jsonify({'status':'An Email was sent with the reset link'})
             flash("An Email was sent with the reset link", category="info")
-            return redirect(url_for("auth_view.reset_password"))  
-
+            return redirect(url_for("auth_view.reset_password")) 
+             
+        if request.mimetype=='application/json':
+                return jsonify({'status':'No such email'})
         flash("No such email", category="error")
         return redirect(url_for("auth_view.reset_password"))
     return render_template("reset password.html")
