@@ -209,6 +209,8 @@ def book_appointment_view_department():
                 for department in departments:
                     dept_name.append(str(department))
                     dept_id.append(department.id)
+                print(dept_name)
+                print("SENT")
                 return  jsonify({'name':dept_name,'id':dept_id})
     abort(401)
 # for department in departments:
