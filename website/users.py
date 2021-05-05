@@ -197,11 +197,12 @@ def edit_profile_view_phone():
         print(first_name)
         print(last_name)
         print(password1)
-        print(password1)
-        print(password1)
+        print(password2)
+        print(password3)
         print(gender)
         print(dob)
         print(phone_no)
+        return true
     #     count = 0
     #     user = User.query.filter_by(email=current_user.email).first()
     #     if user.email != email:
