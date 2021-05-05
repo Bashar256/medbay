@@ -144,12 +144,12 @@ def validate_staff_register(request):
         if submit == "Create Management Staff" and role.lower() == "ms":
             if hospital_id:
                 if Hospital.query.filter_by(id=hospital_id).first():
-                    new_user = Management_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=hospital_id, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now())
+                    new_user = Management_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=hospital_id, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
                 else:
                     flash("Please specify an existing hospital", category="error")
                     return False
             else:
-                new_user = Management_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=current_user.hospital, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now())
+                new_user = Management_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=current_user.hospital, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
         elif submit == "Create Medical Staff" and role.lower() == 'md':
             if dpt_head.lower() == 'false':
                 department_head = False
@@ -158,9 +158,9 @@ def validate_staff_register(request):
             else:
                 flash("Please specify if the doctor is a department head", category="error")
                 return False
-            new_user = Medical_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=current_user.hospital, department=department, schedule=schedule, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), department_head=department_head)
+            new_user = Medical_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=current_user.hospital, department=department, schedule=schedule, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), department_head=department_head, last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
         elif submit == "Create Admin" and role.lower() == "a":
-            new_user = User(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now())
+            new_user = User(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
         else:
             flash("Please Submit from the correct form and Specify role", category="error")
             return False
