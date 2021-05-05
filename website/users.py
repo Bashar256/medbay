@@ -254,9 +254,8 @@ def edit_profile_view_phone():
                     return jsonify({'status':'Password must be at least 7 characters.'})
                 user.password = generate_password_hash(password2, method="sha256")
                 count = count + 1
-            print(user.password)
-            print(password1)
-            return jsonify({'status':'Your must enter your old password correctly'})
+            else:
+                return jsonify({'status':'Your must enter your old password correctly'})
 
         if count != 0:
             db.session.commit()
