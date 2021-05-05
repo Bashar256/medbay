@@ -188,7 +188,7 @@ def edit_profile_view_phone():
             last_name = data['lastname']
             password1 = data['password1']
             password2 = data['password2']
-            password3 = data['password3'])
+            password3 = data['password3']
             gender = data['gender']
             phone_no = data['phone_no']
             dob = data['dob']
