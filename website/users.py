@@ -104,6 +104,10 @@ def profile_view_phone():
                     information = patient_appointments(current_user.id) 
                     for appointment,hospital,department,usr,diagnoses,lab_results in information:
                         print(appointment.appointment_date_time)
+                        print(usr.first_name)
+                        print(hospital)
+                        print(department)
+                        
                     return jsonify({'firstname':current_user.first_name,'lastname':current_user.last_name,'age':current_user.age(),'phone':current_user.phone_no,'email':current_user.email})
 
 #Edit_Profile View
