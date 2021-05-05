@@ -78,6 +78,10 @@ def about_us_view():
 @login_required
 def profile_view():
     if current_user.is_patient():
+        print(current_user.name)
+        print(current_user.age)
+        print(current_user.phone_no)
+        print(current_user.email)
         information = patient_appointments(current_user.id)  
         return render_template("profile.html",user=current_user, information=information, today=today, sidebar=PATIENT_SIDEBAR)    
     elif current_user.is_medical_staff():
