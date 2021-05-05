@@ -103,11 +103,8 @@ def profile_view_phone():
                 if current_user.is_patient():
                     information = patient_appointments(current_user.id) 
                     for appointment,hospital,department,usr,diagnoses,lab_results in information:
-                        print(appointment.appointment_date_time)
-                        print(usr.first_name)
-                        print(hospital)
-                        print(department)
-                        
+                        if appointment.appointment_date_time < today:
+                            print(usr.first_name)
                     return jsonify({'firstname':current_user.first_name,'lastname':current_user.last_name,'age':current_user.age(),'phone':current_user.phone_no,'email':current_user.email})
 
 #Edit_Profile View
