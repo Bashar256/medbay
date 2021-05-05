@@ -78,11 +78,6 @@ def about_us_view():
 @login_required
 def profile_view():
     if current_user.is_patient():
-        print(current_user.first_name)
-        print(current_user.last_name)
-        print(current_user.age())
-        print(current_user.phone_no)
-        print(current_user.email)
         information = patient_appointments(current_user.id)  
         return render_template("profile.html",user=current_user, information=information, today=today, sidebar=PATIENT_SIDEBAR)    
     elif current_user.is_medical_staff():
@@ -95,7 +90,13 @@ def profile_view():
     elif current_user.is_admin():
         return render_template("profile.html",user=current_user, sidebar=ADMIN_SIDEBAR)
     abort(401)
-
+@user_view.route("/profile_phone")
+@login_required
+def profile_view_phone():
+    if request.mimetype == 'application/json':
+            if load_user_request(request):
+                if current_user.is_patient():
+                    return jsonify{'firstname':current_user.first_name,'lastname':current_user.last_name,'age':current_user.age(),'phone':current_user.phone_no,'email':current_user.email}
 
 #Edit_Profile View
 @user_view.route("/edit_profile", methods=["POST", "GET"])
