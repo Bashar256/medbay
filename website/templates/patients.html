@@ -20,7 +20,7 @@
                                 </tr>
                             </thead>
                                 <tbody>
-                                    {% for (patient, appointment) in info: %}
+                                    {% for (patient, appointment, timed_out) in info: %}
                                         <tr>
                                             <td><div class="d-flex align-items-center"> <span class="w-space-no">{{patient.first_name + ' ' + patient.last_name}}</span></div></td>
                                             <td>{% if appointment: %}{{appointment.strftime("%d-%m-%y") }}{% else: %}<p>No previous appoinment</p>{% endif %}</td>
@@ -28,10 +28,14 @@
                                             <td><div></div><a href="/lab_results/{{patient.id}}">Lab Results</a></td>
                                             <td>
                                                 <div class="d-flex">
-                                                    <button onclick="window.location.href='/patient_details{{patient.id}}'" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-user"></i></button>
-                                                    <button type="submit" data-toggle="modal" data-target="#upload{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-file"></i></button>
+                                                    {% if not timed_out:%}
+                                                        <button onclick="window.location.href='/patient_details{{patient.id}}'" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-user"></i></button>
+                                                        <button type="submit" data-toggle="modal" data-target="#upload{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-file"></i></button>
+                                                    {% endif %}
                                                     {% if not patient.bed: %}
-                                                        <button type="submit" data-toggle="modal" data-target="#occupybed{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-bed"></i></butto>
+                                                        {% if not timed_out: %}
+                                                            <button type="submit" data-toggle="modal" data-target="#occupybed{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-bed"></i></butto>
+                                                        {% endif %}
                                                     {% else: %}
                                                         <button type="submit" data-toggle="modal" data-target="#releasebed{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-eject"></i></button>
                                                     {% endif %}

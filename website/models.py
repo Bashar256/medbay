@@ -291,10 +291,10 @@ class Management_Staff(User):
 
 
 
-patients = db.Table('patients',
+Patients = db.Table('patients',
     db.Column('patient_id', db.Integer, db.ForeignKey('patient.id')),
     db.Column('medical_staff_id', db.Integer, db.ForeignKey('medical_staff.id')),
-    db.Column('timeout', db.DateTime(timezone=True), nullable=True, default=datetime.today() + timedelta(days=2))
+    db.Column('timeout', db.DateTime(timezone=True), nullable=False, default=datetime.today() + timedelta(days=7))
 )    
 
 
@@ -314,7 +314,7 @@ class Medical_Staff(User):
     schedule = db.Column(db.Integer, db.ForeignKey('schedule.id'), nullable=False, default=1)
     appointments = db.relationship('Appointment', backref='medical_staff_appointment')
     diagnoses = db.relationship('Diagnosis', backref='medical_staff_diagnosis')
-    patients = db.relationship('Patient', secondary=patients, lazy='subquery', backref=db.backref('medical_staff_patients', lazy=True))
+    patients = db.relationship('Patient', secondary='patients', lazy='subquery', backref=db.backref('medical_staff_patients', lazy=True))
 
     def is_department_head(self):
         return self.department_head

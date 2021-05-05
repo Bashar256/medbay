@@ -1,5 +1,5 @@
 from website import db
-from website.models import Hospital,Department,Appointment,User,Patient,Medical_Staff,Management_Staff,patients,Shift,Schedule,Schedules
+from website.models import Hospital,Department,Appointment,User,Patient,Medical_Staff,Management_Staff,Patients,Shift,Schedule,Schedules
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import datetime
@@ -122,7 +122,7 @@ def create_stuff():
     dob = '1999-01-01'
 
     new_patient = Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p', registered_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
-    db.session.execute(patients.insert(), params={"patient_id":5, "medical_staff_id":3,"timeout":datetime.datetime.today() + datetime.timedelta(days=3)})
+    db.session.execute(Patients.insert(), params={"patient_id":5, "medical_staff_id":3,"timeout":datetime.datetime.today() + datetime.timedelta(days=3)})
     db.session.add(new_patient)
     db.session.commit()
     new_patient.create_patient_file()
@@ -138,7 +138,8 @@ def create_stuff():
     dob = '2000-01-01'
 
     new_patient = Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p', registered_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
-    db.session.execute(patients.insert(), params={"patient_id":6, "medical_staff_id":4, "timeout":datetime.datetime.today() + datetime.timedelta(days=1)})
+    db.session.execute(Patients.insert(), params={"patient_id":6, "medical_staff_id":4, "timeout":datetime.datetime(2021,4,14,1,30) + datetime.timedelta(days=7)})
+    db.session.execute(Patients.insert(), params={"patient_id":5, "medical_staff_id":4, "timeout":datetime.datetime(2021,5,4,1,30) + datetime.timedelta(days=7)})
     db.session.add(new_patient)
     db.session.commit()
     new_patient.create_patient_file()
@@ -149,5 +150,9 @@ def create_stuff():
     db.session.commit()
 
     new_patient =  Appointment(appointment_date_time=datetime.datetime(2021,4,14,2,30), medical_staff=4, patient=6, department=2, hospital=1)
+    db.session.add(new_patient)
+    db.session.commit()
+
+    new_patient =  Appointment(appointment_date_time=datetime.datetime(2021,5,4,1,30), medical_staff=4, patient=5, department=1, hospital=1)
     db.session.add(new_patient)
     db.session.commit()

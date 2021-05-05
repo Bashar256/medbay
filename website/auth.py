@@ -1,4 +1,4 @@
-from website.models import User, Patient, Management_Staff, Medical_Staff, Hospital, Department, Shift, Appointment,patients
+from website.models import User, Patient, Management_Staff, Medical_Staff, Hospital, Department, Shift, Appointment,Patients
 from flask import Blueprint, Flask, redirect, url_for, render_template, request, flash, session, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -68,7 +68,7 @@ def register_view():
             flash('Account created successfully !', category='register')
             return redirect(url_for('user_view.home_view'))
         return render_template("register.html")
-    #create_stuff()
+    create_stuff()
     return render_template("register.html")
 
 @auth_view.route("/register_phone", methods=["POST", "GET"])

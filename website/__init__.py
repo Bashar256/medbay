@@ -10,7 +10,7 @@ BAD_LOGINS_LIMIT = 5
 SESSION_TIMEOUT = timedelta(minutes=15)
 
 PATIENT_SIDEBAR = {'My Appointments':'calendar-1','Lab Results':'notepad-2','diagnoses':'heart'}
-MEDICAL_STAFF_SIDEBAR = {'My Appointments':'television', 'Patients':'heart', 'Shifts':'pad'}
+MEDICAL_STAFF_SIDEBAR = {'My Appointments':'television', 'Patients':'heart', 'Shifts':'pad', 'Rooms':'reading'}
 DEPARTMENT_HEAD_SIDEBAR = {'My Appointments':'television', 'Staff':'notepad-2', 'Patients':'heart', 'Shifts':'pad', 'Rooms':'reading'}
 MANAGEMENT_STAFF_SIDEBAR = {'Departments':'network', 'Staff':'notepad-2', 'Shifts':'pad', 'Rooms':'reading'}
 ADMIN_SIDEBAR = {'Hospitals':'television', 'Staff':'networking', 'Rooms':'reading'}

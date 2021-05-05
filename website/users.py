@@ -1,4 +1,4 @@
-from website.models import  Hospital, Department, Appointment, Shift, Management_Staff, Medical_Staff, Patient, patients, Diagnosis, User, Lab_Result, Schedule, Schedules, Room, Bed
+from website.models import  Hospital, Department, Appointment, Shift, Management_Staff, Medical_Staff, Patient, Patients, Diagnosis, User, Lab_Result, Schedule, Schedules, Room, Bed
 from website import db, app, UPLOAD_FOLDER, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR
 from flask import Blueprint, Flask, render_template, url_for, redirect, request, flash, abort, Response, send_from_directory, send_file, jsonify
 from website.validate import validate_staff_register, validate_shift_assignment, create_schedule, change_doctor_schedule, create_shift
@@ -260,8 +260,10 @@ def doctor_details_view(hospital_id, department_id, staff_id,role="md"):
 
 
             new_appointment = Appointment(appointment_date_time=appointment_date, hospital=hospital_id, department=department_id, medical_staff=staff_id, patient=current_user.id)
-            # medical_staff.patients.append(current_user)
-            db.session.execute(patients.insert(), params={"patient_id":current_user.id, "medical_staff_id":staff_id, "timeout":appointment_date + datetime.timedelta(days=7) })
+            medical_staff.patients.append(current_user)
+            if db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==staff_id).all():
+                db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==staff_id).delete()
+            db.session.execute(Patients.insert(), params={"patient_id":current_user.id, "medical_staff_id":staff_id, "timeout":appointment_date + datetime.timedelta(days=7) })
             db.session.add(new_appointment)
             db.session.commit()  
             flash('Appointment created!', category='success')  
@@ -380,11 +382,15 @@ def patients_view():
                         return redirect(url_for("user_view.patients_view"))               
             flash("no such form", category="error")
             return redirect(url_for("user_view.patients_view"))
-        patients = current_user.patients
+        
+        patients_timeouts = db.session.query(Patients).filter_by(medical_staff_id=current_user.id).all()
+        timed_out = check_timeouts(patients_timeouts)
+        doctors_patients = current_user.patients
         appointments = []
-        for patient in patients:
+        for patient in doctors_patients:
             appointments.append(patient.last_visit(current_user.id))
-        info = zip(patients, appointments)
+
+        info = zip(doctors_patients, appointments, timed_out)
         if not current_user.is_department_head():
             return render_template("patients.html", user=current_user, info=info, sidebar=MEDICAL_STAFF_SIDEBAR)
         return render_template("patients.html", user=current_user, info=info, sidebar=DEPARTMENT_HEAD_SIDEBAR)
@@ -446,6 +452,10 @@ def download_view(filename):
 @login_required
 def patient_details_view(patient_id):
     if current_user.is_medical_staff():
+        patient_timeout = db.session.query(Patients).filter(Patients.c.patient_id==patient_id, Patients.c.medical_staff_id==current_user.id).first()
+        if check_timeout(patient_timeout[2]):
+            flash("The patient is not in your care anymore", category="error")
+            return redirect(url_for("user_view.patients_view"))
         for patient in current_user.patients:
             if patient_id == patient.id:
                 diagnoses = Diagnosis.query.filter(Diagnosis.patient==patient_id, Diagnosis.medical_staff==current_user.id).all()
@@ -641,7 +651,15 @@ def staff_details_view(staff_id,role):
 @user_view.route("/rooms", methods=['GET', 'POST'])
 @login_required
 def rooms_view():
-    if current_user.is_management_staff():
+    if current_user.is_medical_staff():
+
+        hospitals = Hospital.query.all()
+        my_hospital = Hospital.query.filter_by(id=current_user.hospital).first()
+        departments = Department.query.filter_by(hospital=current_user.hospital).all()
+        
+        return render_template("rooms.html",user=current_user, hospitals=hospitals, my_hospital=my_hospital, departments=departments, sidebar=MEDICAL_STAFF_SIDEBAR)
+
+    elif current_user.is_management_staff():
         if request.method == 'POST':
             room_no = request.form.get("room_no")
             no_of_beds = request.form.get("no_of_beds")
@@ -846,7 +864,7 @@ def medical_staff_appointments(medical_staff_id):
 
 
 def patient_lab_results(patient_id):
-    medical_staff_ids = db.session.query(patients).filter_by(patient_id=patient_id).all()
+    medical_staff_ids = db.session.query(Patients).filter_by(patient_id=patient_id).all()
     results = Lab_Result.query.filter_by(patient=patient_id).all()
     medical_staff_objs = []
     for user_id in medical_staff_ids:
@@ -855,13 +873,13 @@ def patient_lab_results(patient_id):
 
 
 def medical_staffs_patient(medical_staff_id, patient_id):
-    patient_id = db.session.query(patients).filter(medical_staff_id==medical_staff_id, patient_id==patient_id).first()
+    patient_id = db.session.query(Patients).filter(medical_staff_id==medical_staff_id, patient_id==patient_id).first()
     patient_obj = Patient.query.filter_by(id=patient_id[0]).first()
     return patient_obj
 
 
 def patient_diagnoses(patient_id):
-    medical_staff_ids = db.session.query(patients).filter_by(patient_id=patient_id).all()
+    medical_staff_ids = db.session.query(Patients).filter_by(patient_id=patient_id).all()
     diagnoses = Diagnosis.query.filter_by(patient=patient_id).all()
     medical_staff_objs = []
     for user_id in medical_staff_ids:
@@ -869,6 +887,25 @@ def patient_diagnoses(patient_id):
             medical_staff_objs.append(Medical_Staff.query.filter_by(id=user_id[1]).first())
     return zip(diagnoses,medical_staff_objs)
 
+
+def check_timeouts(patients_timeouts):
+    time_outs = []
+    for timeout in patients_timeouts:
+        if timeout[2] < datetime.datetime.now():
+            # db.session.query(Patients).filter(Patients.c.patient_id==timeout[0], Patients.c.medical_staff_id==timeout[1], Patients.c.timeout==timeout[2]).delete()
+            # patient = Patient.query.filter_by(id=timeout[0]).first()
+            # if patient in current_user.patients:
+            #     current_user.patients.remove(patient)
+            # db.session.commit()
+            time_outs.append(True)
+        time_outs.append(False)
+    return time_outs
+
+
+def check_timeout(patient_timeout):
+    if patient_timeout < datetime.datetime.now():
+        return True
+    return False
 
 def get_path(path):
     return path.replace("\\", "/")

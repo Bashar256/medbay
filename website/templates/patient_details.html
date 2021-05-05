@@ -40,18 +40,18 @@
                             </div>
                             <div class="card-body">
                                 <div id="accordion-one" class="accordion accordion-primary">
-                                    {% for (appointment,hospital,department,patient) in information | sort(reverse=True): %}
+                                    {% for (appointment,hospital,department,medical_staff,diagnoses,lab_results) in information | sort(reverse=True): %}
                                         {% if appointment.appointment_date_time < today: %}
                                             <div class="accordion__item">
-                                                <div class="accordion__header collapsed rounded-lg" data-toggle="collapse" data-target="#default_collapse{{loop.index0 + 1}}">
+                                                <div class="accordion__header collapsed rounded-lg" data-toggle="collapse" data-target="#default_collapse{{loop.index}}">
                                                     <span class="accordion__header--text">Appointment {{appointment.appointment_date_time.day}}/{{appointment.appointment_date_time.month}}/{{appointment.appointment_date_time.year}}</span>
                                                     <span class="accordion__header--indicator"></span>
                                                 </div>
-                                                <div id="default_collapse{{loop.index0 + 1}}" class="collapse accordion__body" data-parent="#accordion-one">
+                                                <div id="default_collapse{{loop.index}}" class="collapse accordion__body" data-parent="#accordion-one">
                                                     <div class="accordion__body--text">
                                                         <div class="pt-4">
                                                             <p>Patient: {{patient.first_name + ' '+ patient.last_name}}</p>
-                                                            <p>Doctor: {{user.first_name + ' '+ user.last_name}}</p>
+                                                            <p>Doctor: {{medical_staff.first_name + ' '+ medical_staff.last_name}}</p>
                                                             <p>Hospital: {{hospital}}</p>
                                                             <p>Department: {{department}}</p>
                                                             {% set days = ("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday") %}
