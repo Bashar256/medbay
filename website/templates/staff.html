@@ -104,8 +104,9 @@
                     </form>
                 </div>
             </div>
-        </div>        
-    {% elif user.is_management_staff() or user.is_admin(): %}
+        </div>
+    {% endif %}        
+    {% if user.is_management_staff() or user.is_admin(): %}
         <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" id="addManagementStaff" style="display: none;" aria-modal="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
