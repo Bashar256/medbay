@@ -193,72 +193,63 @@ def edit_profile_view_phone():
             phone_no = data['phone_no']
             dob = data['dob']
 
-        print(email)
-        print(first_name)
-        print(last_name)
-        print(password1)
-        print(password2)
-        print(password3)
-        print(gender)
-        print(dob)
-        print(phone_no)
-        return true
-    #     count = 0
-    #     user = User.query.filter_by(email=current_user.email).first()
-    #     if user.email != email:
-    #         old_user = User.query.filter_by(email=email).first()
-    #         if old_user:
-    #             flash("Email already exists", category="error")
-    #         else:
-    #             user.email = email
-    #             user.confirmed = False
-    #             user.confirmed_on = None
-    #             count = count + 1
 
-    #     if user.first_name != first_name:
-    #         if len(first_name) < 2:
-    #             flash('First name must be greater than 1 character.', category='error')
-    #         else:
-    #             user.first_name = first_name
-    #             count = count + 1
+        count = 0
+        user = User.query.filter_by(email=current_user.email).first()
+        if user.email != email:
+            old_user = User.query.filter_by(email=email).first()
+            if old_user:
+                status='Email already exists'
+            else:
+                user.email = email
+                user.confirmed = False
+                user.confirmed_on = None
+                count = count + 1
 
-    #     if user.last_name != last_name:
-    #         if len(last_name) < 2:
-    #             flash('Last name must be greater than 1 character.', category='error')
-    #         else:
-    #             user.last_name = last_name
-    #             count = count + 1
+        if user.first_name != first_name:
+            if len(first_name) < 2:
+                status='First name must be greater than 1 character.'
+            else:
+                user.first_name = first_name
+                count = count + 1
 
-    #     if user.date_of_birth != dob:
-    #         user.date_of_birth = dob
-    #         count = count + 1
+        if user.last_name != last_name:
+            if len(last_name) < 2:
+                status='Last name must be greater than 1 character.'
+            else:
+                user.last_name = last_name
+                count = count + 1
+
+        if user.date_of_birth != dob:
+            user.date_of_birth = dob
+            count = count + 1
         
-    #     if user.gender != gender:
-    #         user.gender = gender
-    #         count = count + 1
+        if user.gender != gender:
+            user.gender = gender
+            count = count + 1
         
-    #     if user.phone_no != phone_no:
-    #         if len(phone_no) != 13:
-    #             flash("Enter a correct phone number format", category="error")
-    #         else:
-    #             user.phone_no = phone_no
-    #             count = count + 1
+        if user.phone_no != phone_no:
+            if len(phone_no) != 13:
+                status='Enter a correct phone number format'
+            else:
+                user.phone_no = phone_no
+                count = count + 1
 
-    #     if password1:
-    #         if check_password_hash(user.password, password1):
-    #             if password2 != password3:
-    #                 flash('Passwords don\'t match.', category='error')
-    #             elif len(password2) < 7:
-    #                 flash('Password must be at least 7 characters.', category='error')
-    #             user.password = generate_password_hash(password2, method="sha256")
-    #             count = count + 1
-    #         flash("Your must enter your old password correctly", category="error")
+        if password1:
+            if check_password_hash(user.password, password1):
+                if password2 != password3:
+                    status='Passwords don\'t match.'
+                elif len(password2) < 7:
+                    status='Password must be at least 7 characters.'
+                user.password = generate_password_hash(password2, method="sha256")
+                count = count + 1
+            status='Your must enter your old password correctly'
 
-    #     if count != 0:
-    #         flash("Your Information was changed", category="update")
-    #         db.session.commit()
+        if count != 0:
+            status='Your Information was changed'
+            db.session.commit()
 
-    #     return redirect(url_for("user_view.edit_profile_view"))
+        return jsonify({'status':status})
 
     # elif current_user.is_patient():
     #     return render_template("edit_profile.html",user=current_user, sidebar=PATIENT_SIDEBAR)
