@@ -80,7 +80,7 @@ def profile_view():
     if current_user.is_patient():
         print(current_user.first_name)
         print(current_user.last_name)
-        print(current_user.age)
+        print(current_user.age())
         print(current_user.phone_no)
         print(current_user.email)
         information = patient_appointments(current_user.id)  
