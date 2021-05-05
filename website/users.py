@@ -101,6 +101,9 @@ def profile_view_phone():
     if request.mimetype == 'application/json':
             if load_user_request(request):
                 if current_user.is_patient():
+                    information = patient_appointments(current_user.id) 
+                    for appointment,hospital,department,usr,diagnoses,lab_results in information:
+                        print(appointment.appointment_date_time)
                     return jsonify({'firstname':current_user.first_name,'lastname':current_user.last_name,'age':current_user.age(),'phone':current_user.phone_no,'email':current_user.email})
 
 #Edit_Profile View
@@ -167,7 +170,8 @@ def edit_profile_view():
                     flash('Password must be at least 7 characters.', category='error')
                 user.password = generate_password_hash(password2, method="sha256")
                 count = count + 1
-            flash("Your must enter your old password correctly", category="error")
+            else:
+                flash("Your must enter your old password correctly", category="error")
 
         if count != 0:
             flash("Your Information was changed", category="update")
