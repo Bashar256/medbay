@@ -101,7 +101,7 @@ def edit_profile_view():
         email = request.form.get('email')
         first_name = request.form.get('firstname')
         last_name = request.form.get('lastname')
-        password1 = request.form.get('password1')
+        password1=generate_password_hash(request.form.get('password1'), method='sha256')
         password2 = request.form.get('password2')
         password3 = request.form.get('password3')
         gender = request.form.get('gender')
@@ -186,13 +186,12 @@ def edit_profile_view_phone():
             email = data['email']
             first_name = data['firstname']
             last_name = data['lastname']
-            password1 = data['password1']
+            password1 = generate_password_hash(data['password1'], method='sha256')
             password2 = data['password2']
             password3 = data['password3']
             gender = data['gender']
             phone_no = data['phone_no']
             dob = data['dob']
-
 
         count = 0
         error = 0
