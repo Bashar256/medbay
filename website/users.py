@@ -147,14 +147,14 @@ def edit_profile_view():
 
         if user.first_name != first_name:
             if len(first_name) < 2:
-                flash('First name must be greater than 1 character.', category='error')
+                flash('First name must be greater than 2 character.', category='error')
             else:
                 user.first_name = first_name
                 count = count + 1
 
         if user.last_name != last_name:
             if len(last_name) < 2:
-                flash('Last name must be greater than 1 character.', category='error')
+                flash('Last name must be greater than 2 character.', category='error')
             else:
                 user.last_name = last_name
                 count = count + 1
