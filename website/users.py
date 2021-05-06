@@ -115,6 +115,7 @@ def appointment_history():
                     information = patient_appointments(current_user.id) 
                     for appointment,hospital,department,usr,diagnoses,lab_results in information:
                         if appointment.appointment_date_time < today:
+                            print("We IN")
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
                             year.append(appointment.appointment_date_time.year)
