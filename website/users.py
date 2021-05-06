@@ -107,7 +107,7 @@ def profile_view_phone():
 @user_view.route("/appointment_history")
 @login_required
 def appointment_history():
-    day=[],month=[],year=[],firstname=[],lastname=[],hospital=[],department=[],weekday=[],hour=[],minute=[]
+    day=[],month=[],year=[],firstname=[],lastname=[],hospital_name=[],department_name=[],weekday=[],hour=[],minute=[]
     
     if request.mimetype == 'application/json':
             if load_user_request(request):
@@ -115,7 +115,17 @@ def appointment_history():
                     information = patient_appointments(current_user.id) 
                     for appointment,hospital,department,usr,diagnoses,lab_results in information:
                         if appointment.appointment_date_time < today:
-                            pass
+                            day.append(appointment.appointment_date_time.day)
+                            month.append(appointment.appointment_date_time.month)
+                            year.append(appointment.appointment_date_time.year)
+                            firstname.append(usr.first_name)
+                            lastname.append(usr.last_name)
+                            hospital_name.append(hospital)
+                            department_name.append(department)
+                            hour.append(appointment.appointment_date_time.hour)
+                            minute.append(appointment.appointment_date_time.minute)
+                            return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute})
+
 
 
 #Edit_Profile View
