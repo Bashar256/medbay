@@ -41,7 +41,7 @@ class Hospital(db.Model):
 class Department(db.Model):
     __tablename__ = 'department'
     __table_args__= (
-        db.UniqueConstraint(name, hospital)
+        tuple(db.UniqueConstraint('name', 'hospital'))
     )
     
     id = db.Column(db.Integer, primary_key=True) 
@@ -98,7 +98,7 @@ Schedules = db.Table('schedules',
 class Schedule(db.Model):
     __tablename__ = 'schedule'
     __table_args__= (
-        db.UniqueConstraint(name, hospital)
+        tuple(db.UniqueConstraint('name', 'hospital'))
     )
     
     id = db.Column(db.Integer, primary_key=True)
@@ -115,7 +115,7 @@ class Schedule(db.Model):
 class Shift(db.Model):
     __tablename__ = 'shift'
     __table_args__= (
-        db.UniqueConstraint(name, hospital)
+        tuple(db.UniqueConstraint('name', 'hospital'))
     )
     
     id = db.Column(db.Integer, primary_key=True)
@@ -153,7 +153,7 @@ class Lab_Result(db.Model):
 class Room(db.Model):
     __tablename__ = 'room'
     __table_args__= (
-        db.UniqueConstraint(room_no, hospital)
+        tuple(db.UniqueConstraint('room_no', 'hospital'))
     )
 
     id = db.Column(db.Integer, primary_key=True)
