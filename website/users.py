@@ -133,7 +133,8 @@ def appointment_history():
                             department_name.append(department.name)
                             hour.append(appointment.appointment_date_time.hour)
                             minute.append(appointment.appointment_date_time.minute)
-                            return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute})
+                    if day:
+                        return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute})
 
 
 
