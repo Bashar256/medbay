@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Staff Details{% endblock %}
 {% block body %}
-    {% if user.is_patient(): %}
+    {% if not user.is_patient(): %}
         <div class="form-head d-flex mb-3 mb-lg-5 align-items-start">
             <a href="javascript:void(0)" class="btn btn-primary" data-toggle="modal" data-target="#NewAppointment">+ New Appointment</a>
         </div>
@@ -15,7 +15,7 @@
                         <div class="modal-body">
                             <div class="form-group">
                                 <label class="text-black font-w500">Appointment Date</label>
-                                <input type="datetime-local" name="appointment_date" class="form-control" max="2020-06-20T20:06" min="2020-02-20T02:20" step="1800">
+                                <input type="date" name="appointment_date" id="appointment_date" onchange='calculateappointmenttime({{closest_appointment|safe}}, {{appointment_limit|safe}}) ;' class="form-control">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -109,4 +109,24 @@
             </div>
         </div>
     </div>
+    <script>
+        function calculateappointmenttime(closest_appointment, appointment_limit)
+        {
+            var date = document.getElementById("appointment_date").value;
+            appointment_date = new Date(date);
+            closest_appointment = new Date(closest_appointment);
+            appointment_limit = new Date(appointment_limit);
+            console.log(appointment_date)
+            console.log(closest_appointment)
+            console.log(appointment_limit)
+            if (appointment_date >= closest_appointment && appointment_date <= appointment_limit )
+            {
+                alert("Good Pick");
+            }
+            else{
+                alert("Enter A valid appointment Date");
+            }
+
+        }
+    </script>
 {% endblock %}

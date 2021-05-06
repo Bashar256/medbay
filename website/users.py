@@ -1,6 +1,6 @@
 from website.models import  Hospital, Department, Appointment, Shift, Management_Staff, Medical_Staff, Patient, Patients, Diagnosis, User, Lab_Result, Schedule, Schedules, Room, Bed
 from website import db, app, UPLOAD_FOLDER, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR
-from flask import Blueprint, Flask, render_template, url_for, redirect, request, flash, abort, Response, send_from_directory, send_file, jsonify
+from flask import Blueprint, Flask, render_template, url_for, redirect, request, flash, abort, Response, send_from_directory, send_file, jsonify, json
 from website.validate import validate_staff_register, validate_shift_assignment, create_schedule, change_doctor_schedule, create_shift
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_required, current_user
@@ -756,8 +756,10 @@ def staff_details_view(staff_id,role):
             return render_template("staff_details.html", user=current_user, staff=staff, sidebar=MANAGEMENT_STAFF_SIDEBAR)
         staff = Medical_Staff.query.filter_by(id=staff_id).first()
         if staff:
+            closest_appointment = today + datetime.timedelta(days=1)
+            appointment_limit = today + datetime.timedelta(days=30)
             information = medical_staff_appointments(staff_id)
-            return render_template("staff_details.html", user=current_user, information=information, staff=staff, today=today, sidebar=MANAGEMENT_STAFF_SIDEBAR)
+            return render_template("staff_details.html", user=current_user, information=information, closest_appointment=json.dumps(closest_appointment.strftime("%Y-%m-%d")),  appointment_limit=json.dumps(appointment_limit.strftime("%Y-%m-%d")), staff=staff, today=today, sidebar=MANAGEMENT_STAFF_SIDEBAR)
         
     elif current_user.is_admin():
         staff = User.query.filter(User.id==staff_id,  User.role==current_user.role).first()

@@ -40,13 +40,15 @@ class Hospital(db.Model):
 #Department Table
 class Department(db.Model):
     __tablename__ = 'department'
+    __table_args__= (
+        db.UniqueConstraint(name, hospital)
+    )
     
     id = db.Column(db.Integer, primary_key=True) 
     name = db.Column(db.String(100, collation='NOCASE'), nullable=False, server_default='')
     hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'))
     medical_staff = db.relationship('Medical_Staff', backref='department_medical_staff')
     rooms = db.relationship('Room', backref='department_rooms')
-    tuple(db.UniqueConstraint('name', 'hospital'))
 
     def __repr__(self):
         return f"{self.name}"
@@ -95,13 +97,16 @@ Schedules = db.Table('schedules',
 #Schedule Table
 class Schedule(db.Model):
     __tablename__ = 'schedule'
+    __table_args__= (
+        db.UniqueConstraint(name, hospital)
+    )
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20,collation='NOCASE'), nullable=False, default='A')
     hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'))
     medical_staff = db.relationship('Medical_Staff', backref="schedule_medical_staff")
     shifts = db.relationship('Shift', secondary=Schedules, lazy='subquery', backref=db.backref('medical_staff_shifts', lazy=True))
-    tuple(db.UniqueConstraint('name', 'hospital'))
+    # month = db.Column(db.Integer, nullable=False)
     def __gt__(self, other):
         return self.name > other.name
 
@@ -109,13 +114,15 @@ class Schedule(db.Model):
 #Shift Table
 class Shift(db.Model):
     __tablename__ = 'shift'
+    __table_args__= (
+        db.UniqueConstraint(name, hospital)
+    )
     
     id = db.Column(db.Integer, primary_key=True)
     shift_start = db.Column(db.Time(timezone=True), nullable=False)
     shift_end = db.Column(db.Time(timezone=True), nullable=False)
     name = db.Column(db.String(20,collation='NOCASE'), nullable=False)
     hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'))
-    tuple(db.UniqueConstraint('name', 'hospital'))
 
 
 #Diagnosis Table
@@ -145,6 +152,9 @@ class Lab_Result(db.Model):
 #Room Table
 class Room(db.Model):
     __tablename__ = 'room'
+    __table_args__= (
+        db.UniqueConstraint(room_no, hospital)
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     room_no = db.Column(db.String(15, collation='NOCASE'))
@@ -152,7 +162,6 @@ class Room(db.Model):
     department = db.Column(db.Integer, db.ForeignKey('department.id'))
     beds =  db.relationship('Bed', backref='room_beds')
     max_no_of_beds = db.Column(db.Integer, nullable=False, default=4)
-    tuple(db.UniqueConstraint('room_no', 'hospital'))
     
     def is_full(self):
         count = 0
@@ -315,7 +324,6 @@ class Medical_Staff(User):
     appointments = db.relationship('Appointment', backref='medical_staff_appointment')
     diagnoses = db.relationship('Diagnosis', backref='medical_staff_diagnosis')
     patients = db.relationship('Patient', secondary='patients', lazy='subquery', backref=db.backref('medical_staff_patients', lazy=True))
-
     def is_department_head(self):
         return self.department_head
     

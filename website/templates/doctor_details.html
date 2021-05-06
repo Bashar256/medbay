@@ -12,7 +12,7 @@
                         <div class="form-group">
                             <form method='POST'>
                                 <label class="text-black font-w500">Appointment Date</label>
-                                <input type="date" name="appointment_date" class="form-control" min={{today}} max={{limit}}>
+                                <input type="date" name="appointment_date" class="form-control"id="appointment_date" onchange="calculateappointmenttime() ;" min={{today}} max={{limit}}>
                                 <label class="text-black font-w500">Appointment Time</label>
                                 {% set mx = shift.shift_end.strftime("%H:%M") %}
                                 {% set mn = shift.shift_start.strftime("%H:%M") %}
