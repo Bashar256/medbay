@@ -156,7 +156,8 @@ def edit_profile_view():
                     flash('Password must be at least 7 characters.', category='error')
                 user.password = generate_password_hash(password2, method="sha256")
                 count = count + 1
-            flash("Your must enter your old password correctly", category="error")
+            else:
+                flash("Your must enter your old password correctly", category="error")
 
         if count != 0:
             flash("Your Information was changed", category="update")

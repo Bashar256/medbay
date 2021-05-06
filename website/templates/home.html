@@ -1,27 +1,76 @@
 {% extends 'base.html' %}
 {% block title %}Home{% endblock %}
 {% block body %}
-    <div class="col-12">
+    <div class="row">
+        <div class="col-11">                 
+            <div class="card-body">
+                <p class="text-primary">
+                    <strong>Welcome to medbay!<br>
+                        Here we provide best care for our patients in all 10 hosptials we have.<br>
+                        <div class="col-lg-4 mb-3">
+                            <ul class="list-icons">
+                                <li><a href="javascript:void(0)"><span class="align-middle mr-2"><i class="fa fa-check text-info"></i></span> We take the best care to our  patients</a></li>
+                                <li><a href="javascript:void(0)"><span class="align-middle mr-2"><i class="fa fa-check text-info"></i></span>We provide an easy communication between the patient and our staff </a></li>
+                            </ul>
+                        </div>
+                    </strong>   
+                </p>
+            </div>
+        </div> 
+    </div> 
+    <div class="col-lg-11">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Our Hospitals</h4>
+            </div>
+            <div class="card-body pb-1">
+                <div id="lightgallery" class="row">
+                    <a href="{{ url_for('static', filename='images/3_Joseph-Brant-Hospital.png') }}" data-exthumbimage="images/big/img1.jpg" data-src="images/big/img1.jpg" class="col-lg-3 col-md-6 mb-4">
+                        <img src="{{ url_for('static', filename='images/3_Joseph-Brant-Hospital.png') }}"  style="width:100%;">
+                    </a>
+                    <a href="{{ url_for('static', filename='images/150420_7v8ix_rci-m-newvr_sn635.png') }}" data-exthumbimage="images/big/img2.jpg" data-src="images/big/img2.jpg" class="col-lg-3 col-md-6 mb-4">
+                        <img src="{{ url_for('static', filename='images/150420_7v8ix_rci-m-newvr_sn635.png') }}" style="width:100%;" />
+                    </a>
+                    <a href="{{ url_for('static', filename='images/180629-bbgi-680x435.png') }}" data-exthumbimage="images/big/img1.jpg" data-src="images/big/img1.jpg" class="col-lg-3 col-md-6 mb-4">
+                        <img src="{{ url_for('static', filename='images/180629-bbgi-680x435.png') }}"  style="width:100%;">
+                    </a>
+                    <a href="{{ url_for('static', filename='images/HospitalFeature35NW_Super_Portrait.png') }}" data-exthumbimage="images/big/img2.jpg" data-src="images/big/img2.jpg" class="col-lg-3 col-md-6 mb-4">
+                        <img src="{{ url_for('static', filename='images/HospitalFeature35NW_Super_Portrait.png') }}" style="width:100%;" />
+                    </a>
+                    <a href="{{ url_for('static', filename='images/img-top-hospitals.png') }}" data-exthumbimage="images/big/img1.jpg" data-src="images/big/img1.jpg" class="col-lg-3 col-md-6 mb-4">
+                        <img src="{{ url_for('static', filename='images/img-top-hospitals.png') }}"  style="width:100%;">
+                    </a>
+                    <a href="{{ url_for('static', filename='images/screen_shot_2020-01-07_at_10.29.08_am_p3426440.png') }}" data-exthumbimage="images/big/img2.jpg" data-src="images/big/img2.jpg" class="col-lg-3 col-md-6 mb-4">
+                        <img src="{{ url_for('static', filename='images/screen_shot_2020-01-07_at_10.29.08_am_p3426440.png') }}" style="width:100%;" />
+                    </a>
+                    <a href="{{ url_for('static', filename='images/toronto_general_hospital.png') }}" data-exthumbimage="images/big/img1.jpg" data-src="images/big/img1.jpg" class="col-lg-3 col-md-6 mb-4">
+                        <img src="{{ url_for('static', filename='images/toronto_general_hospital.png') }}"  style="width:100%;">
+                    </a>
+                    <a href="{{ url_for('static', filename='images/EUeoMPTXkAA36Yq.jpg') }}" data-exthumbimage="images/big/img2.jpg" data-src="images/big/img2.jpg" class="col-lg-3 col-md-6 mb-4">
+                        <img src="{{ url_for('static', filename='images/EUeoMPTXkAA36Yq.jpg') }}" style="width:100%;" />
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-11">
         <div class="card">
             <div class="card-header d-block">
                 <h4 class="card-title">Our services</h4>
-                
             </div>
             <div class="card-body">
-                <!-- Default accordion -->
                 <div id="accordion-one" class="accordion accordion-primary">
                     <div class="accordion__item">
-                        <div class="accordion__header collapsed rounded-lg" data-toggle="collapse" data-target="#default_collapseOne">
-                            <span class="accordion__header--text"> orthopaedics</span>
+                        <div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#default_collapseOne">
+                            <span class="accordion__header--text">orthopaedics</span>
                             <span class="accordion__header--indicator"></span>
                         </div>
-                        <div id="default_collapseOne" class="collapse accordion__body" data-parent="#accordion-one">
+                        <div id="default_collapseOne" class="collapse accordion__body show" data-parent="#accordion-one">
                             <div class="accordion__body--text">
                                 Section Of Orthopedics Is One Of The Most Distinguished Educational Sections In Our Hospitals. It Provides High-Quality Medical Care
                             </div>
                         </div>
                     </div>
-                    
                     <div class="accordion__item">
                         <div class="accordion__header collapsed rounded-lg" data-toggle="collapse" data-target="#default_collapseTwo">
                             <span class="accordion__header--text">Kidney disease</span>
@@ -35,74 +84,10 @@
                     </div>
                     <div class="accordion__item">
                         <div class="accordion__header collapsed rounded-lg" data-toggle="collapse" data-target="#default_collapseThree">
-                            <span class="accordion__header--text">gastroenterology and hepatology</span>
-                            <span class="accordion__header--indicator"></span>
-                        </div>
-                        <div id="default_collapseThree" class="collapse accordion__body" data-parent="#accordion-one">
-                            <div class="accordion__body--text">
-                                Our Hospitals have a distinguished Gastroenterology & Hepatology Section, which offers expert diagnosis and medical treatment for patients with disorders of the esophagus, liver, gallbladder, stomach, pancreas, small intestine and colon.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion__item">
-                        <div class="accordion__header collapsed rounded-lg" data-toggle="collapse" data-target="#default_collapseFour">
-                            <span class="accordion__header--text">hematology and oncology </span>
-                            <span class="accordion__header--indicator"></span>
-                        </div>
-                        <div id="default_collapseFour" class="collapse accordion__body" data-parent="#accordion-one">
-                            <div class="accordion__body--text">
-                                The Section Of Hematology & Medical Oncology in Our Hospitals Is Comprised Of Physicians, Nurses, Clinicians Pharmacists And Other Healthcare Professionals Specializing In The Diagnosis And Treatment Of Patients With Cancers Or Disorders</div>
-                        </div>
-                    </div>
-                    <div class="accordion__item">
-                        <div class="accordion__header collapsed rounded-lg" data-toggle="collapse" data-target="#default_collapseFive">
-                            <span class="accordion__header--text">obstetrics and gynecology</span>
-                            <span class="accordion__header--indicator"></span>
-                        </div>
-                        <div id="default_collapseFive" class="collapse accordion__body" data-parent="#accordion-one">
-                            <div class="accordion__body--text">
-                                Gynecology And Obstetrics Section Is Considered One Of The Leading Departments In Our Hospitals, Due To Its Exclusiveness That Makes It More Privileged Than The Other Medical Departments.</div>
-                        </div>
-                    </div>
-                    <div class="accordion__item">
-                        <div class="accordion__header collapsed rounded-lg" data-toggle="collapse" data-target="#default_collapseSix">
-                            <span class="accordion__header--text">neurological diseases</span>
-                            <span class="accordion__header--indicator"></span>
-                        </div>
-                        <div id="default_collapseSix" class="collapse accordion__body" data-parent="#accordion-one">
-                            <div class="accordion__body--text">
-                                The Section Of Neurology in Our Hospital Offers Comprehensive Medical Care For A Broad Spectrum Of Neurological Conditions.</div>
-                        </div>
-                    </div>
-                    <div class="accordion__item">
-                        <div class="accordion__header collapsed rounded-lg" data-toggle="collapse" data-target="#default_collapseSeven">
-                            <span class="accordion__header--text">ophthalmology</span>
-                            <span class="accordion__header--indicator"></span>
-                        </div>
-                        <div id="default_collapseSeven" class="collapse accordion__body" data-parent="#accordion-one">
-                            <div class="accordion__body--text">
-                                The Ophthalmology Unit In Our Hospitals Is Specialized In Treating All Ophthalmic Diseases That Can Be Treated Medically By A Constellation Of Consultant Doctors Who Specialize In The Treatment Of Various Ophthalmic Diseases.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion__item">
-                        <div class="accordion__header collapsed rounded-lg" data-toggle="collapse" data-target="#default_collapseEight">
-                            <span class="accordion__header--text">cardiovascular disease</span>
-                            <span class="accordion__header--indicator"></span>
-                        </div>
-                        <div id="default_collapseEight" class="collapse accordion__body" data-parent="#accordion-one">
-                            <div class="accordion__body--text">
-                                The Cardiology Center In Our Hospitals Is One Of The Leading Centers In Jordan And Middle East By Providing Comprehensive Health Care For Patients.</div>
-                        </div>
-                    </div>
-                    
-
-                    <div class="accordion__item">
-                        <div class="accordion__header collapsed rounded-lg" data-toggle="collapse" data-target="#default_collapseNine">
                             <span class="accordion__header--text">Others</span>
                             <span class="accordion__header--indicator"></span>
                         </div>
-                        <div id="default_collapseNine" class="collapse accordion__body" data-parent="#accordion-one">
+                        <div id="default_collapseThree" class="collapse accordion__body" data-parent="#accordion-one">
                             <div class="accordion__body--text">
                                 Other services that is included in our Hospitals:<br><br>
                                     -Infectious Diseases<br>
@@ -121,17 +106,16 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="col-12">
-        <div class="card text-white bg-primary">
-            <div class="card-header">
-                <h5 class="card-title text-white">Who are we!</h5>
+        </div>    
+        <div class="col-xl-9">
+            <div class="card text-white bg-primary">
+                <div class="card-header">
+                    <h5 class="card-title text-white">About Us!</h5>
+                </div>
+                <div class="card-body mb-0">
+                    <p class="card-text">Click on the button below to Know more About us.</p><a href="/about_us" class="btn bg-white text-secondary btn-card">Click me</a>
+                </div>
             </div>
-            <div class="card-body mb-0">
-                <p class="card-text">to know more About us click on the button below</p><a href="/about_us" class="btn bg-white text-primary btn-card">Click me</a>
-            </div>
-            
         </div>
     </div>
 {% endblock %}
