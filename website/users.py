@@ -16,9 +16,12 @@ today = datetime.datetime.today()
 login_manager = LoginManager()
 login_manager.login_view = "auth_view.login_view"
 login_manager.init_app(app=app)
+
+
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(int(id))
+
 
 @login_manager.request_loader
 def load_user_request(request):
@@ -90,6 +93,8 @@ def profile_view():
     elif current_user.is_admin():
         return render_template("profile.html",user=current_user, sidebar=ADMIN_SIDEBAR)
     abort(401)
+
+
 @user_view.route("/profile_phone")
 @login_required
 def profile_view_phone():
@@ -97,10 +102,12 @@ def profile_view_phone():
             if load_user_request(request):
                 if current_user.is_patient():
                     return jsonify({'firstname':current_user.first_name,'lastname':current_user.last_name,'age':current_user.age(),'phone':current_user.phone_no,'email':current_user.email})
+
+
 @user_view.route("/appointment_history")
 @login_required
 def appointment_history():
-    day=[],month=[],year=[]firstname=[],lastname=[],hospital=[],department=[],weekday=[],hour=[],minute=[]
+    day=[],month=[],year=[],firstname=[],lastname=[],hospital=[],department=[],weekday=[],hour=[],minute=[]
     
     if request.mimetype == 'application/json':
             if load_user_request(request):
@@ -108,6 +115,9 @@ def appointment_history():
                     information = patient_appointments(current_user.id) 
                     for appointment,hospital,department,usr,diagnoses,lab_results in information:
                         if appointment.appointment_date_time < today:
+                            pass
+
+
 #Edit_Profile View
 @user_view.route("/edit_profile", methods=["POST", "GET"])
 @login_required
@@ -282,6 +292,7 @@ def edit_profile_view_phone():
     # elif current_user.is_admin():
     #     return render_template("edit_profile.html",user=current_user, sidebar=ADMIN_SIDEBAR)    
         
+
 #Appointment_Booking View
 #Selecting Hospital
 @user_view.route("/book_appointment")
@@ -290,17 +301,21 @@ def book_appointment_view():
     if current_user.is_patient(): 
         hospitals = Hospital.query.all()
         departments = Department.query.all()
-        Hosp_name = []
-        Hosp_id=[]
 
         if request.mimetype == 'application/json':
             if load_user_request(request):
+                Hosp_name = []
+                Hosp_id=[]
                 for hospital in hospitals:
                     Hosp_name.append(str(hospital))
                     Hosp_id.append(hospital.id)
-                return jsonify({'name':Hosp_name,'id':Hosp_id}) 
+                return jsonify({'name':Hosp_name,'id':Hosp_id})
+            abort(401)
+             
         return render_template("book_appointment.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=PATIENT_SIDEBAR)
     abort(401)
+
+
 ##hello
 @user_view.route("/book_appointment_department")
 @login_required
@@ -326,6 +341,7 @@ def book_appointment_view_department():
 # for department in departments:
 #     dept_name.append(str(department)})
 #     dept_id.append(department.id)
+
 
 #Selecting Doctor
 @user_view.route("/book_appointment/<int:hospital_id>/<int:department_id>/doctors")
@@ -444,8 +460,6 @@ def edit_appointment(appointment_id):
     abort(401)
 
 
-
-
 #Doctor_Patients View 
 @user_view.route("/patients", methods=["GET", "POST"])
 @login_required
@@ -550,6 +564,7 @@ def download_view(filename):
     if os.path.isfile(filename):
         return send_file(get_path(filename), as_attachment=True)
     abort(404)
+
 
 #Patient_Profile View
 @user_view.route("/patient_details<int:patient_id>")
@@ -996,11 +1011,6 @@ def check_timeouts(patients_timeouts):
     time_outs = []
     for timeout in patients_timeouts:
         if timeout[2] < datetime.datetime.now():
-            # db.session.query(Patients).filter(Patients.c.patient_id==timeout[0], Patients.c.medical_staff_id==timeout[1], Patients.c.timeout==timeout[2]).delete()
-            # patient = Patient.query.filter_by(id=timeout[0]).first()
-            # if patient in current_user.patients:
-            #     current_user.patients.remove(patient)
-            # db.session.commit()
             time_outs.append(True)
         time_outs.append(False)
     return time_outs
@@ -1010,6 +1020,7 @@ def check_timeout(patient_timeout):
     if patient_timeout < datetime.datetime.now():
         return True
     return False
+
 
 def get_path(path):
     return path.replace("\\", "/")
