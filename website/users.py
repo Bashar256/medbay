@@ -90,8 +90,24 @@ def profile_view():
     elif current_user.is_admin():
         return render_template("profile.html",user=current_user, sidebar=ADMIN_SIDEBAR)
     abort(401)
-
-
+@user_view.route("/profile_phone")
+@login_required
+def profile_view_phone():
+    if request.mimetype == 'application/json':
+            if load_user_request(request):
+                if current_user.is_patient():
+                    return jsonify({'firstname':current_user.first_name,'lastname':current_user.last_name,'age':current_user.age(),'phone':current_user.phone_no,'email':current_user.email})
+@user_view.route("/appointment_history")
+@login_required
+def appointment_history():
+    day=[],month=[],year=[]firstname=[],lastname=[],hospital=[],department=[],weekday=[],hour=[],minute=[]
+    
+    if request.mimetype == 'application/json':
+            if load_user_request(request):
+                if current_user.is_patient():
+                    information = patient_appointments(current_user.id) 
+                    for appointment,hospital,department,usr,diagnoses,lab_results in information:
+                        if appointment.appointment_date_time < today:
 #Edit_Profile View
 @user_view.route("/edit_profile", methods=["POST", "GET"])
 @login_required
@@ -101,7 +117,7 @@ def edit_profile_view():
         email = request.form.get('email')
         first_name = request.form.get('firstname')
         last_name = request.form.get('lastname')
-        password1 = request.form.get('password1')
+        password1=request.form.get('password1')
         password2 = request.form.get('password2')
         password3 = request.form.get('password3')
         gender = request.form.get('gender')
@@ -178,7 +194,94 @@ def edit_profile_view():
     elif current_user.is_admin():
         return render_template("edit_profile.html",user=current_user, sidebar=ADMIN_SIDEBAR)    
         
+@user_view.route("/edit_profile_phone", methods=["POST", "GET"])
+@login_required
+def edit_profile_view_phone():
+    if request.method == 'POST':
+        if request.mimetype=='application/json':
+            data=request.json
+            email = data['email']
+            first_name = data['firstname']
+            last_name = data['lastname']
+            password1 = data['password1']
+            password2 = data['password2']
+            password3 = data['password3']
+            gender = data['gender']
+            phone_no = data['phone_no']
+            dob = data['dob']
 
+        count = 0
+        error = 0
+        user = User.query.filter_by(email=current_user.email).first()
+        if user.email != email:
+            old_user = User.query.filter_by(email=email).first()
+            if old_user:
+                return jsonify({'status':'Email already exists'})
+            else:
+                user.email = email
+                user.confirmed = False
+                user.confirmed_on = None
+                count = count + 1
+
+        if user.first_name != first_name:
+            if len(first_name) < 2:
+                return jsonify({'status':'First name must be greater than 1 character.'})
+            else:
+                user.first_name = first_name
+                count = count + 1
+
+        if user.last_name != last_name:
+            if len(last_name) < 2:
+                return jsonify({'status':'Last name must be greater than 1 character.'})
+            else:
+                user.last_name = last_name
+                count = count + 1
+
+        if user.date_of_birth != dob:
+            user.date_of_birth = dob
+            count = count + 1
+        
+        if user.gender != gender:
+            user.gender = gender
+            count = count + 1
+        
+        if user.phone_no != phone_no:
+            if len(phone_no) != 13:
+                return jsonify({'status':'Enter a correct phone number format'})
+            else:
+                user.phone_no = phone_no
+                count = count + 1
+
+        if password1:
+            if check_password_hash(user.password, password1):
+                if password2 != password3:
+                    return jsonify({'status':'Passwords don\'t match.'})
+                elif len(password2) < 7:
+                    return jsonify({'status':'Password must be at least 7 characters.'})
+                user.password = generate_password_hash(password2, method="sha256")
+                count = count + 1
+            else:
+                return jsonify({'status':'Your must enter your old password correctly'})
+
+        if count != 0:
+            db.session.commit()
+            return jsonify({'status':'Your Information was changed'})
+
+        #return jsonify({'status':status})
+
+    # elif current_user.is_patient():
+    #     return render_template("edit_profile.html",user=current_user, sidebar=PATIENT_SIDEBAR)
+
+    # elif current_user.is_medical_staff():
+    #     if not current_user.is_department_head():
+    #         return render_template("edit_profile.html",user=current_user, sidebar=MEDICAL_STAFF_SIDEBAR)
+    #     return render_template("edit_profile.html",user=current_user, sidebar=DEPARTMENT_HEAD_SIDEBAR)
+    # elif current_user.is_management_staff():
+    #     return render_template("edit_profile.html",user=current_user, sidebar=MANAGEMENT_STAFF_SIDEBAR)
+        
+    # elif current_user.is_admin():
+    #     return render_template("edit_profile.html",user=current_user, sidebar=ADMIN_SIDEBAR)    
+        
 #Appointment_Booking View
 #Selecting Hospital
 @user_view.route("/book_appointment")
