@@ -107,7 +107,15 @@ def profile_view_phone():
 @user_view.route("/appointment_history")
 @login_required
 def appointment_history():
-    day=[],month=[],year=[],firstname=[],lastname=[],hospital_name=[],department_name=[],hour=[],minute=[]
+    day=[]
+    month=[]
+    year=[]
+    firstname=[]
+    lastname=[]
+    hospital_name=[]
+    department_name=[]
+    hour=[]
+    minute=[]
     
     if request.mimetype == 'application/json':
             if load_user_request(request):
