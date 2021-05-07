@@ -101,8 +101,11 @@ def profile_view_phone():
     if request.mimetype == 'application/json':
             if load_user_request(request):
                 if current_user.is_patient():
+                    print('Is Patient')
                     return jsonify({'firstname':current_user.first_name,'lastname':current_user.last_name,'age':current_user.age(),'phone':current_user.phone_no,'email':current_user.email})
-
+                elif current_user.is_medical_staff():
+                    print('Is medical staff')
+                    pass
 
 @user_view.route("/appointment_history")
 @login_required
