@@ -105,7 +105,8 @@ def profile_view_phone():
                     return jsonify({'firstname':current_user.first_name,'lastname':current_user.last_name,'age':current_user.age(),'phone':current_user.phone_no,'email':current_user.email})
                 elif current_user.is_medical_staff():
                     print('Is medical staff')
-                    pass
+                    return jsonify({'firstname':current_user.first_name,'lastname':current_user.last_name,'age':current_user.age(),'phone':current_user.phone_no,'email':current_user.email})
+                    
 
 @user_view.route("/appointment_history")
 @login_required
