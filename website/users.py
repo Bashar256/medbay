@@ -696,18 +696,34 @@ def patients_view_phone():
             return redirect(url_for("user_view.patients_view"))
         if (request.method=='GET'):
             if(request.mimetype == 'application/json'):
+                firstname=[]
+                lastname=[]
+                last=[]
+                is_admitted=[]
+                is_timedout=[]
+                age=[]
+                phone=[]
+                email=[]
                 patients_timeouts = db.session.query(Patients).filter_by(medical_staff_id=current_user.id).all()
                 timed_out = check_timeouts(patients_timeouts)
                 doctors_patients = current_user.patients
                 for patient in doctors_patients:
-                    if(patient.bed== None):
-                        print("not admitted")
+                    firstname.append(patient.first_name)
+                    lastname.append(patient.lastname)
+                    is_timedout.append(timed_out)
+                    age.append(patient.age())
+                    phone.append(patient.phone_no)
+                    email.append(patient.email)
+                    if patient.bed:
+                        is_admitted.append('Discharge')
                     else:
-                        print('admitted')
+                        is_admitted.append('Admit')
                     if patient.last_visit(current_user.id) is None:
-                        print("No previous appointment")
+                        last.append("No Previous Appointments")
+                    else :
+                        last.append(patient.last_visit(current_user.id))
                 print('return')
-                return jsonify({'1':1})
+                return jsonify({'firstname':firstname,'lastname':lastname,'last':last,'IsAdmitted':is_admitted,'IsTimedOut':is_timedout,'age':age,'phone':phone,'email':email})
     
         # appointments = []
         # for patient in doctors_patients:
