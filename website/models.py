@@ -1,7 +1,7 @@
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from datetime import datetime, timedelta
 from flask_login import UserMixin
-from website import db, app, UPLOAD_DIRECTORY, WEEKEND, APPOINTMENT_TIME
+from website import db, app, UPLOAD_DIRECTORY, WEEKEND, APPOINTMENT_TIME,APPOINTMENT_TIMEOUT
 from time import time
 import math
 import os
@@ -304,7 +304,7 @@ class Management_Staff(User):
 Patients = db.Table('patients',
     db.Column('patient_id', db.Integer, db.ForeignKey('patient.id')),
     db.Column('medical_staff_id', db.Integer, db.ForeignKey('medical_staff.id')),
-    db.Column('timeout', db.DateTime(timezone=True), nullable=False, default=datetime.today() + timedelta(days=7))
+    db.Column('timeout', db.DateTime(timezone=True), nullable=False, default=datetime.today() + timedelta(days=APPOINTMENT_TIMEOUT))
 )    
 
 

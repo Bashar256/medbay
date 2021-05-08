@@ -1,8 +1,8 @@
+from website import db, app, UPLOAD_FOLDER, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, APPOINTMENT_TIMEOUT, MAX_APPOINTMENT_DATE, WEEKEND
 from website.models import  Hospital, Department, Appointment, Management_Staff, Medical_Staff, Patient, Patients, Diagnosis, User, Lab_Result, Room, Bed, Appointment_Times, Time_Slot
-from website import db, app, UPLOAD_FOLDER, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, APPOINTMENT_TIMEOUT, WEEKEND
 from flask import Blueprint, Flask, render_template, url_for, redirect, request, flash, abort, Response, send_from_directory, send_file, jsonify, json
-from website.validate import validate_staff_register
 from werkzeug.security import generate_password_hash, check_password_hash
+from website.validate import validate_staff_register
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager
@@ -425,7 +425,7 @@ def doctor_details_view(hospital_id, department_id, staff_id,role="md"):
             return redirect(url_for("user_view.doctor_details_view", hospital_id=hospital_id, department_id=department_id, staff_id=staff_id, role=role))
         medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
         appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
-        return render_template("staff_details.html", user=current_user, max_appointment_date=today + datetime.timedelta(days=30), today=today, staff=medical_staff, appointment_time=appointment_time, sidebar=PATIENT_SIDEBAR)
+        return render_template("staff_details.html", user=current_user, max_appointment_date=today + datetime.timedelta(days=MAX_APPOINTMENT_DATE), today=today, staff=medical_staff, appointment_time=appointment_time, sidebar=PATIENT_SIDEBAR)
     abort(401)
 
 
@@ -527,7 +527,7 @@ def my_appointments_view():
             return redirect(url_for("user_view.my_appointments_view"))
 
         information = patient_appointments(current_user.id)
-        return render_template("my_appointments.html", user=current_user, information=information, today=today, max_appointment_date=today + datetime.timedelta(days=30), sidebar=PATIENT_SIDEBAR)
+        return render_template("my_appointments.html", user=current_user, information=information, today=today, max_appointment_date=today + datetime.timedelta(days=MAX_APPOINTMENT_DATE), sidebar=PATIENT_SIDEBAR)
 
     if current_user.is_medical_staff():
         information = medical_staff_appointments(current_user.id)
