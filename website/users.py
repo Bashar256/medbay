@@ -180,7 +180,7 @@ def appointment_upcoming():
                             lastname.append(usr.last_name)
                             hospital_name.append(hospital.name)
                             department_name.append(department.name)
-                            hour.append(str(appointment.appointment_date_time.hour))
+                            hour.append(appointment.appointment_date_time.hour)
                             minute.append(str(appointment.appointment_date_time.minute))
                             weekday.append(wdays[appointment.appointment_date_time.weekday()])
                     if day:
