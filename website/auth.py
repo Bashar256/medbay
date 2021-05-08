@@ -63,7 +63,7 @@ def register_view():
             new_patient.create_patient_file()
             db.session.add(new_patient)
             db.session.commit()
-            login_user(new_patient, remember=True)
+            login_user(new_patient, remember=True, duration=SESSION_TIMEOUT)
             confirm_email(new_patient)
             flash('Account created successfully !', category='register')
             return redirect(url_for('user_view.home_view'))

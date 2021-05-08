@@ -6,12 +6,12 @@ from flask import Flask
 import os
 
 DB_NAME = "database.db"
-BAD_LOGINS_LIMIT = 5
+BAD_LOGINS_LIMIT = 5 #Allowed Login Attempts
 WEEKEND = [4] #Friday
 APPOINTMENT_TIMEOUT = 7 #Days
 MAX_APPOINTMENT_DATE = 30 #Days
-APPOINTMENT_TIME = 30
-SESSION_TIMEOUT = timedelta(minutes=15)
+APPOINTMENT_TIME = 30 #Minutes
+SESSION_TIMEOUT = timedelta(minutes=30)
 
 PATIENT_SIDEBAR = {'My Appointments':'calendar-1','Lab Results':'notepad-2','diagnoses':'heart'}
 MEDICAL_STAFF_SIDEBAR = {'My Appointments':'television', 'Patients':'heart', 'Shifts':'pad', 'Rooms':'reading'}
@@ -31,8 +31,8 @@ app = Flask(__name__, static_folder='static')
 app.secret_key = '0930444342a12c461c38d7c0837e39eff978504b64b1d765'
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['TESTING'] = False
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['TESTING'] = False
 db = SQLAlchemy(app=app)
 db.init_app(app)
 

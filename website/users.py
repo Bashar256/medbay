@@ -1,6 +1,6 @@
-from website import db, app, UPLOAD_FOLDER, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, APPOINTMENT_TIMEOUT, MAX_APPOINTMENT_DATE, WEEKEND
+from website import db, app, UPLOAD_FOLDER, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, APPOINTMENT_TIMEOUT, MAX_APPOINTMENT_DATE, SESSION_TIMEOUT, WEEKEND
 from website.models import  Hospital, Department, Appointment, Management_Staff, Medical_Staff, Patient, Patients, Diagnosis, User, Lab_Result, Room, Bed, Appointment_Times, Time_Slot
-from flask import Blueprint, Flask, render_template, url_for, redirect, request, flash, abort, Response, send_from_directory, send_file, jsonify, json
+from flask import Blueprint, render_template, url_for, redirect, request, flash, abort, session, send_file, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from website.validate import validate_staff_register
 from flask_login import login_required, current_user
@@ -15,6 +15,9 @@ today = datetime.datetime.today()
 
 login_manager = LoginManager()
 login_manager.login_view = "auth_view.login_view"
+login_manager.refresh_view = "auth_view.login_view"
+login_manager.needs_refresh_message = "Session Timedout. Please Login Again"
+login_manager.needs_refresh_message_category = "info"
 login_manager.init_app(app=app)
 
 
@@ -40,6 +43,11 @@ def load_user_request(request):
     # finally, return None if both methods did not login the user
     return None
 
+
+@user_view.before_request
+def before_request():
+    session.permanent = True
+    app.permanent_session_lifetime = SESSION_TIMEOUT
 
 #Home View
 @user_view.route("/")
