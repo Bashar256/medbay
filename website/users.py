@@ -695,10 +695,13 @@ def patients_view_phone():
             flash("no such form", category="error")
             return redirect(url_for("user_view.patients_view"))
         if (request.method=='GET'):
-            doctors_patients = current_user.patients
-            for patient in doctors_patients:
-                print(patient.firstname)
-                print(patient.lastname)
+            if(request.mimetype == 'application/json'):
+                doctors_patients = current_user.patients
+                for patient in doctors_patients:
+                    print(patient.firstname)
+                    print(patient.lastname)
+
+                return jsonify({'1':1})
         # patients_timeouts = db.session.query(Patients).filter_by(medical_staff_id=current_user.id).all()
         # timed_out = check_timeouts(patients_timeouts)
         # doctors_patients = current_user.patients
