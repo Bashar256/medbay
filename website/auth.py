@@ -27,8 +27,6 @@ def login_view():
             user.last_login_attempt = datetime.datetime.now()
             user.bad_logins = 0
             db.session.commit()
-            user.create_patient_file()
-            db.session.commit()
             if request.mimetype=='application/json':
                 return jsonify({'status':'Login Successful!'})
             return redirect(url_for('user_view.home_view'))
@@ -62,7 +60,7 @@ def register_view():
         #     return jsonify({'status':status})
         new_patient = validate_patient_register(request) 
         if new_patient:
-            #new_patient.create_patient_file()
+            new_patient.create_patient_file()
             db.session.add(new_patient)
             db.session.commit()
             login_user(new_patient, remember=True)
@@ -70,7 +68,7 @@ def register_view():
             flash('Account created successfully !', category='register')
             return redirect(url_for('user_view.home_view'))
         return render_template("register.html")
-    create_stuff()
+    #create_stuff()
     return render_template("register.html")
 
 @auth_view.route("/register_phone", methods=["POST", "GET"])
