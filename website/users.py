@@ -696,17 +696,18 @@ def patients_view_phone():
             return redirect(url_for("user_view.patients_view"))
         if (request.method=='GET'):
             if(request.mimetype == 'application/json'):
-                print('in 1')
+                patients_timeouts = db.session.query(Patients).filter_by(medical_staff_id=current_user.id).all()
+                timed_out = check_timeouts(patients_timeouts)
                 doctors_patients = current_user.patients
                 for patient in doctors_patients:
+                    print(timed_out)
                     if patient.last_visit(current_user.id) is None:
                         print("No previous appointment")
-                        print(patient.first_name)
                 print('return')
                 return jsonify({'1':1})
-        # patients_timeouts = db.session.query(Patients).filter_by(medical_staff_id=current_user.id).all()
-        # timed_out = check_timeouts(patients_timeouts)
-        # doctors_patients = current_user.patients
+        patients_timeouts = db.session.query(Patients).filter_by(medical_staff_id=current_user.id).all()
+        timed_out = check_timeouts(patients_timeouts)
+        doctors_patients = current_user.patients
         # appointments = []
         # for patient in doctors_patients:
         #     appointments.append(patient.last_visit(current_user.id))
