@@ -705,6 +705,8 @@ def patients_view_phone():
                 phone=[]
                 email=[]
                 patients_timeouts = db.session.query(Patients).filter_by(medical_staff_id=current_user.id).all()
+                print('1')
+                print(patients_timeouts)
                 timed_out = check_timeouts(patients_timeouts)
                 doctors_patients = current_user.patients
                 for patient in doctors_patients:
