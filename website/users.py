@@ -663,7 +663,7 @@ def patients_view_phone():
             if(request.mimetype == 'application/json'):
                 data=request.json
                 form_no = data['form']
-                if form_no == "1":
+                if form_no == 1:
                     print('form=1')
                     patient_name = data['name']
                     print('0')
@@ -683,19 +683,19 @@ def patients_view_phone():
                             
                         return jsonify({'status':'No free beds were found.'})
 
+                    return jsonify({'status':'No such patient.'})
+                elif form_no == 2:
+                    print('form=2')
+                    patient_name = data['name']
+                    patient = Patient.query.filter_by(first_name=patient_name).first()
+                    if patient:
+                        bed = Bed.query.filter_by(id=patient.bed).first()
+                        if bed:
+                            bed.release_bed()
+                            patient.bed = None
+                            db.session.commit()
+                            return jsonify({'status':'Patient Discharged'})               
                 return jsonify({'status':'No such patient.'})
-            elif form_no == "2":
-                print('form=2')
-                patient_name = data['name']
-                patient = Patient.query.filter_by(first_name=patient_name).first()
-                if patient:
-                    bed = Bed.query.filter_by(id=patient.bed).first()
-                    if bed:
-                        bed.release_bed()
-                        patient.bed = None
-                        db.session.commit()
-                        return jsonify({'status':'Patient Discharged'})               
-            return jsonify({'status':'No such patient.'})
 
         if (request.method=='GET'):
             if(request.mimetype == 'application/json'):
