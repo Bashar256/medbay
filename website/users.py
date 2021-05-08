@@ -1,7 +1,7 @@
-from website.models import  Hospital, Department, Appointment, Shift, Management_Staff, Medical_Staff, Patient, Patients, Diagnosis, User, Lab_Result, Schedule, Schedules, Room, Bed
-from website import db, app, UPLOAD_FOLDER, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR
+from website.models import  Hospital, Department, Appointment, Management_Staff, Medical_Staff, Patient, Patients, Diagnosis, User, Lab_Result, Room, Bed, Appointment_Times, Time_Slot
+from website import db, app, UPLOAD_FOLDER, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, WEEKEND
 from flask import Blueprint, Flask, render_template, url_for, redirect, request, flash, abort, Response, send_from_directory, send_file, jsonify, json
-from website.validate import validate_staff_register, validate_shift_assignment, create_schedule, change_doctor_schedule, create_shift
+from website.validate import validate_staff_register
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
@@ -379,68 +379,149 @@ def choose_medical_staff_view(hospital_id,department_id):
 def doctor_details_view(hospital_id, department_id, staff_id,role="md"):  
     if current_user.is_patient():
         if request.method == 'POST':
-            date = request.form.get('appointment_date')
-            time = request.form.get('appointment_time')
-            date = date.split('-')
-            time = time.split(':')
+            appointment_date = request.form.get('appointment_date')
+            time_slot_id = request.form.get('appointment_time')
+            medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
+            appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
+            time_slot = db.session.query(Time_Slot).filter_by(id=int(time_slot_id)).first()
+            if (not time_slot) or time_slot[-1]:
+                flash("Please select one of the provided time slots", category='error')
+                return redirect(url_for("user_view.doctor_details_view", hospital_id=hospital_id, department_id=department_id, staff_id=staff_id, role=role))
 
-            appointment_date = datetime.datetime(int(date[0]), int(date[1]), int(date[2]), int(time[0]), int(time[1]))
+
+            appointment_date = html_date_to_python_date(appointment_date)
+            appointment_date_time = datetime.datetime.combine(appointment_date,time_slot[2])
             department = Department.query.filter_by(id=department_id).first()
             hospital = Hospital.query.filter_by(id=hospital_id).first()
-
-            appointment = Appointment.query.filter(Appointment.appointment_date_time==appointment_date, Appointment.medical_staff==staff_id, Appointment.patient==current_user.id).all()
+            appointment = Appointment.query.filter(Appointment.appointment_date_time==appointment_date_time, Appointment.medical_staff==staff_id, Appointment.patient==current_user.id).all()
+            
             if appointment:
                 flash("The doctor has an appointment at that time", category='warning')
-                return redirect(url_for("user_view.doctor_details_view"))
+                return redirect(url_for("user_view.doctor_details_view", hospital_id=hospital_id, department_id=department_id, staff_id=staff_id, role=role))
 
-            appointment = Appointment.query.filter(Appointment.appointment_date_time==appointment_date, Appointment.patient==current_user.id).all()
+            appointment = Appointment.query.filter(Appointment.appointment_date_time==appointment_date_time, Appointment.patient==current_user.id).all()
             if appointment:
                 flash("You have an appointment at that time", category='warning')
-                return redirect(url_for("user_view.doctor_details_view"))
+                return redirect(url_for("user_view.doctor_details_view", hospital_id=hospital_id, department_id=department_id, staff_id=staff_id, role=role))
 
-
-            new_appointment = Appointment(appointment_date_time=appointment_date, hospital=hospital_id, department=department_id, medical_staff=staff_id, patient=current_user.id)
+            new_appointment = Appointment(appointment_date_time=appointment_date_time, hospital=hospital_id, department=department_id, medical_staff=staff_id, patient=current_user.id)
             medical_staff.patients.append(current_user)
             if db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==staff_id).all():
                 db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==staff_id).delete()
-            db.session.execute(Patients.insert(), params={"patient_id":current_user.id, "medical_staff_id":staff_id, "timeout":appointment_date + datetime.timedelta(days=7) })
+            db.session.execute(Patients.insert(), params={"patient_id":current_user.id, "medical_staff_id":staff_id, "timeout":appointment_date_time + datetime.timedelta(days=7) })            
+            temp_slot = time_slot
+            db.session.query(Time_Slot).filter_by(id=time_slot[0]).delete()       
             db.session.add(new_appointment)
-            db.session.commit()  
+            db.session.commit()
+            db.session.execute(Time_Slot.insert(), params={"id": temp_slot[0], "appointment_time_id":temp_slot[1], "start":temp_slot[2], "end":temp_slot[3], "date":temp_slot[4], "appointment_id":new_appointment.id, "taken":True})
+            db.session.commit()
             flash('Appointment created!', category='success')  
                    
         medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
-        schedule = Schedule.query.filter_by(id=medical_staff.schedule).first()
-        schedule_shifts = db.session.query(Schedules).filter_by(schedule_id=schedule.id).all()
-        shifts = []
-        for shift_id in schedule_shifts:
-            shift = Shift.query.filter_by(id=shift_id[1]).first()
-            if shift not in shifts:
-                shifts.append(shift) 
-        closest_appointment = today + datetime.timedelta(days=1)
-        appointment_limit = today + datetime.timedelta(days=30)
-        return render_template("staff_details.html", user=current_user, today=today, closest_appointment=closest_appointment, appointment_limit=appointment_limit, shifts=shifts_objs, staff=medical_staff, sidebar=PATIENT_SIDEBAR)
+        return render_template("staff_details.html", user=current_user, max_appointment_date=today + datetime.timedelta(days=30), today=today, staff=medical_staff, sidebar=PATIENT_SIDEBAR)
 
     abort(401)
 
 
-#My_Appointments View
+
+#Change Appointment_Times View
+@user_view.route("/appointment_time_select")
+@login_required
+def appointment_time_select_View():
+    medical_staff_id = request.args.get('medical_staff_id')
+    appointment_date = request.args.get('appointment_date')
+    print(appointment_date)
+    appointment_date = html_date_to_python_date(appointment_date)
+    data = [{"id": -1}]
+
+    if appointment_date.weekday() in WEEKEND:
+        return jsonify(data)
+    
+    time_slots = db.session.query(Time_Slot).filter_by(date=appointment_date.date()).all()
+    if time_slots:
+        available_times = []
+        for slot in time_slots:
+            if slot[-1] == False:
+                if slot not in available_times:
+                    available_times.append(slot)
+        
+        data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in available_times]
+        return jsonify(data)
+
+    doctor = Medical_Staff.query.filter_by(id=medical_staff_id).first()
+    appointment_times = Appointment_Times.query.filter_by(id=doctor.appointment_times).first()
+    appointment_times.create_slots(date=appointment_date)
+    time_slots = db.session.query(Time_Slot).filter_by(date=appointment_date.date()).all()
+    data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in time_slots]
+    return jsonify(data)  
+
+
+#My_Appointments(View/Edit/Delete)  View
 @user_view.route("/my_appointments", methods=["POST", "GET"])
 @login_required
 def my_appointments_view():
     if current_user.is_patient():
         if request.method == "POST":
+            form_no = request.form.get('form_no')
             appointment_id = request.form.get('appointment_id')
+            appointment_date = request.form.get('appointment_date')
+            time_slot_id = request.form.get('appointment_time')
             appointment = Appointment.query.filter_by(id=appointment_id).first()
             if appointment:
-                flash("Appointment Deleted!", category='update')
-                db.session.delete(appointment)
-                db.session.commit()
+                if current_user.id == appointment.patient:
+                    if form_no == "1":
+                        if db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff).first():
+                            db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff).delete()
+                        time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
+                        print(appointment_id)
+                        print(time_slot)
+                        temp_slot = time_slot
+                        db.session.query(Time_Slot).filter_by(id=time_slot[0]).delete()       
+                        db.session.execute(Time_Slot.insert(), params={"id": temp_slot[0], "appointment_time_id":temp_slot[1], "start":temp_slot[2], "end":temp_slot[3], "date":temp_slot[4], "taken":False})          
+                        db.session.delete(appointment)
+                        db.session.commit()
+                        flash("Appointment Deleted!", category='update')
+                        return redirect(url_for("user_view.my_appointments_view"))
+                    
+                    elif form_no =="2":
+                        medical_staff = Medical_Staff.query.filter_by(id=appointment.medical_staff).first()
+                        appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
+                        time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
+                        free_appointment_time = db.session.query(Time_Slot).filter_by(id=time_slot_id).first()
+                        if (not free_appointment_time) or free_appointment_time[-1]:
+                            flash("Please select one of the provided time slots", category='error')
+                            return redirect(url_for("user_view.my_appointments_view"))
+                        
+                        appointment_date = html_date_to_python_date(appointment_date)
+                        appointment_date_time = datetime.datetime.combine(appointment_date,time_slot[2])
+                        appointment.appointment_date_time = appointment_date_time
+
+                        temp_slot = time_slot
+                        db.session.query(Time_Slot).filter_by(id=time_slot[0]).delete()       
+                        db.session.execute(Time_Slot.insert(), params={"id": temp_slot[0], "appointment_time_id":temp_slot[1], "start":temp_slot[2], "end":temp_slot[3], "date":temp_slot[4], "taken":False})
+
+                        free_temp_slot = free_appointment_time
+                        db.session.query(Time_Slot).filter_by(id=free_appointment_time[0]).delete()       
+                        db.session.execute(Time_Slot.insert(), params={"id": free_temp_slot[0], "appointment_time_id":free_temp_slot[1], "start":free_temp_slot[2], "end":free_temp_slot[3], "date":free_temp_slot[4], "appointment_id":appointment_id, "taken":True})                           
+
+                        db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff).delete()
+                        db.session.execute(Patients.insert(), params={"patient_id":current_user.id, "medical_staff_id":medical_staff.id, "timeout":appointment_date_time + datetime.timedelta(days=7) })              
+                        
+                        db.session.commit()             
+                        flash("Appointment Changed!", category='update')
+                        return redirect(url_for("user_view.my_appointments_view"))
+
+                    flash("Please submit a correct form", category='error')
+                    return redirect(url_for("user_view.my_appointments_view"))
+
+                flash("You can only modify your appointments", category='error')
                 return redirect(url_for("user_view.my_appointments_view"))
 
             flash("Appointment Does not exist", category='error')
             return redirect(url_for("user_view.my_appointments_view"))
+
         information = patient_appointments(current_user.id)
-        return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=PATIENT_SIDEBAR)
+        return render_template("my_appointments.html", user=current_user, information=information, today=today, max_appointment_date=today + datetime.timedelta(days=30), sidebar=PATIENT_SIDEBAR)
 
     if current_user.is_medical_staff():
         information = medical_staff_appointments(current_user.id)
@@ -448,35 +529,6 @@ def my_appointments_view():
             return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=MEDICAL_STAFF_SIDEBAR)
         return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=DEPARTMENT_HEAD_SIDEBAR)
     
-    abort(401)
-
-
-#Edit_Appointment View
-@user_view.route("/edit_appointment/<int:appoinment_id>", methods=["POST", "GET"])
-@login_required
-def edit_appointment(appointment_id):
-    if current_user.is_patient():
-        if request.method == "POST":
-            date = request.form.get('appointment_date')
-            time = request.form.get('appointment_time')
-            date = date.split('-')
-            time = time.split(':')
-            appointment_date_time = datetime.datetime(int(date[0]), int(date[1]), int(date[2]), int(time[0]), int(time[1]))
-            appointment = Appointment.query.filter_by(id=appointment_id).first()
-
-            if appointment:
-                flash("Appointment Changed", category='update')
-                appointment.appointment_date_time = appointment_date_time
-                db.session.query()
-                db.session.commit()
-                return redirect(url_for("user_view.my_appointments_view"))
-    
-            flash("Appointment Does not exist", category='error')
-            return redirect(url_for("user_view.my_appointments_view"))
-        information = patient_appointments(current_user.id)
-        shifts = Shift.query.all()
-        return render_template("edit_appointment.html", user=current_user, information=information, shifts=shifts, today=today, sidebar=PATIENT_SIDEBAR)
-
     abort(401)
 
 
@@ -580,6 +632,7 @@ def upload_file_view():
 
 #File_Download View
 @user_view.route('/download/<path:filename>', methods=['GET', 'POST'])
+@login_required
 def download_view(filename):
     if os.path.isfile(filename):
         return send_file(get_path(filename), as_attachment=True)
@@ -728,24 +781,22 @@ def departments_view():
 @login_required
 def staff_view():
     if current_user.is_medical_staff() and current_user.is_department_head():
-        schedules = Schedule.query.filter_by(hospital=current_user.hospital).all()
         medical_staff = Medical_Staff.query.filter_by(department=current_user.department).all()
         management_staff = Management_Staff.query.all()
         department = Department.query.filter_by(id=current_user.department).first()
         hospital = Hospital.query.filter_by(id=current_user.hospital).first()
-        return render_template("staff.html", user=current_user, hospital=hospital, schedules=schedules, doctors=medical_staff, departments=department, management_staff=management_staff, sidebar=DEPARTMENT_HEAD_SIDEBAR)
+        return render_template("staff.html", user=current_user, hospital=hospital, doctors=medical_staff, departments=department, management_staff=management_staff, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     elif current_user.is_management_staff():
         if request.method == 'POST':
             if validate_staff_register(request):
                 flash("Staff Added Successfully", category="success")
             return redirect(url_for("user_view.staff_view"))
-        schedules = Schedule.query.filter_by(hospital=current_user.hospital).all()
         medical_staff = Medical_Staff.query.all()
         management_staff = Management_Staff.query.all()
         departments = Department.query.filter_by(hospital=current_user.hospital).all()
         hospital = Hospital.query.filter_by(id=current_user.hospital).first()
-        return render_template("staff.html", user=current_user, hospital=hospital, schedules=schedules, doctors=medical_staff, departments=departments, management_staff=management_staff, sidebar=MANAGEMENT_STAFF_SIDEBAR)
+        return render_template("staff.html", user=current_user, hospital=hospital, doctors=medical_staff, departments=departments, management_staff=management_staff, sidebar=MANAGEMENT_STAFF_SIDEBAR)
 
     elif current_user.is_admin():
         if request.method == 'POST':
@@ -763,10 +814,7 @@ def staff_view():
 @user_view.route("/staff/staff_details_<int:staff_id><string:role>")
 @login_required
 def staff_details_view(staff_id,role):
-    if current_user.is_patient():
-        return redirect(url_for("user_view.doctor_details"))
-
-    elif current_user.is_medical_staff() and current_user.is_department_head():
+    if current_user.is_medical_staff() and current_user.is_department_head():
         information = medical_staff_appointments(staff_id)
         return render_template("staff_details.html",user=current_user, information=information, shift=shift, staff=staff, sidebar=MEDICAL_STAFF_SIDEBAR)
 
@@ -776,10 +824,8 @@ def staff_details_view(staff_id,role):
             return render_template("staff_details.html", user=current_user, staff=staff, sidebar=MANAGEMENT_STAFF_SIDEBAR)
         staff = Medical_Staff.query.filter_by(id=staff_id).first()
         if staff:
-            closest_appointment = today + datetime.timedelta(days=1)
-            appointment_limit = today + datetime.timedelta(days=30)
             information = medical_staff_appointments(staff_id)
-            return render_template("staff_details.html", user=current_user, information=information, closest_appointment=json.dumps(closest_appointment.strftime("%Y-%m-%d")),  appointment_limit=json.dumps(appointment_limit.strftime("%Y-%m-%d")), staff=staff, today=today, sidebar=MANAGEMENT_STAFF_SIDEBAR)
+            return render_template("staff_details.html", user=current_user, information=information, staff=staff,  today=today, sidebar=MANAGEMENT_STAFF_SIDEBAR)
         
     elif current_user.is_admin():
         staff = User.query.filter(User.id==staff_id,  User.role==current_user.role).first()
@@ -851,84 +897,6 @@ def rooms_view():
         hospitals = Hospital.query.all()
         return render_template("rooms.html",user=current_user, hospitals=hospitals, rooms=rooms, beds=beds, sidebar=ADMIN_SIDEBAR)
 
-    abort(401)
-
-
-#Shifts View
-@user_view.route("/shifts", methods=['GET', 'POST'])
-@login_required
-def shifts_view():
-    if current_user.is_medical_staff():
-        if not current_user.is_department_head():
-            doctor_schedule = Schedule.query.filter_by(id=current_user.schedule).first()
-            doctors = doctor_schedule.medical_staff
-            for doctor in Medical_Staff.query.filter_by(department=current_user.department).all():
-                if doctor not in doctors: 
-                    doctors.append(doctor)
-            
-            schedules_types = []
-            for doctor in doctors:
-                schedules_types.append(doctor.schedule)
-
-            doctors_schedules = []
-            for schedule_type in schedules_types:
-                doctor_schedule = []
-                shifts = db.session.query(Schedules).filter_by(schedule_id=schedule_type).all()
-                for shift in shifts:
-                    doctor_schedule.append(Shift.query.filter_by(id=shift[1]).first()) 
-                doctors_schedules.append(doctor_schedule)
-            
-            all_shifts = Shift.query.filter_by(hospital=current_user.hospital).all()
-            return render_template("shifts.html", user=current_user, all_shifts=all_shifts, doctors_schedules=zip(doctors, doctors_schedules), sidebar=MEDICAL_STAFF_SIDEBAR)
-        
-        if request.method == 'POST':
-            if form_no == "4":
-                change_doctor_schedule(request)
-
-        all_schedules = Schedule.query.filter_by(hospital=current_user.hospital).all()
-        doctors = Medical_Staff.query.filter_by(department=current_user.department).all()
-        schedules = []
-
-        for doctor in doctors:
-            doctor_shift = []
-            for shift in db.session.query(Schedules).filter_by(schedule_id=doctor.schedule).all():
-                doctor_shift.append(Shift.query.filter_by(id=shift[1]).first())
-            schedules.append(doctor_shift)
-
-        all_shifts = Shift.query.filter_by(hospital=current_user.hospital).all()
-        return render_template("shifts.html", user=current_user, all_schedules=all_schedules, all_shifts=all_shifts, doctors_schedules=zip(doctors, schedules), sidebar=DEPARTMENT_HEAD_SIDEBAR)
-    
-    elif current_user.is_management_staff():
-        if request.method == 'POST':
-            form_no = request.form.get("form_no")
-            if form_no == "1":
-                create_schedule(request)
-                return redirect(url_for("user_view.shifts_view"))
-
-            elif form_no == "2":
-                create_shift(request)
-                return redirect(url_for("user_view.shifts_view"))
-
-            elif form_no == "3":
-                validate_shift_assignment(request)
-                return redirect(url_for("user_view.shifts_view"))
-
-            elif form_no == "4":
-                change_doctor_schedule(request)
-                return redirect(url_for("user_view.shifts_view"))
-
-        all_schedules = Schedule.query.filter_by(hospital=current_user.hospital).all()
-        doctors = Medical_Staff.query.filter_by(hospital=current_user.hospital).all()
-        schedules = []
-
-        for doctor in doctors:
-            doctor_shift = []
-            for shift in db.session.query(Schedules).filter_by(schedule_id=doctor.schedule).all():
-                doctor_shift.append(Shift.query.filter_by(id=shift[1]).first())
-            schedules.append(doctor_shift)
-
-        all_shifts = Shift.query.filter_by(hospital=current_user.hospital).all() 
-        return render_template("shifts.html", user=current_user, all_schedules=all_schedules, all_shifts=all_shifts, doctors_schedules=zip(doctors, schedules), sidebar=MANAGEMENT_STAFF_SIDEBAR)
     abort(401)
 
 
@@ -1028,6 +996,13 @@ def patient_diagnoses(patient_id):
             medical_staff_objs.append(Medical_Staff.query.filter_by(id=user_id[1]).first())
     return zip(diagnoses,medical_staff_objs)
 
+
+def html_date_to_python_date(date, time=None):
+    date = date.split('-')
+    if time:
+        time = time.split(':')
+        return datetime.datetime(int(date[0]), int(date[1]), int(date[2]), int(time[0]), int(time[1]))
+    return datetime.datetime(int(date[0]), int(date[1]), int(date[2])) 
 
 def check_timeouts(patients_timeouts):
     time_outs = []

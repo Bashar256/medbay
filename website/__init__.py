@@ -7,7 +7,9 @@ import os
 
 DB_NAME = "database.db"
 BAD_LOGINS_LIMIT = 5
+WEEKEND = [4] #Friday
 SESSION_TIMEOUT = timedelta(minutes=15)
+APPOINTMENT_TIME = 30
 
 PATIENT_SIDEBAR = {'My Appointments':'calendar-1','Lab Results':'notepad-2','diagnoses':'heart'}
 MEDICAL_STAFF_SIDEBAR = {'My Appointments':'television', 'Patients':'heart', 'Shifts':'pad', 'Rooms':'reading'}

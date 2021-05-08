@@ -1,4 +1,3 @@
-from website.models import User, Patient, Management_Staff, Medical_Staff, Hospital, Department, Shift, Appointment,Patients
 from flask import Blueprint, Flask, redirect, url_for, render_template, request, flash, session, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,6 +5,7 @@ from website.validate import validate_patient_register, validate_login
 from website.temp_create_objects import create_stuff
 from website import db, mail, app, SESSION_TIMEOUT
 from website.users import load_user_request
+from website.models import User, Patient
 from flask_login import LoginManager
 from flask_mail import Message
 from threading import Thread
@@ -26,6 +26,8 @@ def login_view():
             user.last_login = datetime.datetime.now()
             user.last_login_attempt = datetime.datetime.now()
             user.bad_logins = 0
+            db.session.commit()
+            user.create_patient_file()
             db.session.commit()
             if request.mimetype=='application/json':
                 return jsonify({'status':'Login Successful!'})
@@ -68,7 +70,7 @@ def register_view():
             flash('Account created successfully !', category='register')
             return redirect(url_for('user_view.home_view'))
         return render_template("register.html")
-    #create_stuff()
+    create_stuff()
     return render_template("register.html")
 
 @auth_view.route("/register_phone", methods=["POST", "GET"])

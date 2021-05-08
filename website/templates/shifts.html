@@ -1,39 +1,16 @@
 {% extends 'base.html' %}
 {% block title %}Shifts{% endblock %}
 {% block body %}
-    {% set days = ("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday") %}
+{% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
     {% if user.is_management_staff() or (user.is_medical_staff() and user.is_department_head()): %}
         <div class="row page-titles mx-0">
             <div class="col-sm-6 p-md-0">
                 <div class="welcome-text">
-                    <button type="submit" class="btn btn-danger" data-toggle="modal" data-target="#makeschedule">Make Schedule</button>
                     <button type="submit" class="btn btn-danger" data-toggle="modal" data-target="#makeshift">Make Shift</button>
                     <button type="submit" class="btn btn-danger" data-toggle="modal" data-target="#assignshifts">Assign Shifts</button>
                 </div>
             </div>
         </div>
-        <div class="modal fade bd-example-modal-lg" id="makeschedule">
-            <div class="modal-dialog" role="document">
-                <form method='POST'>
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Schedule</h5>
-                        </div>
-                        <div class="modal-body">
-                            <div class="form-group">
-                                <label class="mb-1"><strong>Schedule Letter</strong></label>
-                                <input type="hidden" name="form_no" value="1"></input>
-                                <input type="text" name="schedule_name" placeholder="Ex:A,B,..." maxlength=1></input>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Create</button>
-                            <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div> 
         <div class="modal fade bd-example-modal-lg" id="makeshift">
             <div class="modal-dialog" role="document">
                 <form method='POST'>
@@ -73,27 +50,31 @@
                         </div>
                         <div class="modal-body">
                             <div class="form-group">
-                                <label class="mb-1"><strong>Schedule</strong></label>
+                                <label class="mb-1"><strong>Doctor</strong></label>
                                 <input type="hidden" name="form_no" value="3"></input>
-                                <select name='schedule' class="form-control ">
-                                    {% for schedule in all_schedules|sort: %}
-                                        <option value="{{schedule.id}}">{{schedule.name}}</option>
+                                <select name="doctor_id" class="form-control">
+                                    {% for doctor in doctors: %}
+                                        <option value="{{doctor.id}}">{{doctor.first_name + " " + doctor.last_name}}</option>
                                     {% endfor %}
                                 </select>
                             </div>
-                            {% for i in range(5): %}
-                                <div class="form-group">
-                                    <label class="mb-1"><strong>{{days[i]}}</strong></label>
-                                    <select name="shift{{loop.index}}" id="shift" class="form-control">
-                                        {% for shift in all_shifts: %}
-                                            <option value="{{shift.id}}">{{shift.name}}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
+                            {% for i in range(7): %}
+                                    <div class="form-group">
+                                        <label class="mb-1"><strong>{{days[i]}}</strong></label>
+                                        <select name="shift{{loop.index}}" class="form-control">
+                                            {% for shift in all_shifts: %}
+                                                <option value="{{shift.id}}">{{shift.name}}</option>
+                                            {% endfor %}
+                                            <option value"None">None</option>
+                                        </select>
+                                    </div>
                             {% endfor %}
                         </div>
+                        <div class="alert alert-warning">
+                            <strong>Warning!</strong> This will assign appointment times for this doctor for the next 4 weeks.
+                        </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Create</button>
+                            <button type="submit" class="btn btn-primary">Assign</button>
                             <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
                         </div>
                     </div>
@@ -116,12 +97,9 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    {% for i in range(days|length - 2): %}
-                                        <th class="text-center text-dark">{{days[i]}}</th>
+                                    {% for date,day in dates_days: %}
+                                        <th class="text-center text-dark">{{date}}<br>{{days[day]}}</th>
                                     {% endfor %}
-                                    {% if user.is_management_staff(): %}
-                                        <th class="text-center text-dark">Shift Schedule</th>
-                                    {% endif %}
                                 </tr>
                             </thead>
                             <tbody>
@@ -130,31 +108,16 @@
                                         <tr>
                                             <th class="text-nowrap text-dark" scope="row">Dr.{{ doctor.first_name + " " + doctor.last_name }}</th>
                                             {% for shift in schedule: %}
-                                                <td class="text-center text-dark">{{shift.name}}</td>
+                                                <td class="text-center text-dark">&nbsp;&nbsp;&nbsp;&nbsp;{{shift.name}}&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                             {% endfor %}
-                                            <td>
-                                                <form method="POST">
-                                                    <input type="hidden" name="form_no" value="4"></input>
-                                                    <input type="hidden" name="doctor_id" value={{doctor.id}}></input>                                
-                                                    <select name="schedule_id" class="form-control" onchange="this.form.submit();">
-                                                        {% for schedule in all_schedules|sort: %}
-                                                            {% if schedule.id == doctor.schedule: %}
-                                                            <option selected="selected" value="{{schedule.id}}">{{schedule.name}}</option>
-                                                            {% else: %}
-                                                            <option value="{{schedule.id}}">{{schedule.name}}</option>
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                    </select>
-                                                </form>
-                                            </td>
                                         </tr>
                                     {% endfor %}
                                 {% elif user.is_medical_staff(): %}
-                                    {% for (doctor,schedule) in doctors_schedules: %}
+                                    {% for doctor in doctors: %}
                                         <tr>
                                             <th class="text-nowrap text-dark" scope="row">Dr.{{ doctor.first_name + " " + doctor.last_name }}</th>
-                                            {% for shift in schedule: %}
-                                                <td class="text-center text-dark">{{shift.name}}</td>
+                                            {% for shift in shifts: %}
+                                                <td class="text-center text-dark">&nbsp;&nbsp;&nbsp;&nbsp;{{shift.name}}&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                             {% endfor %}
                                         </tr>
                                     {% endfor %}
