@@ -660,27 +660,28 @@ def patients_view():
 def patients_view_phone():
     if current_user.is_medical_staff():
         if request.method == 'POST':
-            data=request.json
-            form_no = data['form']
-            if form_no == "1":
-                print('form=1')
-                patient_name = data['name']
-                print('0')
-                print(patient_name)
-                print('1')
-                patient = Patient.query.filter_by(first_name=patient_name).first()
-                if patient:           
-                    rooms = Room.query.filter_by(department=current_user.department).all()
-                    for room in rooms:
-                        if not room.is_full():
-                            for bed in room.beds:
-                                if not bed.occupied:
-                                    bed.occupy_bed(patient)
-                                    patient.bed = bed.id
-                                    db.session.commit()
-                                    return jsonify({'status':'Patient Admitted'})
-                        
-                    return jsonify({'status':'No free beds were found.'})
+            if(request.mimetype == 'application/json'):
+                data=request.json
+                form_no = data['form']
+                if form_no == "1":
+                    print('form=1')
+                    patient_name = data['name']
+                    print('0')
+                    print(patient_name)
+                    print('1')
+                    patient = Patient.query.filter_by(first_name=patient_name).first()
+                    if patient:           
+                        rooms = Room.query.filter_by(department=current_user.department).all()
+                        for room in rooms:
+                            if not room.is_full():
+                                for bed in room.beds:
+                                    if not bed.occupied:
+                                        bed.occupy_bed(patient)
+                                        patient.bed = bed.id
+                                        db.session.commit()
+                                        return jsonify({'status':'Patient Admitted'})
+                            
+                        return jsonify({'status':'No free beds were found.'})
 
                 return jsonify({'status':'No such patient.'})
             elif form_no == "2":
