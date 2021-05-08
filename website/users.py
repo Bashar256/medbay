@@ -709,7 +709,7 @@ def patients_view_phone():
                 doctors_patients = current_user.patients
                 for patient in doctors_patients:
                     firstname.append(patient.first_name)
-                    lastname.append(patient.lastname)
+                    lastname.append(patient.last_name)
                     is_timedout.append(timed_out)
                     age.append(patient.age())
                     phone.append(patient.phone_no)
