@@ -689,7 +689,7 @@ def patients_view_phone():
                         patient.bed = None
                         db.session.commit()
                         return jsonify({'status':'Patient Discharged'})               
-            return jsonify({'status':'No such patient.'}))
+            return jsonify({'status':'No such patient.'})
 
         if (request.method=='GET'):
             if(request.mimetype == 'application/json'):
