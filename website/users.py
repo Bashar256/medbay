@@ -660,10 +660,11 @@ def patients_view():
 def patients_view_phone():
     if current_user.is_medical_staff():
         if request.method == 'POST':
-            form_no = request.form.get("form_no")
+            data=request.json
+            form_no = data['form']
             if form_no == "1":
-                patient_id = request.form.get("patient_id")
-                patient = Patient.query.filter_by(id=patient_id).first()
+                patient_name = data['name']
+                patient = Patient.query.filter_by(first_name=patient_name).first()
                 if patient:           
                     rooms = Room.query.filter_by(department=current_user.department).all()
                     for room in rooms:
@@ -673,27 +674,23 @@ def patients_view_phone():
                                     bed.occupy_bed(patient)
                                     patient.bed = bed.id
                                     db.session.commit()
-                                    flash("Patient admitted", category="success")
-                                    return redirect(url_for("user_view.patients_view"))
+                                    return jsonify({'status':'Patient Admitted'})
                         
-                    flash("No free beds were found", category="error")
-                    return redirect(url_for("user_view.patients_view"))
+                    return jsonify({'status':'No free beds were found.'})
 
-                flash("No such patient", category="error")
-                return redirect(url_for("user_view.patients_view"))
+                return jsonify({'status':'No such patient.'})
             elif form_no == "2":
-                patient_id = request.form.get("patient_id")
-                patient = Patient.query.filter_by(id=patient_id).first()
+                patient_name = data['name']
+                patient = Patient.query.filter_by(first_name=patient_name).first()
                 if patient:
                     bed = Bed.query.filter_by(id=patient.bed).first()
                     if bed:
                         bed.release_bed()
                         patient.bed = None
                         db.session.commit()
-                        flash("Patient disscharged", category="success")
-                        return redirect(url_for("user_view.patients_view"))               
-            flash("no such form", category="error")
-            return redirect(url_for("user_view.patients_view"))
+                        return jsonify({'status':'Patient Discharged'})               
+            return jsonify({'status':'No such patient.'}))
+
         if (request.method=='GET'):
             if(request.mimetype == 'application/json'):
                 firstname=[]
