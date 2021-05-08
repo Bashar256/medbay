@@ -146,7 +146,7 @@ def appointment_history():
                             hospital_name.append(hospital.name)
                             department_name.append(department.name)
                             hour.append(appointment.appointment_date_time.hour)
-                            minute.append(appointment.appointment_date_time.minute)
+                            minute.append(str(appointment.appointment_date_time.minute))
                             weekday.append(wdays[appointment.appointment_date_time.weekday()])
                     if day:
                         return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
@@ -180,7 +180,7 @@ def appointment_upcoming():
                             lastname.append(usr.last_name)
                             hospital_name.append(hospital.name)
                             department_name.append(department.name)
-                            hour.append(appointment.appointment_date_time.hour)
+                            hour.append(str(appointment.appointment_date_time.hour))
                             minute.append(str(appointment.appointment_date_time.minute))
                             weekday.append(wdays[appointment.appointment_date_time.weekday()])
                     if day:
