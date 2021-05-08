@@ -1,5 +1,5 @@
 from website.models import  Hospital, Department, Appointment, Management_Staff, Medical_Staff, Patient, Patients, Diagnosis, User, Lab_Result, Room, Bed, Appointment_Times, Time_Slot
-from website import db, app, UPLOAD_FOLDER, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, WEEKEND
+from website import db, app, UPLOAD_FOLDER, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, APPOINTMENT_TIMEOUT, WEEKEND
 from flask import Blueprint, Flask, render_template, url_for, redirect, request, flash, abort, Response, send_from_directory, send_file, jsonify, json
 from website.validate import validate_staff_register
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -383,48 +383,49 @@ def choose_medical_staff_view(hospital_id,department_id):
 def doctor_details_view(hospital_id, department_id, staff_id,role="md"):  
     if current_user.is_patient():
         if request.method == 'POST':
-            appointment_date = request.form.get('appointment_date')
-            time_slot_id = request.form.get('appointment_time')
-            medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
-            appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
-            time_slot = db.session.query(Time_Slot).filter_by(id=int(time_slot_id)).first()
-            if (not time_slot) or time_slot[-1]:
-                flash("Please select one of the provided time slots", category='error')
+            if current_user.confirmed:
+                appointment_date = request.form.get('appointment_date')
+                time_slot_id = request.form.get('appointment_time')
+                medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
+                appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
+                time_slot = db.session.query(Time_Slot).filter_by(id=int(time_slot_id)).first()
+                if (not time_slot) or time_slot[-1]:
+                    flash("Please select one of the provided time slots", category='error')
+                    return redirect(url_for("user_view.doctor_details_view", hospital_id=hospital_id, department_id=department_id, staff_id=staff_id, role=role))
+
+
+                appointment_date = html_date_to_python_date(appointment_date)
+                appointment_date_time = datetime.datetime.combine(appointment_date,time_slot[2])
+                department = Department.query.filter_by(id=department_id).first()
+                hospital = Hospital.query.filter_by(id=hospital_id).first()
+                appointment = Appointment.query.filter(Appointment.appointment_date_time==appointment_date_time, Appointment.medical_staff==staff_id, Appointment.patient==current_user.id).all()
+                
+                if appointment:
+                    flash("The doctor has an appointment at that time", category='warning')
+                    return redirect(url_for("user_view.doctor_details_view", hospital_id=hospital_id, department_id=department_id, staff_id=staff_id, role=role))
+
+                appointment = Appointment.query.filter(Appointment.appointment_date_time==appointment_date_time, Appointment.patient==current_user.id).all()
+                if appointment:
+                    flash("You have an appointment at that time", category='warning')
+                    return redirect(url_for("user_view.doctor_details_view", hospital_id=hospital_id, department_id=department_id, staff_id=staff_id, role=role))
+
+                new_appointment = Appointment(appointment_date_time=appointment_date_time, hospital=hospital_id, department=department_id, medical_staff=staff_id, patient=current_user.id)
+                medical_staff.patients.append(current_user)
+                db.session.execute(Patients.insert(), params={"patient_id":current_user.id, "medical_staff_id":staff_id, "timeout":appointment_date_time + datetime.timedelta(days=APPOINTMENT_TIMEOUT) })            
+                temp_slot = time_slot
+                db.session.query(Time_Slot).filter_by(id=time_slot[0]).delete()
+                db.session.add(new_appointment)
+                db.session.commit()
+                db.session.execute(Time_Slot.insert(), params={"id": temp_slot[0], "appointment_time_id":temp_slot[1], "start":temp_slot[2], "end":temp_slot[3], "date":temp_slot[4], "appointment_id":new_appointment.id, "taken":True})
+                db.session.commit()
+                flash('Appointment created!', category='success')  
                 return redirect(url_for("user_view.doctor_details_view", hospital_id=hospital_id, department_id=department_id, staff_id=staff_id, role=role))
-
-
-            appointment_date = html_date_to_python_date(appointment_date)
-            appointment_date_time = datetime.datetime.combine(appointment_date,time_slot[2])
-            department = Department.query.filter_by(id=department_id).first()
-            hospital = Hospital.query.filter_by(id=hospital_id).first()
-            appointment = Appointment.query.filter(Appointment.appointment_date_time==appointment_date_time, Appointment.medical_staff==staff_id, Appointment.patient==current_user.id).all()
-            
-            if appointment:
-                flash("The doctor has an appointment at that time", category='warning')
-                return redirect(url_for("user_view.doctor_details_view", hospital_id=hospital_id, department_id=department_id, staff_id=staff_id, role=role))
-
-            appointment = Appointment.query.filter(Appointment.appointment_date_time==appointment_date_time, Appointment.patient==current_user.id).all()
-            if appointment:
-                flash("You have an appointment at that time", category='warning')
-                return redirect(url_for("user_view.doctor_details_view", hospital_id=hospital_id, department_id=department_id, staff_id=staff_id, role=role))
-
-            new_appointment = Appointment(appointment_date_time=appointment_date_time, hospital=hospital_id, department=department_id, medical_staff=staff_id, patient=current_user.id)
-            medical_staff.patients.append(current_user)
-            if db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==staff_id).all():
-                db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==staff_id).delete()
-            db.session.execute(Patients.insert(), params={"patient_id":current_user.id, "medical_staff_id":staff_id, "timeout":appointment_date_time + datetime.timedelta(days=7) })            
-            temp_slot = time_slot
-            db.session.query(Time_Slot).filter_by(id=time_slot[0]).delete()       
-            db.session.add(new_appointment)
-            db.session.commit()
-            db.session.execute(Time_Slot.insert(), params={"id": temp_slot[0], "appointment_time_id":temp_slot[1], "start":temp_slot[2], "end":temp_slot[3], "date":temp_slot[4], "appointment_id":new_appointment.id, "taken":True})
-            db.session.commit()
-            flash('Appointment created!', category='success')  
-                   
+                 
+            flash("Please confirm your email to make an appointment", category="warning")
+            return redirect(url_for("user_view.doctor_details_view", hospital_id=hospital_id, department_id=department_id, staff_id=staff_id, role=role))
         medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
         appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
         return render_template("staff_details.html", user=current_user, max_appointment_date=today + datetime.timedelta(days=30), today=today, staff=medical_staff, appointment_time=appointment_time, sidebar=PATIENT_SIDEBAR)
-
     abort(401)
 
 
@@ -435,7 +436,6 @@ def doctor_details_view(hospital_id, department_id, staff_id,role="md"):
 def appointment_time_select_View():
     medical_staff_id = request.args.get('medical_staff_id')
     appointment_date = request.args.get('appointment_date')
-    print(appointment_date)
     appointment_date = html_date_to_python_date(appointment_date)
     data = [{"id": -1}]
 
@@ -475,13 +475,12 @@ def my_appointments_view():
             if appointment:
                 if current_user.id == appointment.patient:
                     if form_no == "1":
-                        if db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff).first():
-                            db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff).delete()
+                        db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff, Patients.c.timeout==(appointment.appointment_date_time + datetime.timedelta(days=APPOINTMENT_TIMEOUT))).delete()
                         time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
                         print(appointment_id)
                         print(time_slot)
                         temp_slot = time_slot
-                        db.session.query(Time_Slot).filter_by(id=time_slot[0]).delete()       
+                        db.session.query(Time_Slot).filter_by(id=time_slot[0]).delete()      
                         db.session.execute(Time_Slot.insert(), params={"id": temp_slot[0], "appointment_time_id":temp_slot[1], "start":temp_slot[2], "end":temp_slot[3], "date":temp_slot[4], "taken":False})          
                         db.session.delete(appointment)
                         db.session.commit()
@@ -490,27 +489,29 @@ def my_appointments_view():
                     
                     elif form_no =="2":
                         medical_staff = Medical_Staff.query.filter_by(id=appointment.medical_staff).first()
+                        print(medical_staff.appointments)
                         appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
                         time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
                         free_appointment_time = db.session.query(Time_Slot).filter_by(id=time_slot_id).first()
+                        print(db.session.query(Time_Slot).filter_by(id=time_slot_id).first())
                         if (not free_appointment_time) or free_appointment_time[-1]:
                             flash("Please select one of the provided time slots", category='error')
                             return redirect(url_for("user_view.my_appointments_view"))
                         
                         appointment_date = html_date_to_python_date(appointment_date)
-                        appointment_date_time = datetime.datetime.combine(appointment_date,time_slot[2])
+                        appointment_date_time = datetime.datetime.combine(appointment_date,free_appointment_time[2])
                         appointment.appointment_date_time = appointment_date_time
 
                         temp_slot = time_slot
-                        db.session.query(Time_Slot).filter_by(id=time_slot[0]).delete()       
+                        db.session.query(Time_Slot).filter_by(id=time_slot[0]).delete()
                         db.session.execute(Time_Slot.insert(), params={"id": temp_slot[0], "appointment_time_id":temp_slot[1], "start":temp_slot[2], "end":temp_slot[3], "date":temp_slot[4], "taken":False})
 
                         free_temp_slot = free_appointment_time
-                        db.session.query(Time_Slot).filter_by(id=free_appointment_time[0]).delete()       
+                        db.session.query(Time_Slot).filter_by(id=free_appointment_time[0]).delete()
                         db.session.execute(Time_Slot.insert(), params={"id": free_temp_slot[0], "appointment_time_id":free_temp_slot[1], "start":free_temp_slot[2], "end":free_temp_slot[3], "date":free_temp_slot[4], "appointment_id":appointment_id, "taken":True})                           
 
-                        db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff).delete()
-                        db.session.execute(Patients.insert(), params={"patient_id":current_user.id, "medical_staff_id":medical_staff.id, "timeout":appointment_date_time + datetime.timedelta(days=7) })              
+                        db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff, Patients.c.timeout==(appointment.appointment_date_time + datetime.timedelta(days=APPOINTMENT_TIMEOUT))).delete()                        
+                        db.session.execute(Patients.insert(), params={"patient_id":current_user.id, "medical_staff_id":medical_staff.id, "timeout":appointment_date_time + datetime.timedelta(days=APPOINTMENT_TIMEOUT) })              
                         
                         db.session.commit()             
                         flash("Appointment Changed!", category='update')
@@ -796,7 +797,6 @@ def staff_view():
     elif current_user.is_management_staff():
         if request.method == 'POST':
             form_no = request.form.get("form_no")
-            print(form_no)
             if form_no =="1":
                 if validate_staff_register(request):
                     flash("Staff Added Successfully", category="success")
@@ -804,8 +804,9 @@ def staff_view():
             elif form_no == "2":
                 staff_id = request.form.get("user_id")
                 staff = Medical_Staff.query.filter(Medical_Staff.id==staff_id, Medical_Staff.hospital==current_user.hospital).first()
-                print(staff_id)
                 if staff:
+                    doctors_patients = db.session.query(Patients).filter_by(medical_staff_id=staff.id).all()
+                    db.session.delete(doctors_patients)
                     db.session.delete(staff)
                     db.session.commit()
                     flash("Doctor deleteed !", category="update")
@@ -841,10 +842,8 @@ def staff_view():
                 staff = User.query.filter_by(id=staff_id).first()
                 if staff:
                     if staff.is_medical_staff():
-                        db.session.delete(Appointment.query.filter_by(medical_staff=staff.id).all())
-                        appointment_times = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
-                        appointment_times.medical_staff.remove(medical_staff)
-                        db.session.query(Patients).filter_by(medical_staff_id=medical_staff.id).delete()
+                        doctors_patients = db.session.query(Patients).filter_by(medical_staff_id=medical_staff.id).all()
+                        db.session.delete(doctors_patients)
                     db.session.delete(staff)
                     db.session.commit()
                     flash("User deleteed!", category="update")
@@ -1036,7 +1035,7 @@ def patient_lab_results(patient_id):
 
 
 def medical_staffs_patient(medical_staff_id, patient_id):
-    patient_id = db.session.query(Patients).filter(medical_staff_id==medical_staff_id, patient_id==patient_id).first()
+    patient_id = db.session.query(Patients).filter(Patients.c.medical_staff_id==medical_staff_id, Patients.c.patient_id==patient_id).first()
     patient_obj = Patient.query.filter_by(id=patient_id[0]).first()
     return patient_obj
 
