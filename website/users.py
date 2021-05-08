@@ -129,7 +129,7 @@ def appointment_history():
     hour=[]
     minute=[]
     weekday=[]
-     wdays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] 
+    wdays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] 
     
     if request.mimetype == 'application/json':
             if load_user_request(request):
@@ -164,7 +164,7 @@ def appointment_upcoming():
     hour=[]
     minute=[]
     weekday=[]
-     wdays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] 
+    wdays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] 
     
     if request.mimetype == 'application/json':
             if load_user_request(request):
