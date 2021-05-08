@@ -664,6 +664,7 @@ def patients_view_phone():
             form_no = data['form']
             if form_no == "1":
                 patient_name = data['name']
+                print(patient_name)
                 patient = Patient.query.filter_by(first_name=patient_name).first()
                 if patient:           
                     rooms = Room.query.filter_by(department=current_user.department).all()
