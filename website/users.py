@@ -429,7 +429,7 @@ def choose_medical_staff_view(hospital_id,department_id):
 def doctor_details_view(hospital_id, department_id, staff_id,role="md"):  
     if current_user.is_patient():
         if request.method == 'POST':
-            if current_user.confirmed:
+            if not current_user.confirmed:
                 appointment_date = request.form.get('appointment_date')
                 time_slot_id = request.form.get('appointment_time')
                 medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
