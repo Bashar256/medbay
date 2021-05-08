@@ -129,7 +129,7 @@ def appointment_history():
     hour=[]
     minute=[]
     weekday=[]
-    set wdays = ("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday") 
+     wdays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] 
     
     if request.mimetype == 'application/json':
             if load_user_request(request):
@@ -147,7 +147,7 @@ def appointment_history():
                             department_name.append(department.name)
                             hour.append(appointment.appointment_date_time.hour)
                             minute.append(appointment.appointment_date_time.minute)
-                            weekday.append(days[appointment.appointment_date_time.weekday()])
+                            weekday.append(wdays[appointment.appointment_date_time.weekday()])
                     if day:
                         return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
 
@@ -164,7 +164,7 @@ def appointment_upcoming():
     hour=[]
     minute=[]
     weekday=[]
-    set wdays = ("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday") 
+     wdays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] 
     
     if request.mimetype == 'application/json':
             if load_user_request(request):
@@ -182,7 +182,7 @@ def appointment_upcoming():
                             department_name.append(department.name)
                             hour.append(appointment.appointment_date_time.hour)
                             minute.append(appointment.appointment_date_time.minute)
-                            weekday.append(days[appointment.appointment_date_time.weekday()])
+                            weekday.append(wdays[appointment.appointment_date_time.weekday()])
                     if day:
                         return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
 
