@@ -699,7 +699,7 @@ def patients_view_phone():
                 print('in 1')
                 doctors_patients = current_user.patients
                 for patient in doctors_patients:
-                    if patient.last_visit(current_user.id) is none:
+                    if patient.last_visit(current_user.id) is None:
                         print("No previous appointment")
                         print(patient.first_name)
                 print('return')
