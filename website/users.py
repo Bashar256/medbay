@@ -128,6 +128,8 @@ def appointment_history():
     department_name=[]
     hour=[]
     minute=[]
+    weekday=[]
+    set wdays = ("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday") 
     
     if request.mimetype == 'application/json':
             if load_user_request(request):
@@ -145,8 +147,44 @@ def appointment_history():
                             department_name.append(department.name)
                             hour.append(appointment.appointment_date_time.hour)
                             minute.append(appointment.appointment_date_time.minute)
+                            weekday.append(days[appointment.appointment_date_time.weekday()])
                     if day:
-                        return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute})
+                        return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
+
+@user_view.route("/appointment_upcoming")
+@login_required
+def appointment_upcoming():
+    day=[]
+    month=[]
+    year=[]
+    firstname=[]
+    lastname=[]
+    hospital_name=[]
+    department_name=[]
+    hour=[]
+    minute=[]
+    weekday=[]
+    set wdays = ("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday") 
+    
+    if request.mimetype == 'application/json':
+            if load_user_request(request):
+            if current_user.is_medical_staff():
+                information = medical_staff_appointments(current_user.id)
+                    for appointment,hospital,department,usr,diagnoses,lab_results in information:
+                        if appointment.appointment_date_time > today:
+                            print("We IN")
+                            day.append(appointment.appointment_date_time.day)
+                            month.append(appointment.appointment_date_time.month)
+                            year.append(appointment.appointment_date_time.year)
+                            firstname.append(usr.first_name)
+                            lastname.append(usr.last_name)
+                            hospital_name.append(hospital.name)
+                            department_name.append(department.name)
+                            hour.append(appointment.appointment_date_time.hour)
+                            minute.append(appointment.appointment_date_time.minute)
+                            weekday.append(days[appointment.appointment_date_time.weekday()])
+                    if day:
+                        return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
 
 
 
