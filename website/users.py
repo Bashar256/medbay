@@ -699,9 +699,9 @@ def patients_view_phone():
                 print('in 1')
                 doctors_patients = current_user.patients
                 for patient in doctors_patients:
-                    print('in 2')
-                    print(patient.first_name)
-                    print(patient.last_name)
+                    if patient.last_visit(current_user.id) is none:
+                        print("No previous appointment")
+                        print(patient.first_name)
                 print('return')
                 return jsonify({'1':1})
         # patients_timeouts = db.session.query(Patients).filter_by(medical_staff_id=current_user.id).all()
