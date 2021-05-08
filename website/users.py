@@ -700,8 +700,8 @@ def patients_view_phone():
                 doctors_patients = current_user.patients
                 for patient in doctors_patients:
                     print('in 2')
-                    print(patient.firstname)
-                    print(patient.lastname)
+                    print(patient.first_name)
+                    print(patient.last_name)
                 print('return')
                 return jsonify({'1':1})
         # patients_timeouts = db.session.query(Patients).filter_by(medical_staff_id=current_user.id).all()
