@@ -46,7 +46,7 @@
     <div class="row">
         <div class="col-xl-12">
             <div id="accordion-one" class="accordion doctor-list">
-                {% if user.is_management_staff(): %}
+                {% if user.is_management_staff(): or user.is_medical_staff() %}
                     <div class="accordion__item">
                         <div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#hospital_collapse{{my_hospital.id}}">
                             <span class="form-group">{{my_hospital.name}}</span>
