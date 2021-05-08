@@ -696,11 +696,13 @@ def patients_view_phone():
             return redirect(url_for("user_view.patients_view"))
         if (request.method=='GET'):
             if(request.mimetype == 'application/json'):
+                print('in 1')
                 doctors_patients = current_user.patients
                 for patient in doctors_patients:
+                    print('in 2')
                     print(patient.firstname)
                     print(patient.lastname)
-
+                print('return')
                 return jsonify({'1':1})
         # patients_timeouts = db.session.query(Patients).filter_by(medical_staff_id=current_user.id).all()
         # timed_out = check_timeouts(patients_timeouts)
