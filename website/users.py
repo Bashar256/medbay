@@ -655,6 +655,63 @@ def patients_view():
 
     abort(401)
 
+@user_view.route("/patients_phone", methods=["GET", "POST"])
+@login_required
+def patients_view_phone():
+    if current_user.is_medical_staff():
+        if request.method == 'POST':
+            form_no = request.form.get("form_no")
+            if form_no == "1":
+                patient_id = request.form.get("patient_id")
+                patient = Patient.query.filter_by(id=patient_id).first()
+                if patient:           
+                    rooms = Room.query.filter_by(department=current_user.department).all()
+                    for room in rooms:
+                        if not room.is_full():
+                            for bed in room.beds:
+                                if not bed.occupied:
+                                    bed.occupy_bed(patient)
+                                    patient.bed = bed.id
+                                    db.session.commit()
+                                    flash("Patient admitted", category="success")
+                                    return redirect(url_for("user_view.patients_view"))
+                        
+                    flash("No free beds were found", category="error")
+                    return redirect(url_for("user_view.patients_view"))
+
+                flash("No such patient", category="error")
+                return redirect(url_for("user_view.patients_view"))
+            elif form_no == "2":
+                patient_id = request.form.get("patient_id")
+                patient = Patient.query.filter_by(id=patient_id).first()
+                if patient:
+                    bed = Bed.query.filter_by(id=patient.bed).first()
+                    if bed:
+                        bed.release_bed()
+                        patient.bed = None
+                        db.session.commit()
+                        flash("Patient disscharged", category="success")
+                        return redirect(url_for("user_view.patients_view"))               
+            flash("no such form", category="error")
+            return redirect(url_for("user_view.patients_view"))
+        if (request.method=='GET'):
+            doctors_patients = current_user.patients
+            for patient in doctors_patients:
+                print(patient.firstname)
+                print(patient.lastname)
+        # patients_timeouts = db.session.query(Patients).filter_by(medical_staff_id=current_user.id).all()
+        # timed_out = check_timeouts(patients_timeouts)
+        # doctors_patients = current_user.patients
+        # appointments = []
+        # for patient in doctors_patients:
+        #     appointments.append(patient.last_visit(current_user.id))
+
+        # info = zip(doctors_patients, appointments, timed_out)
+        # if not current_user.is_department_head():
+        #     return render_template("patients.html", user=current_user, info=info, sidebar=MEDICAL_STAFF_SIDEBAR)
+        # return render_template("patients.html", user=current_user, info=info, sidebar=DEPARTMENT_HEAD_SIDEBAR)
+
+    abort(401)
 
 #File_Upload View
 @user_view.route("/upload", methods=["POST"])
