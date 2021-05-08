@@ -2,9 +2,9 @@
 {% block title %}Staff{% endblock %}
 {% block body %}
     <div class="bootstrap-modal">
-        <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addManagementStaff">+ Management Staff</button>
+        <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addManagementStaff">+ Manager</button>
         {% if user.is_management_staff(): %}
-            <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addMedicalStaff">+ Medical Staff</button>
+            <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addMedicalStaff">+ Doctor</button>
         {% elif user.is_admin(): %}
             <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addAdmin">+ Admin</button>
         {% endif %}
@@ -14,7 +14,7 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Add Medical Staff</h5>
+                        <h5 class="modal-title">Add Doctor</h5>
                         <button type="button" class="close" data-dismiss="modal"><span>×</span>
                         </button>
                     </div>
@@ -34,7 +34,7 @@
                             <div class="form-group">
                                 <div class="col-sm-6">
                                     <label class="mb-1"><strong>Gender</strong></label>
-                                    <select name='gender' id="gender" class="form-control ">
+                                    <select name='gender' id="gender" class="form-control">
                                         <option value="M">Male</option>
                                         <option value="F">Female</option>
                                     </select>
@@ -67,7 +67,7 @@
                             </div>
                             <div class="form-group">
                                 <label class="text-black font-w500">Department</label>
-                                <select name='department' id="department" class="form-control ">
+                                <select name='department' id="department" class="form-control">
                                     {% for department in departments: %}
                                         <option value="{{department.id}}">{{department}}</option>
                                     {% endfor %}
@@ -86,10 +86,19 @@
                                     <label><input type="radio" name="dpt_head" value="false" checked> No </label>
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <label class="text-black font-w500">Appointments Hours</label>
+                                <select name="appointment_times" class="form-control">
+                                    {% for appointment_time in appointment_times: %}
+                                        <option value="{{appointment_time.id}}">{{appointment_time.start.strftime("%H:%M") + "-" + appointment_time.end.strftime("%H:%M")}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <input type="hidden" name="form_no" value="1">
                             <input type="hidden" class="form-control" name='role' value="md" >
                     </div>
                         <div class="modal-footer">
-                            <input type="submit" name="submit" value="Create Medical Staff" class="btn btn-primary"></input>
+                            <input type="submit" name="submit" value="Add Doctor" class="btn btn-primary"></input>
                         </div>
                     </form>
                 </div>
@@ -101,7 +110,7 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Add Management Staff</h5>
+                        <h5 class="modal-title">Add Manager</h5>
                         <button type="button" class="close" data-dismiss="modal"><span>×</span>
                         </button>
                     </div>
@@ -121,7 +130,7 @@
                             <div class="form-group">
                                 <div class="col-sm-6">
                                     <label class="mb-1"><strong>Gender</strong></label>
-                                    <select name='gender' id="gender" class="form-control ">
+                                    <select name='gender' id="gender" class="form-control">
                                         <option value="M">Male</option>
                                         <option value="F">Female</option>
                                     </select>
@@ -155,17 +164,18 @@
                             {% if user.is_admin(): %}
                                 <div class="form-group">
                                     <label class="text-black font-w500">Hospital</label>
-                                    <select name='hospital_id' class="form-control ">
+                                    <select name='hospital_id' class="form-control">
                                         {% for hospital in hospitals: %}
                                             <option value="{{hospital.id}}">{{hospital}}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
                             {% endif %}
+                            <input type="hidden" name="form_no" value="1">
                             <input type="hidden" class="form-control" name='role' value="ms" >
                     </div>
                         <div class="modal-footer">
-                            <input type="submit" name="submit" value="Create Management Staff" class="btn btn-primary"></input>
+                            <input type="submit" name="submit" value="Add Manager" class="btn btn-primary"></input>
                         </div>
                     </form>
                 </div>
@@ -197,7 +207,7 @@
                             <div class="form-group">
                                 <div class="col-sm-6">
                                     <label class="mb-1"><strong>Gender</strong></label>
-                                    <select name='gender' id="gender" class="form-control ">
+                                    <select name='gender' id="gender" class="form-control">
                                         <option value="M">Male</option>
                                         <option value="F">Female</option>
                                     </select>
@@ -228,10 +238,11 @@
                                     </div>
                                 </div>
                             </div>
+                            <input type="hidden" name="form_no" value="1">
                             <input type="hidden" class="form-control" name='role' value="a" >
                     </div>
                         <div class="modal-footer">
-                            <input type="submit" name="submit" value="Create Admin" class="btn btn-primary"></input>
+                            <input type="submit" name="submit" value="Add Admin" class="btn btn-primary"></input>
                         </div>
                     </form>
                 </div>
@@ -240,7 +251,7 @@
     {% endif %}
     <div class="row">
         <div class="col-xl-12">
-            <div id="accordion-one" class="accordion doctor-list ">
+            <div id="accordion-one" class="accordion doctor-list">
                 {% if user.is_admin(): %}
                     <div class="accordion__item">
                         <div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#admin_collapse">
@@ -257,6 +268,31 @@
                                                     <div class="media-body">
                                                         <a href="/staff/staff_details_{{admin.id}}{{admin.role}}"><h4 class="mb-2">{{admin}}</h4></a>
                                                     </div>
+                                                    {% if user.id != admin.id: %}
+                                                        <div class="d-flex">
+                                                            <a href="#" class="btn btn-danger shadow btn-xs sharp mr-1" data-toggle="modal" data-target="#delete{{admin.id}}" ><i class="fa fa-trash"></i></a>
+                                                            <div class="modal fade" id="delete{{doctor.id}}">
+                                                                <div class="modal-dialog" role="document">
+                                                                    <form method='POST'>
+                                                                        <div class="modal-content">
+                                                                            <div class="modal-header">
+                                                                                <h5 class="modal-title">Remove Admin</h5>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                            <input type="hidden" name="form_no" value="2">
+                                                                            <input type="hidden" name="user_id" value="{{admin.id}}"></input>
+                                                                            Are you sure you want to remove this admin?
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <button type="submit" class="btn btn-primary">Remove</button>
+                                                                                <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                     {% endfor %}	
@@ -280,6 +316,29 @@
                                                     <div class="timeline-panel bg-white p-4 mb-4">
                                                         <div class="media-body">
                                                             <a href="/staff/staff_details_{{manager.id}}{{manager.role}}"><h4 class="mb-2">{{manager.first_name + " " + manager.last_name}}</h4></a>
+                                                        </div>
+                                                        <div class="d-flex">
+                                                            <a href="#" class="btn btn-danger shadow btn-xs sharp mr-1" data-toggle="modal" data-target="#delete{{manager.id}}" ><i class="fa fa-trash"></i></a>
+                                                            <div class="modal fade" id="delete{{manager.id}}">
+                                                                <div class="modal-dialog" role="document">
+                                                                    <form method='POST'>
+                                                                        <div class="modal-content">
+                                                                            <div class="modal-header">
+                                                                                <h5 class="modal-title">Remove Manager</h5>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                            <input type="hidden" name="form_no" value="2">
+                                                                            <input type="hidden" name="user_id" value="{{manager.id}}"></input>
+                                                                            Are you sure you want to remove this manager?
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <button type="submit" class="btn btn-primary">Remove</button>
+                                                                                <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -307,6 +366,31 @@
                                                     <div class="media-body">
                                                         <a href="/staff/staff_details_{{manager.id}}{{manager.role}}"><h4 class="mb-2">{{manager}}</h4></a>
                                                     </div>
+                                                    {% if user.id != manager.id: %}
+                                                        <div class="d-flex">
+                                                            <a href="#" class="btn btn-danger shadow btn-xs sharp mr-1" data-toggle="modal" data-target="#delete{{manager.id}}" ><i class="fa fa-trash"></i></a>
+                                                            <div class="modal fade" id="delete{{manager.id}}">
+                                                                <div class="modal-dialog" role="document">
+                                                                    <form method='POST'>
+                                                                        <div class="modal-content">
+                                                                            <div class="modal-header">
+                                                                                <h5 class="modal-title">Remove Manager</h5>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                            <input type="hidden" name="form_no" value="2">
+                                                                            <input type="hidden" name="user_id" value="{{manager.id}}"></input>
+                                                                            Are you sure you want to remove this manager?
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <button type="submit" class="btn btn-primary">Remove</button>
+                                                                                <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                         {% endif %}
@@ -331,6 +415,29 @@
                                                     <div class="timeline-panel bg-white p-4 mb-4">
                                                         <div class="media-body">
                                                             <a href="/staff/staff_details_{{doctor.id}}{{doctor.role}}"><h4 class="mb-2">{{doctor}}</h4></a>
+                                                        </div>
+                                                        <div class="d-flex">
+                                                            <a href="#" class="btn btn-danger shadow btn-xs sharp mr-1" data-toggle="modal" data-target="#delete{{doctor.id}}" ><i class="fa fa-trash"></i></a>
+                                                            <div class="modal fade" id="delete{{doctor.id}}">
+                                                                <div class="modal-dialog" role="document">
+                                                                    <form method='POST'>
+                                                                        <div class="modal-content">
+                                                                            <div class="modal-header">
+                                                                                <h5 class="modal-title">Remove Doctor</h5>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                            <input type="hidden" name="form_no" value="2">
+                                                                            <input type="hidden" name="user_id" value="{{doctor.id}}"></input>
+                                                                            Are you sure you want to remove this doctor?
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <button type="submit" class="btn btn-primary">Remove</button>
+                                                                                <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>

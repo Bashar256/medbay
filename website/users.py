@@ -422,7 +422,8 @@ def doctor_details_view(hospital_id, department_id, staff_id,role="md"):
             flash('Appointment created!', category='success')  
                    
         medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
-        return render_template("staff_details.html", user=current_user, max_appointment_date=today + datetime.timedelta(days=30), today=today, staff=medical_staff, sidebar=PATIENT_SIDEBAR)
+        appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
+        return render_template("staff_details.html", user=current_user, max_appointment_date=today + datetime.timedelta(days=30), today=today, staff=medical_staff, appointment_time=appointment_time, sidebar=PATIENT_SIDEBAR)
 
     abort(401)
 
@@ -789,24 +790,72 @@ def staff_view():
         management_staff = Management_Staff.query.all()
         department = Department.query.filter_by(id=current_user.department).first()
         hospital = Hospital.query.filter_by(id=current_user.hospital).first()
+        appointment_times = Appointment_Times.query.all()
         return render_template("staff.html", user=current_user, hospital=hospital, doctors=medical_staff, departments=department, management_staff=management_staff, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     elif current_user.is_management_staff():
         if request.method == 'POST':
-            if validate_staff_register(request):
-                flash("Staff Added Successfully", category="success")
+            form_no = request.form.get("form_no")
+            print(form_no)
+            if form_no =="1":
+                if validate_staff_register(request):
+                    flash("Staff Added Successfully", category="success")
+                    return redirect(url_for("user_view.staff_view"))
+            elif form_no == "2":
+                staff_id = request.form.get("user_id")
+                staff = Medical_Staff.query.filter(Medical_Staff.id==staff_id, Medical_Staff.hospital==current_user.hospital).first()
+                print(staff_id)
+                if staff:
+                    db.session.delete(staff)
+                    db.session.commit()
+                    flash("Doctor deleteed !", category="update")
+                    return redirect(url_for("user_view.staff_view"))
+                staff = Management_Staff.query.filter(Management_Staff.id==staff_id, Management_Staff.hospital==current_user.hospital).first()
+                if staff:
+                    db.session.delete(staff)
+                    db.session.commit()
+                    flash("Manager deleteed !", category="update")
+                    return redirect(url_for("user_view.staff_view"))
+
+                flash("User doesn't exist", category="error")
+                return redirect(url_for("user_view.staff_view"))
+            
+            flash("Use correct form", category="error")
             return redirect(url_for("user_view.staff_view"))
         medical_staff = Medical_Staff.query.all()
         management_staff = Management_Staff.query.all()
         departments = Department.query.filter_by(hospital=current_user.hospital).all()
         hospital = Hospital.query.filter_by(id=current_user.hospital).first()
-        return render_template("staff.html", user=current_user, hospital=hospital, doctors=medical_staff, departments=departments, management_staff=management_staff, sidebar=MANAGEMENT_STAFF_SIDEBAR)
+        appointment_times = Appointment_Times.query.all()
+        return render_template("staff.html", user=current_user, hospital=hospital, doctors=medical_staff, departments=departments, management_staff=management_staff, appointment_times=appointment_times, sidebar=MANAGEMENT_STAFF_SIDEBAR)
 
     elif current_user.is_admin():
         if request.method == 'POST':
-            if validate_staff_register(request):
-                flash("User Added Successfully", category="success")
+            form_no = request.form.get("form_no")
+            if form_no =="1":
+                if validate_staff_register(request):
+                    flash("User Added Successfully", category="success")
+                    return redirect(url_for("user_view.staff_view"))
+            elif form_no == "2":
+                staff_id = request.form.get("user_id")
+                staff = User.query.filter_by(id=staff_id).first()
+                if staff:
+                    if staff.is_medical_staff():
+                        db.session.delete(Appointment.query.filter_by(medical_staff=staff.id).all())
+                        appointment_times = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
+                        appointment_times.medical_staff.remove(medical_staff)
+                        db.session.query(Patients).filter_by(medical_staff_id=medical_staff.id).delete()
+                    db.session.delete(staff)
+                    db.session.commit()
+                    flash("User deleteed!", category="update")
+                    return redirect(url_for("user_view.staff_view"))
+
+                flash("The user you're trying to delete doesn't exist", category="error")
+                return redirect(url_for("user_view.staff_view"))
+
+            flash("Use correct form", category="error")
             return redirect(url_for("user_view.staff_view"))
+
         management_staff = Management_Staff.query.all()
         hospitals = Hospital.query.all()
         admins = User.query.filter_by(role=current_user.role).all()
@@ -820,7 +869,9 @@ def staff_view():
 def staff_details_view(staff_id,role):
     if current_user.is_medical_staff() and current_user.is_department_head():
         information = medical_staff_appointments(staff_id)
-        return render_template("staff_details.html",user=current_user, information=information, shift=shift, staff=staff, sidebar=MEDICAL_STAFF_SIDEBAR)
+        staff = Management_Staff.query.filter_by(id=staff_id).first()
+        appointment_time = Appointment_Times.query.filter_by(id=staff.appointment_times).first()
+        return render_template("staff_details.html",user=current_user, information=information, shift=shift, staff=staff, appointment_time=appointment_time, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     elif current_user.is_management_staff():
         staff = Management_Staff.query.filter_by(id=staff_id).first()
@@ -828,8 +879,9 @@ def staff_details_view(staff_id,role):
             return render_template("staff_details.html", user=current_user, staff=staff, sidebar=MANAGEMENT_STAFF_SIDEBAR)
         staff = Medical_Staff.query.filter_by(id=staff_id).first()
         if staff:
+            appointment_time = Appointment_Times.query.filter_by(id=staff.appointment_times).first()
             information = medical_staff_appointments(staff_id)
-            return render_template("staff_details.html", user=current_user, information=information, staff=staff,  today=today, sidebar=MANAGEMENT_STAFF_SIDEBAR)
+            return render_template("staff_details.html", user=current_user, information=information, staff=staff,  today=today, appointment_time=appointment_time, sidebar=MANAGEMENT_STAFF_SIDEBAR)
         
     elif current_user.is_admin():
         staff = User.query.filter(User.id==staff_id,  User.role==current_user.role).first()
@@ -843,7 +895,6 @@ def staff_details_view(staff_id,role):
 @login_required
 def rooms_view():
     if current_user.is_medical_staff():
-
         hospitals = Hospital.query.all()
         my_hospital = Hospital.query.filter_by(id=current_user.hospital).first()
         departments = Department.query.filter_by(hospital=current_user.hospital).all()
@@ -884,7 +935,6 @@ def rooms_view():
 
             flash("Department error",category="error")
             return redirect(url_for("user_view.rooms_view"))
-
 
         hospitals = Hospital.query.all()
         my_hospital = Hospital.query.filter_by(id=current_user.hospital).first()

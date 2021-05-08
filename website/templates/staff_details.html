@@ -52,10 +52,13 @@
                             <h4>Presonal Information</h4>
                             <p>Name: {{staff.first_name + ' '+ staff.last_name}}</p>
                             <p>Age: {{staff.age()}}</p>
-                        {% if not user.is_patient() %} 
-                            <p>Phone Number: {{staff.phone_no}}</p>
-                        {% endif %}
-                            <p>Email: {{staff.email}}
+                            {% if not user.is_patient() %} 
+                                <p>Phone Number: {{staff.phone_no}}</p>
+                                <p>Email: {{staff.email}}
+                            {% endif %}
+                            {% if staff.is_medical_staff(): %}
+                                <p>Appointment Hours: {{appointment_time.start.strftime("%H:%M") + "-" + appointment_time.end.strftime("%H:%M")}} </p>
+                            {% endif %}
                         </div>
                     </div>
                     {% if user.is_management_staff() and staff.is_medical_staff(): %}
