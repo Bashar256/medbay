@@ -447,7 +447,7 @@ def choose_medical_staff_phone(hospital_id,department_id):
                     print("WE IN!!!") 
                     medical_staff = Medical_Staff.query.filter(Medical_Staff.department==department_id, Medical_Staff.hospital==hospital_id)
                     for i in medical_staff:
-                        print(medical_staff.first_name)
+                        print(i.first_name)
                     return jsonify({'1':1})
     abort(401)
 
