@@ -485,8 +485,6 @@ def my_appointments_view():
                     if form_no == "1":
                         db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff, Patients.c.timeout==(appointment.appointment_date_time + datetime.timedelta(days=APPOINTMENT_TIMEOUT))).delete()
                         time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
-                        print(appointment_id)
-                        print(time_slot)
                         temp_slot = time_slot
                         db.session.query(Time_Slot).filter_by(id=time_slot[0]).delete()      
                         db.session.execute(Time_Slot.insert(), params={"id": temp_slot[0], "appointment_time_id":temp_slot[1], "start":temp_slot[2], "end":temp_slot[3], "date":temp_slot[4], "taken":False})          
@@ -497,11 +495,9 @@ def my_appointments_view():
                     
                     elif form_no =="2":
                         medical_staff = Medical_Staff.query.filter_by(id=appointment.medical_staff).first()
-                        print(medical_staff.appointments)
                         appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
                         time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
                         free_appointment_time = db.session.query(Time_Slot).filter_by(id=time_slot_id).first()
-                        print(db.session.query(Time_Slot).filter_by(id=time_slot_id).first())
                         if (not free_appointment_time) or free_appointment_time[-1]:
                             flash("Please select one of the provided time slots", category='error')
                             return redirect(url_for("user_view.my_appointments_view"))
