@@ -23,15 +23,16 @@ class Hospital(db.Model):
     def __repr__(self):
         return f"{self.name}"
 
-    def hospital_beds_stats(self,hospital_id):
+    def hospital_beds_stats(self,hospital_id, room_type='patient'):
         total_beds = 0
         available_beds = 0
         if self.id == hospital_id:
             for room in self.rooms:
-                total_beds = total_beds + room.max_no_of_beds
-                for bed in room.beds:
-                    if not bed.occupied:
-                        available_beds = available_beds + 1
+                if room.room_type.lower() == room_type:
+                    total_beds = total_beds + room.max_no_of_beds
+                    for bed in room.beds:
+                        if not bed.occupied:
+                            available_beds = available_beds + 1
 
         return total_beds,available_beds
 
@@ -52,15 +53,16 @@ class Department(db.Model):
     def __repr__(self):
         return f"{self.name}"
 
-    def department_beds_stats(self,department_id):
+    def department_beds_stats(self,department_id, room_type='patient'):
         total_beds = 0
         available_beds = 0
         if self.id == department_id:
             for room in self.rooms:
-                total_beds = total_beds + room.max_no_of_beds
-                for bed in room.beds:
-                    if not bed.occupied:
-                        available_beds = available_beds + 1
+                if room.room_type.lower() == room_type:
+                    total_beds = total_beds + room.max_no_of_beds
+                    for bed in room.beds:
+                        if not bed.occupied:
+                            available_beds = available_beds + 1
                         
         return total_beds,available_beds
 
@@ -158,9 +160,10 @@ class Room(db.Model):
     )
 
     id = db.Column(db.Integer, primary_key=True)
-    room_no = db.Column(db.String(15, collation='NOCASE'))
-    hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'))
-    department = db.Column(db.Integer, db.ForeignKey('department.id'))
+    room_no = db.Column(db.String(15, collation='NOCASE'), nullable=False)
+    room_type = db.Column(db.String(15, collation='NOCASE'), nullable=False)
+    hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'), nullable=False)
+    department = db.Column(db.Integer, db.ForeignKey('department.id'), nullable=False)
     beds =  db.relationship('Bed', backref='room_beds')
     max_no_of_beds = db.Column(db.Integer, nullable=False, default=4)
     
@@ -193,7 +196,7 @@ class Bed(db.Model):
     patient = db.relationship('Patient', uselist=False, backref='patient_bed')
     hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'))
     
-    def occupy_bed(self, patient):
+    def occupy_bed(self, patient=None):
         self.patient = patient
         self.occupied = True
 
@@ -204,16 +207,17 @@ class Bed(db.Model):
 
 #User Table
 class User(db.Model, UserMixin):
-
+    __tablename__ = 'user'
+   
     type = db.Column(db.String(32)) 
-
+    
     __mapper_args__ = {
         'polymorphic_identity': 'user',
         'polymorphic_on': type,
     }
 
     id = db.Column(db.Integer, primary_key=True)
-    
+
     # User authentication information. The collation='NOCASE' is required
     # to search case insensitively when USER_IFIND_MODE is 'nocase_collation'.
     email = db.Column(db.String(255, collation='NOCASE'), nullable=False, unique=True)

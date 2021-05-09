@@ -28,8 +28,16 @@
                                 <input type="text" class="form-control" name='room_no' required>
                             </div>
                             <div class="form-group">
+                                <label class="text-black font-w500">Room Type</label>
+                                <select name="room_type" id="room_type" class="form-control" onchange="changenumberofbeds(document.getElementById('room_type').value);">
+                                    {% for room_type in room_types: %}
+                                        <option value="{{room_type.lower()}}">{{room_type.lower()}} Room</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
                                 <label class="text-black font-w500">Number of beds in the room</label>
-                                <input type="number" class="form-control" name='no_of_beds' min=1 max=4 required>
+                                <input type="number" class="form-control" name='no_of_beds' id="no_of_beds" value="1" min=1 max=4 required>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -117,17 +125,19 @@
                                                 <div class="widget-media best-doctor pt-4">
                                                     <div class="timeline row">
                                                         {% for room in department.rooms: %}
-                                                            <div class="col-lg-6">
-                                                                <div class="timeline-panel bg-white p-4 mb-4">
-                                                                    <div class="media-body">
-                                                                        {% set beds = room.room_stats(room.id) %}
-                                                                        <h4 class="mt-2">
-                                                                            Room Number: {{room.room_no}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                                            Beds: {{beds[1]}}/{{beds[0]}}
-                                                                        </h4>
+                                                            {% if room.room_type != "operation": %}
+                                                                <div class="col-lg-6">
+                                                                    <div class="timeline-panel bg-white p-4 mb-4">
+                                                                        <div class="media-body">
+                                                                            {% set beds = room.room_stats(room.id) %}
+                                                                            <h4 class="mt-2">
+                                                                                Room Number: {{room.room_no}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                                                Beds: {{beds[1]}}/{{beds[0]}}
+                                                                            </h4>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
+                                                            {% endif %}
                                                         {% endfor %}
                                                     </div>
                                                 </div>
@@ -205,4 +215,19 @@
             </div>
         </div>
     </div>
+    <script>
+        function changenumberofbeds(room_type) 
+        {
+            if (room_type == "operation")
+            {
+                document.getElementById("no_of_beds").value = "1";
+                document.getElementById("no_of_beds").disabled = true;
+            }
+            else if (room_type == "patient")
+            {
+                document.getElementById("no_of_beds").value = "";
+                document.getElementById("no_of_beds").disabled = false;
+            }
+        }
+    </script>
 {% endblock %}

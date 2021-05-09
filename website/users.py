@@ -1,4 +1,4 @@
-from website import db, app, UPLOAD_FOLDER, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, APPOINTMENT_TIMEOUT, MAX_APPOINTMENT_DATE, SESSION_TIMEOUT, WEEKEND
+from website import db, app, UPLOAD_FOLDER, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, APPOINTMENT_TIMEOUT, MAX_APPOINTMENT_DATE, SESSION_TIMEOUT, WEEKEND, ROOM_TYPES
 from website.models import  Hospital, Department, Appointment, Management_Staff, Medical_Staff, Patient, Patients, Diagnosis, User, Lab_Result, Room, Bed, Appointment_Times, Time_Slot
 from flask import Blueprint, render_template, url_for, redirect, request, flash, abort, session, send_file, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -1040,15 +1040,22 @@ def rooms_view():
         hospitals = Hospital.query.all()
         my_hospital = Hospital.query.filter_by(id=current_user.hospital).first()
         departments = Department.query.filter_by(hospital=current_user.hospital).all()
-        
-        return render_template("rooms.html",user=current_user, hospitals=hospitals, my_hospital=my_hospital, departments=departments, sidebar=MEDICAL_STAFF_SIDEBAR)
+
+        if not current_user.is_department_head():  
+            return render_template("rooms.html",user=current_user, hospitals=hospitals, my_hospital=my_hospital, departments=departments, sidebar=MEDICAL_STAFF_SIDEBAR)
+        return render_template("rooms.html",user=current_user, hospitals=hospitals, my_hospital=my_hospital, departments=departments, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     elif current_user.is_management_staff():
         if request.method == 'POST':
             room_no = request.form.get("room_no")
+            room_type = request.form.get("room_type")
             no_of_beds = request.form.get("no_of_beds")
             department_id = request.form.get("department_id")
             hospital_id = current_user.hospital
+            print(room_type,room_no,no_of_beds,department_id)
+
+            if room_type == 'operation':
+                no_of_beds = 1
 
             if int(no_of_beds) > 4 or int(no_of_beds) < 1:
                 flash("Room can have between 1 and 4 beds", category="error")
@@ -1060,8 +1067,8 @@ def rooms_view():
                 if room and room.hospital == hospital_id:
                     flash("Room already exists in this hospital", category="error")
                     return redirect(url_for("user_view.rooms_view"))
-
-                new_room = Room(room_no=room_no, hospital=hospital_id, department=department_id, max_no_of_beds=no_of_beds)
+                
+                new_room = Room(room_no=room_no, room_type=room_type, hospital=hospital_id, department=department_id, max_no_of_beds=no_of_beds)
                 db.session.add(new_room)
                 for i in range(int(no_of_beds)):
                     new_bed = Bed(room=new_room.id, hospital=hospital_id)
@@ -1082,7 +1089,8 @@ def rooms_view():
         my_hospital = Hospital.query.filter_by(id=current_user.hospital).first()
         departments = Department.query.filter_by(hospital=current_user.hospital).all()
         
-        return render_template("rooms.html",user=current_user, hospitals=hospitals, my_hospital=my_hospital, departments=departments, sidebar=MANAGEMENT_STAFF_SIDEBAR)
+        
+        return render_template("rooms.html",user=current_user, hospitals=hospitals, my_hospital=my_hospital, departments=departments, room_types=ROOM_TYPES, sidebar=MANAGEMENT_STAFF_SIDEBAR)
 
     elif current_user.is_admin():
         rooms = Room.query.all()
@@ -1094,6 +1102,64 @@ def rooms_view():
         return render_template("rooms.html",user=current_user, hospitals=hospitals, rooms=rooms, beds=beds, sidebar=ADMIN_SIDEBAR)
 
     abort(401)
+
+
+@user_view.route("/operation_rooms", methods=['GET', 'POST'])
+@login_required
+def operation_rooms_view():
+    if current_user.is_medical_staff():
+        departments = Department.query.filter_by(hospital=current_user.hospital).all()
+        rooms = []
+        for department in departments:
+            for room in department.rooms:
+                if room.room_type == 'operation':
+                    rooms.append(room)
+        if not current_user.is_department_head():      
+            return render_template("operation_rooms.html", user=current_user, departments=departments, rooms=rooms, sidebar=MEDICAL_STAFF_SIDEBAR)
+        return render_template("operation_rooms.html", user=current_user, departments=departments, rooms=rooms, sidebar=DEPARTMENT_HEAD_SIDEBAR)
+
+    elif current_user.is_management_staff():
+        if request.method == 'POST':
+            room_id = request.form.get("room_id")
+            room = Room.query.filter_by(id=room_id).first()
+            if room:
+                if room.room_type == "operation":
+                    form_no = request.form.get("form_no")
+                    if form_no == "1":
+                        beds = room.beds
+                        for bed in beds:
+                            bed.occupy_bed()
+                        db.session.commit()
+                        flash("Surgeory room is booked", category="success")
+                        return redirect(url_for("user_view.operation_rooms_view")) 
+
+                    elif form_no == "2":
+                        beds = room.beds
+                        for bed in beds:
+                            bed.release_bed()
+                        db.session.commit()
+                        flash("Surgeory room is no longer booked", category="success")
+                        return redirect(url_for("user_view.operation_rooms_view")) 
+
+                    flash("No such form exists", category="error")
+                    return redirect(url_for("user_view.operation_rooms_view"))
+
+                flash("This is not an operation room", category="error")
+                return redirect(url_for("user_view.operation_rooms_view"))  
+
+            flash("The Room doesn't exist", category="error")
+            return redirect(url_for("user_view.operation_rooms_view"))
+
+        departments = Department.query.filter_by(hospital=current_user.hospital).all()
+        rooms = []
+        for department in departments:
+            for room in department.rooms:
+                if room.room_type == 'operation':
+                    rooms.append(room)
+
+        return render_template("operation_rooms.html", user=current_user, departments=departments, rooms=rooms, sidebar=MANAGEMENT_STAFF_SIDEBAR)
+    abort(401)
+
 
 
 #Custom error pages

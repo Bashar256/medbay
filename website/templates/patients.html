@@ -29,15 +29,15 @@
                                             <td>
                                                 <div class="d-flex">
                                                     {% if not timed_out:%}
-                                                        <button onclick="window.location.href='/patient_details{{patient.id}}'" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-user"></i></button>
-                                                        <button type="submit" data-toggle="modal" data-target="#upload{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-file"></i></button>
+                                                        <button title="Patient Profile" onclick="window.location.href='/patient_details{{patient.id}}'" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-user"></i></button>
+                                                        <button title="Upload" type="submit" data-toggle="modal" data-target="#upload{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-file"></i></button>
                                                     {% endif %}
                                                     {% if not patient.bed: %}
                                                         {% if not timed_out: %}
-                                                            <button type="submit" data-toggle="modal" data-target="#occupybed{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-bed"></i></butto>
+                                                            <button title="Admit Patient" type="submit" data-toggle="modal" data-target="#occupybed{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-bed"></i></butto>
                                                         {% endif %}
                                                     {% else: %}
-                                                        <button type="submit" data-toggle="modal" data-target="#releasebed{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-eject"></i></button>
+                                                        <button title="Release Patient" type="submit" data-toggle="modal" data-target="#releasebed{{patient.id}}" class="btn btn-danger shadow btn-xs sharp mr-1"><i class="fa fa-eject"></i></button>
                                                     {% endif %}
                                                 </div>
                                                 <div class="modal fade" id="upload{{patient.id}}">
