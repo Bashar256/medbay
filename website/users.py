@@ -2,7 +2,7 @@ from website import db, app, UPLOAD_FOLDER, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDI
 from website.models import  Hospital, Department, Appointment, Management_Staff, Medical_Staff, Patient, Patients, Diagnosis, User, Lab_Result, Room, Bed, Appointment_Times, Time_Slot
 from flask import Blueprint, render_template, url_for, redirect, request, flash, abort, session, send_file, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from website.validate import validate_staff_register
+from website.validate import validate_staff_register, create_random_password
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager
@@ -54,6 +54,7 @@ def before_request():
 @user_view.route("/home")
 @login_required
 def home_view():
+    create_random_password()
     if current_user.is_patient():
         return render_template("home.html",user=current_user, sidebar=PATIENT_SIDEBAR)
     elif current_user.is_management_staff():
@@ -981,9 +982,9 @@ def staff_view():
 
                 flash("User doesn't exist", category="error")
                 return redirect(url_for("user_view.staff_view"))
-            
-            flash("Use correct form", category="error")
-            return redirect(url_for("user_view.staff_view"))
+            else:
+                flash("Use correct form", category="error")
+                return redirect(url_for("user_view.staff_view"))
         medical_staff = Medical_Staff.query.all()
         management_staff = Management_Staff.query.all()
         departments = Department.query.filter_by(hospital=current_user.hospital).all()
