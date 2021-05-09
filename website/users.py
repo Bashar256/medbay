@@ -1148,7 +1148,7 @@ def operation_rooms_view():
                         for bed in beds:
                             bed.occupy_bed()
                         db.session.commit()
-                        flash("Surgeory room is booked", category="success")
+                        flash("Surgery room is booked", category="success")
                         return redirect(url_for("user_view.operation_rooms_view")) 
 
                     elif form_no == "2":
