@@ -438,6 +438,19 @@ def choose_medical_staff_view(hospital_id,department_id):
         return render_template("doctors.html", user=current_user, hospital_id=hospital_id, department_id=department_id, medical_staff=medical_staff, sidebar=PATIENT_SIDEBAR)
     abort(401)
 
+@user_view.route("/book_appointment/<int:hospital_id>/<int:department_id>/doctors_phone")
+@login_required
+def choose_medical_staff_phone(hospital_id,department_id):
+    if request.mimetype == 'application/json':
+            if load_user_request(request):
+                if current_user.is_patient():
+                    print("WE IN!!!") 
+                    medical_staff = Medical_Staff.query.filter(Medical_Staff.department==department_id, Medical_Staff.hospital==hospital_id)
+                    for i in medical_staff:
+                        print(medical_staff.first_name)
+                    return jsonify({'1':1})
+    abort(401)
+
 
 #Doctor Details
 @user_view.route("/book_appointment/<int:hospital_id>/<int:department_id>/staff_details_<int:staff_id><string:role>", methods=["POST", "GET"])
