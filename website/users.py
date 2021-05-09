@@ -1156,7 +1156,7 @@ def operation_rooms_view():
                         for bed in beds:
                             bed.release_bed()
                         db.session.commit()
-                        flash("Surgeory room is no longer booked", category="success")
+                        flash("Surgery room is no longer booked", category="success")
                         return redirect(url_for("user_view.operation_rooms_view")) 
 
                     flash("No such form exists", category="error")
