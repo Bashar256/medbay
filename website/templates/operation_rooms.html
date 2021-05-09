@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block title %}Operation Rooms{% endblock %}
+{% block body %}
+    <div class="row">  
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Operation Rooms</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-responsive-md">
+                            <thead>
+                                <tr>	
+                                    <th><strong>Department</strong></th>
+                                    <th><strong>Room No</strong></th>
+                                    <th><strong>Status</strong></th>
+                                    {% if user.is_management_staff(): %}
+                                        <th><strong>Action</strong></th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                                <tbody>
+                                    {% for department in departments: %}
+                                        {% for room in rooms: %}
+                                            {% if room.department == department.id: %}
+                                                <tr>
+                                                    <td><div class="d-flex align-items-center"> <span class="w-space-no">{{department.name}}</span></div></td>
+                                                    <td><div class="d-flex align-items-center"> <span class="w-space-no">{{room.room_no}}</span></div></td>
+                                                    <td><div class="d-flex align-items-center"> <span class="w-space-no">{% if room.is_full() %} Booked {% else: %} Free {% endif %}</span></div></td>
+                                                    {% if user.is_management_staff(): %}
+                                                        <td>
+                                                            <div class="d-flex">
+                                                                {% if not room.is_full() :%}
+                                                                    <button type="submit" data-toggle="modal" data-target="#occupybed{{room.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-bed"></i></butto>
+                                                                {% else: %}
+                                                                    <button type="submit" data-toggle="modal" data-target="#releasebed{{room.id}}" class="btn btn-danger shadow btn-xs sharp mr-1"><i class="fa fa-eject"></i></button>
+                                                                {% endif %}
+                                                            </div>            
+                                                            <div class="modal fade" id="occupybed{{room.id}}">
+                                                                <div class="modal-dialog" role="document">
+                                                                    <form method='POST'>
+                                                                        <div class="modal-content">
+                                                                            <div class="modal-header">
+                                                                                <h5 class="modal-title">Schedule Opeation</h5>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                                <div class="form-group">
+                                                                                    <input type="hidden" name="form_no" value="1"></input>
+                                                                                    <input type="hidden" name="room_id" value="{{room.id}}"></input>
+                                                                                    Are you sure you want to reserve this room for an operation ?
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <button type="submit" class="btn btn-primary">Confirm</button>
+                                                                                <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal fade" id="releasebed{{room.id}}">
+                                                                <div class="modal-dialog" role="document">
+                                                                    <form method='POST'>
+                                                                        <div class="modal-content">
+                                                                            <div class="modal-header">
+                                                                                <h5 class="modal-title">Release Opeation Room</h5>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                                <div class="form-group">
+                                                                                    <input type="hidden" name="form_no" value="2"></input>
+                                                                                    <input type="hidden" name="room_id" value="{{room.id}}"></input>
+                                                                                    Are you sure you want to make this room available again for scheduling ?
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <button type="submit" class="btn btn-primary">Confirm</button>
+                                                                                <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </div> 
+                                                        </td>
+                                                    {% endif %}
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>	    
+    </div>
+{% endblock %}
