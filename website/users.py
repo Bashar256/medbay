@@ -128,6 +128,8 @@ def appointment_history():
     department_name=[]
     hour=[]
     minute=[]
+    weekday=[]
+    wdays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] 
     
     if request.mimetype == 'application/json':
             if load_user_request(request):
@@ -144,9 +146,61 @@ def appointment_history():
                             hospital_name.append(hospital.name)
                             department_name.append(department.name)
                             hour.append(appointment.appointment_date_time.hour)
-                            minute.append(appointment.appointment_date_time.minute)
+                            minute.append(str(appointment.appointment_date_time.minute))
+                            weekday.append(wdays[appointment.appointment_date_time.weekday()])
+
+                elif current_user.is_medical_staff():
+                    information = medical_staff_appointments(current_user.id)
+                    for appointment,hospital,department,usr,diagnoses,lab_results in information:
+                        if appointment.appointment_date_time < today:
+                            print("We IN")
+                            day.append(appointment.appointment_date_time.day)
+                            month.append(appointment.appointment_date_time.month)
+                            year.append(appointment.appointment_date_time.year)
+                            firstname.append(usr.first_name)
+                            lastname.append(usr.last_name)
+                            hospital_name.append(hospital.name)
+                            department_name.append(department.name)
+                            hour.append(appointment.appointment_date_time.hour)
+                            minute.append(str(appointment.appointment_date_time.minute))
+                            weekday.append(wdays[appointment.appointment_date_time.weekday()])
+                if day:
+                    return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
+
+@user_view.route("/appointment_upcoming")
+@login_required
+def appointment_upcoming():
+    day=[]
+    month=[]
+    year=[]
+    firstname=[]
+    lastname=[]
+    hospital_name=[]
+    department_name=[]
+    hour=[]
+    minute=[]
+    weekday=[]
+    wdays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] 
+    
+    if request.mimetype == 'application/json':
+            if load_user_request(request):
+                if current_user.is_medical_staff():
+                    information = medical_staff_appointments(current_user.id)
+                    for appointment,hospital,department,usr,diagnoses,lab_results in information:
+                        if appointment.appointment_date_time > today:
+                            print("We IN")
+                            day.append(appointment.appointment_date_time.day)
+                            month.append(appointment.appointment_date_time.month)
+                            year.append(appointment.appointment_date_time.year)
+                            firstname.append(usr.first_name)
+                            lastname.append(usr.last_name)
+                            hospital_name.append(hospital.name)
+                            department_name.append(department.name)
+                            hour.append(appointment.appointment_date_time.hour)
+                            minute.append(str(appointment.appointment_date_time.minute))
+                            weekday.append(wdays[appointment.appointment_date_time.weekday()])
                     if day:
-                        return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute})
+                        return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
 
 
 
@@ -391,7 +445,7 @@ def choose_medical_staff_view(hospital_id,department_id):
 def doctor_details_view(hospital_id, department_id, staff_id,role="md"):  
     if current_user.is_patient():
         if request.method == 'POST':
-            if current_user.confirmed:
+            if not current_user.confirmed:
                 appointment_date = request.form.get('appointment_date')
                 time_slot_id = request.form.get('appointment_time')
                 medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
@@ -597,6 +651,91 @@ def patients_view():
 
     abort(401)
 
+@user_view.route("/patients_phone", methods=["GET", "POST"])
+@login_required
+def patients_view_phone():
+    if current_user.is_medical_staff():
+        if request.method == 'POST':
+            if(request.mimetype == 'application/json'):
+                data=request.json
+                form_no = data['form']
+                if form_no == 1:
+                    print('form=1')
+                    patient_name = data['name']
+                    print('0')
+                    print(patient_name)
+                    print('1')
+                    patient = Patient.query.filter_by(first_name=patient_name).first()
+                    if patient:           
+                        rooms = Room.query.filter_by(department=current_user.department).all()
+                        for room in rooms:
+                            if not room.is_full():
+                                for bed in room.beds:
+                                    if not bed.occupied:
+                                        bed.occupy_bed(patient)
+                                        patient.bed = bed.id
+                                        db.session.commit()
+                                        return jsonify({'status':'Patient Admitted'})
+                            
+                        return jsonify({'status':'No free beds were found.'})
+
+                    return jsonify({'status':'No such patient.'})
+                elif form_no == 2:
+                    print('form=2')
+                    patient_name = data['name']
+                    patient = Patient.query.filter_by(first_name=patient_name).first()
+                    if patient:
+                        bed = Bed.query.filter_by(id=patient.bed).first()
+                        if bed:
+                            bed.release_bed()
+                            patient.bed = None
+                            db.session.commit()
+                            return jsonify({'status':'Patient Discharged'})               
+                return jsonify({'status':'No such patient.'})
+
+        if (request.method=='GET'):
+            if(request.mimetype == 'application/json'):
+                firstname=[]
+                lastname=[]
+                last=[]
+                is_admitted=[]
+                is_timedout=[]
+                age=[]
+                phone=[]
+                email=[]
+                patients_timeouts = db.session.query(Patients).filter_by(medical_staff_id=current_user.id).all()
+                print('1')
+                print(patients_timeouts)
+                timed_out = check_timeouts(patients_timeouts)
+                doctors_patients = current_user.patients
+                for patient in doctors_patients:
+                    firstname.append(patient.first_name)
+                    lastname.append(patient.last_name)
+                    is_timedout.append(timed_out)
+                    age.append(patient.age())
+                    phone.append(patient.phone_no)
+                    email.append(patient.email)
+                    if patient.bed:
+                        is_admitted.append('Discharge')
+                    else:
+                        is_admitted.append('Admit')
+                    if patient.last_visit(current_user.id) is None:
+                        last.append("No Previous Appointments")
+                    else :
+                        last.append(patient.last_visit(current_user.id))
+                print('return')
+                return jsonify({'firstname':firstname,'lastname':lastname,'last':last,'IsAdmitted':is_admitted,'IsTimedOut':is_timedout,'age':age,'phone':phone,'email':email})
+    
+        # appointments = []
+        # for patient in doctors_patients:
+        #     appointments.append(patient.last_visit(current_user.id))
+
+        # info = zip(doctors_patients, appointments, timed_out)
+        # if not current_user.is_department_head():
+        #     return render_template("patients.html", user=current_user, info=info, sidebar=MEDICAL_STAFF_SIDEBAR)
+        # return render_template("patients.html", user=current_user, info=info, sidebar=DEPARTMENT_HEAD_SIDEBAR)
+
+    abort(401)
 
 #File_Upload View
 @user_view.route("/upload", methods=["POST"])
