@@ -452,7 +452,7 @@ def choose_medical_staff_phone(hospital_id,department_id):
                     for i in medical_staff:
                         fname.append(i.first_name)
                         lname.append(i.last_name)
-                        doctor_id.append(i.staff_id)
+                        doctor_id.append(i.id)
                     return jsonify({'firstname':fname,'lastname':lname,'id':doctor_id})
     abort(401)
 
