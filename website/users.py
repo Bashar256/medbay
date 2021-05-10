@@ -517,11 +517,8 @@ def doctor_details_view(hospital_id, department_id, staff_id,role="md"):
 def appointment_time_select_View():
     medical_staff_id = request.args.get('medical_staff_id')
     appointment_date = request.args.get('appointment_date')
-    print("1")
-    print(appointment_date)
     appointment_date = html_date_to_python_date(appointment_date)
-    print("2")
-    print(appointment_date)
+
     data = [{"id": -1}]
 
     if appointment_date.weekday() in WEEKEND:
@@ -557,7 +554,8 @@ def appointment_time_select_View_phone():
     if request.method=="GET":
         if(request.mimetype == 'application/json'):
             if load_user_request(request):
-                data=request.json
+                medical_staff_id = request.args.get('medical_staff_id')
+                appointment_date = request.args.get('appointment_date')
                 print(medical_staff_id)
                 print(appointment_date)
                 appointment_date = html_date_to_python_date(appointment_date)
