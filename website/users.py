@@ -520,7 +520,7 @@ def appointment_time_select_View():
     print("1")
     print(appointment_date)
     appointment_date = html_date_to_python_date(appointment_date)
-     print("2")
+    print("2")
     print(appointment_date)
     data = [{"id": -1}]
 
