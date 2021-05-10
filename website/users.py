@@ -535,12 +535,12 @@ def doctor_details_view_phone(hospital_id, department_id, staff_id,role="md"):
                             appointment = Appointment.query.filter(Appointment.appointment_date_time==appointment_date_time, Appointment.medical_staff==staff_id, Appointment.patient==current_user.id).all()
                             
                             if appointment:
-                                return jsonify({'status':'The doctor has an appointment at that time'}
+                                return jsonify({'status':'The doctor has an appointment at that time'})
                             
 
                             appointment = Appointment.query.filter(Appointment.appointment_date_time==appointment_date_time, Appointment.patient==current_user.id).all()
                             if appointment:
-                                return jsonify({'status':'You have an appointment at that time'}
+                                return jsonify({'status':'You have an appointment at that time'})
                                 
 
                             new_appointment = Appointment(appointment_date_time=appointment_date_time, hospital=hospital_id, department=department_id, medical_staff=staff_id, patient=current_user.id)
@@ -552,9 +552,9 @@ def doctor_details_view_phone(hospital_id, department_id, staff_id,role="md"):
                             db.session.commit()
                             db.session.execute(Time_Slot.insert(), params={"id": temp_slot[0], "appointment_time_id":temp_slot[1], "start":temp_slot[2], "end":temp_slot[3], "date":temp_slot[4], "appointment_id":new_appointment.id, "taken":True})
                             db.session.commit()
-                            return jsonify({'status':'Appointment created!'}
+                            return jsonify({'status':'Appointment created!'})
                         
-                        return jsonify({'status':'Please confirm your email to make an appointment'}    
+                        return jsonify({'status':'Please confirm your email to make an appointment'}) 
         
         medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
         appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
