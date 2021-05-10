@@ -525,10 +525,14 @@ def appointment_time_select_View():
     
     time_slots = db.session.query(Time_Slot).filter_by(date=appointment_date.date()).all()
     if time_slots:
+        print("1")
         available_times = []
         for slot in time_slots:
+            print("2")
             if slot[-1] == False:
+                print("3")
                 if slot not in available_times:
+                    print("4")
                     available_times.append(slot)
         print("AVAILABLE TIMES")
         print(available_times)
