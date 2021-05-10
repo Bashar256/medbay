@@ -517,7 +517,11 @@ def doctor_details_view(hospital_id, department_id, staff_id,role="md"):
 def appointment_time_select_View():
     medical_staff_id = request.args.get('medical_staff_id')
     appointment_date = request.args.get('appointment_date')
+    print("1")
+    print(appointment_date)
     appointment_date = html_date_to_python_date(appointment_date)
+     print("2")
+    print(appointment_date)
     data = [{"id": -1}]
 
     if appointment_date.weekday() in WEEKEND:
@@ -534,8 +538,7 @@ def appointment_time_select_View():
                 if slot not in available_times:
                     print("4")
                     available_times.append(slot)
-        print("AVAILABLE TIMES")
-        print(available_times)
+
         data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in available_times]
         return jsonify(data)
 
@@ -543,9 +546,8 @@ def appointment_time_select_View():
     appointment_times = Appointment_Times.query.filter_by(id=doctor.appointment_times).first()
     appointment_times.create_slots(date=appointment_date)
     time_slots = db.session.query(Time_Slot).filter_by(date=appointment_date.date()).all()
-    print("AVAILABLE TIMES")
-    for time_slot in time_slots:
-        print((time_slot[2].strftime("%H:%M")).__str__())
+ 
+
     data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in time_slots]
     return jsonify(data)  
 
