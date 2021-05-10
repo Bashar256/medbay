@@ -557,6 +557,8 @@ def appointment_time_select_View_phone():
     data=request.json
     medical_staff_id = data['medical_staff_id']
     appointment_date = data['appointment_date']
+    print(medical_staff_id)
+    print(appointment_date)
     appointment_date = html_date_to_python_date(appointment_date)
     data = [{"id": -1}]
 
