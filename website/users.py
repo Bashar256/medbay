@@ -509,6 +509,58 @@ def doctor_details_view(hospital_id, department_id, staff_id,role="md"):
         return render_template("staff_details.html", user=current_user, max_appointment_date=today + datetime.timedelta(days=MAX_APPOINTMENT_DATE), today=today, staff=medical_staff, appointment_time=appointment_time, sidebar=PATIENT_SIDEBAR)
     abort(401)
 
+@user_view.route("/book_appointment/<int:hospital_id>/<int:department_id>/staff_details_<int:staff_id><string:role>", methods=["POST", "GET"])
+@login_required
+def doctor_details_view(hospital_id, department_id, staff_id,role="md"):  
+    if current_user.is_patient():
+        if request.method == 'POST':
+                if(request.mimetype == 'application/json'):
+                    if load_user_request(request):
+                        if not current_user.confirmed:
+                            data=request.json
+                            appointment_date = data['appointment_date']
+                            time_slot_id = data['appointment_time']
+                            medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
+                            appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
+                            time_slot = db.session.query(Time_Slot).filter_by(id=int(time_slot_id)).first()
+                            if (not time_slot) or time_slot[-1]:
+                                return jsonify({'status':'Please select one of the provided time slots'})
+                                
+
+
+                            appointment_date = html_date_to_python_date(appointment_date)
+                            appointment_date_time = datetime.datetime.combine(appointment_date,time_slot[2])
+                            department = Department.query.filter_by(id=department_id).first()
+                            hospital = Hospital.query.filter_by(id=hospital_id).first()
+                            appointment = Appointment.query.filter(Appointment.appointment_date_time==appointment_date_time, Appointment.medical_staff==staff_id, Appointment.patient==current_user.id).all()
+                            
+                            if appointment:
+                                return jsonify({'status':'The doctor has an appointment at that time'}
+                            
+
+                            appointment = Appointment.query.filter(Appointment.appointment_date_time==appointment_date_time, Appointment.patient==current_user.id).all()
+                            if appointment:
+                                return jsonify({'status':'You have an appointment at that time'}
+                                
+
+                            new_appointment = Appointment(appointment_date_time=appointment_date_time, hospital=hospital_id, department=department_id, medical_staff=staff_id, patient=current_user.id)
+                            medical_staff.patients.append(current_user)
+                            db.session.execute(Patients.insert(), params={"patient_id":current_user.id, "medical_staff_id":staff_id, "timeout":appointment_date_time + datetime.timedelta(days=APPOINTMENT_TIMEOUT) })            
+                            temp_slot = time_slot
+                            db.session.query(Time_Slot).filter_by(id=time_slot[0]).delete()
+                            db.session.add(new_appointment)
+                            db.session.commit()
+                            db.session.execute(Time_Slot.insert(), params={"id": temp_slot[0], "appointment_time_id":temp_slot[1], "start":temp_slot[2], "end":temp_slot[3], "date":temp_slot[4], "appointment_id":new_appointment.id, "taken":True})
+                            db.session.commit()
+                            return jsonify({'status':'Appointment created!'}
+                        
+                        return jsonify({'status':'Please confirm your email to make an appointment'}    
+        
+        medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
+        appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
+        return render_template("staff_details.html", user=current_user, max_appointment_date=today + datetime.timedelta(days=MAX_APPOINTMENT_DATE), today=today, staff=medical_staff, appointment_time=appointment_time, sidebar=PATIENT_SIDEBAR)
+    abort(401)
+
 
 
 #Change Appointment_Times View
@@ -554,10 +606,6 @@ def appointment_time_select_View_phone(medical_staff_id,appointment_date):
     if request.method=="GET":
         if(request.mimetype == 'application/json'):
             if load_user_request(request):
-                # medical_staff_id = request.args.get('medical_staff_id')
-                # appointment_date = request.args.get('appointment_date')
-                print(medical_staff_id)
-                print(appointment_date)
                 appointment_date = html_date_to_python_date(appointment_date)
                 data = [{"id": -1}]
 
