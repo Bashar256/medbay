@@ -544,7 +544,7 @@ def appointment_time_select_View():
     appointment_times.create_slots(date=appointment_date)
     time_slots = db.session.query(Time_Slot).filter_by(date=appointment_date.date()).all()
     print("AVAILABLE TIMES")
-    print((time_slot[2].strftime("%H:%M")).__str__()} for time_slot in time_slots)
+    print(time_slot[2].strftime("%H:%M")).__str__()} for time_slot in time_slots)
     data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in time_slots]
     return jsonify(data)  
 
