@@ -551,7 +551,7 @@ def appointment_time_select_View():
     data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in time_slots]
     return jsonify(data)  
 
-@user_view.route("/appointment_time_select_phone/<int:medical_staff_id>/<string:appointment_date>", methods=["GET"])
+@user_view.route("/appointment_time_select_phone<int:medical_staff_id><string:appointment_date>", methods=["GET"])
 @login_required
 def appointment_time_select_View_phone(medical_staff_id,appointment_date):
     if request.method=="GET":
