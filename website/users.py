@@ -506,6 +506,8 @@ def doctor_details_view(hospital_id, department_id, staff_id,role="md"):
             return redirect(url_for("user_view.doctor_details_view", hospital_id=hospital_id, department_id=department_id, staff_id=staff_id, role=role))
         medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
         appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
+        print("MAX DATE:")
+        print(today + datetime.timedelta(days=MAX_APPOINTMENT_DATE))
         return render_template("staff_details.html", user=current_user, max_appointment_date=today + datetime.timedelta(days=MAX_APPOINTMENT_DATE), today=today, staff=medical_staff, appointment_time=appointment_time, sidebar=PATIENT_SIDEBAR)
     abort(401)
 
