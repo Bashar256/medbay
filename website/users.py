@@ -509,9 +509,9 @@ def doctor_details_view(hospital_id, department_id, staff_id,role="md"):
         return render_template("staff_details.html", user=current_user, max_appointment_date=today + datetime.timedelta(days=MAX_APPOINTMENT_DATE), today=today, staff=medical_staff, appointment_time=appointment_time, sidebar=PATIENT_SIDEBAR)
     abort(401)
 
-@user_view.route("/book_appointment/<int:hospital_id>/<int:department_id>/staff_details_<int:staff_id><string:role>", methods=["POST", "GET"])
+@user_view.route("/book_appointment/<int:hospital_id>/<int:department_id>/staff_details_phone<int:staff_id><string:role>", methods=["POST", "GET"])
 @login_required
-def doctor_details_view(hospital_id, department_id, staff_id,role="md"):  
+def doctor_details_view_phone(hospital_id, department_id, staff_id,role="md"):  
     if current_user.is_patient():
         if request.method == 'POST':
                 if(request.mimetype == 'application/json'):
