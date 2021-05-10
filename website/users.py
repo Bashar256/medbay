@@ -752,7 +752,7 @@ def patients_view():
         appointments = []
         for patient in doctors_patients:
             appointments.append(patient.last_visit(current_user.id))
-
+        print(appointments)
         info = zip(doctors_patients, appointments, timed_out)
         if not current_user.is_department_head():
             return render_template("patients.html", user=current_user, info=info, sidebar=MEDICAL_STAFF_SIDEBAR)
@@ -847,7 +847,7 @@ def patients_view_phone():
     abort(401)
 
 #File_Upload View
-@user_view.route("/upload", methods=["POST"])
+@user_view.route("/upload", methods=["GET", "POST"])
 @login_required
 def upload_file_view():
     if current_user.is_medical_staff():
@@ -863,7 +863,7 @@ def upload_file_view():
             appointment = Appointment.query.filter(Appointment.medical_staff==current_user.id, Appointment.patient==patient_id, Appointment.appointment_date_time==appointment_date_time).first()
             patient = Patient.query.filter_by(id=patient_id).first()
             if diganosis_file.filename:
-                filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Diagnosis" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")))
+                filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Diagnosis" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")) + "." + diganosis_file.filename.split('.')[-1])
                 path = os.path.join(patient.diagnoses_file, filename)
                 diganosis_file.save(path)
                 new_diagnosis = Diagnosis(path=path, date=datetime.datetime.now(), medical_staff=current_user.id, patient=patient_id, appointment=appointment.id)
@@ -873,7 +873,7 @@ def upload_file_view():
                 return redirect(url_for("user_view.patients_view"))
 
             elif lab_result_file:
-                filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Lab_result" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")))
+                filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Lab_result" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")) + "." + lab_result_file.filename.split('.')[-1])
                 path = os.path.join(patient.lab_results_file, filename)
                 lab_result_file.save(path)
                 new_lab_result = Lab_Result(path=path, date=datetime.datetime.now(), medical_staff=current_user.id, patient=patient_id, appointment=appointment.id)
@@ -892,9 +892,16 @@ def upload_file_view():
 @user_view.route('/download/<path:filename>', methods=['GET', 'POST'])
 @login_required
 def download_view(filename):
-    if os.path.isfile(filename):
-        return send_file(get_path(filename), as_attachment=True)
-    abort(404)
+    if current_user.is_patient():
+        if "PatientNo" + str(current_user.id) in filename.split("_"):
+            if os.path.isfile(filename):
+                return send_file(get_path(filename), as_attachment=True)
+
+    if current_user.is_medical_staff():
+        if "Doctor" + str(current_user.id) in filename.split("_"):
+            if os.path.isfile(filename):
+                return send_file(get_path(filename), as_attachment=True)       
+    abort(401)
 
 
 #Patient_Profile View
@@ -1391,4 +1398,6 @@ def check_timeout(patient_timeout):
 
 
 def get_path(path):
-    return path.replace("\\", "/")
+    if 'website/' in path:
+        path = path.replace('website/', '')
+    return path.replace("/", "\\")

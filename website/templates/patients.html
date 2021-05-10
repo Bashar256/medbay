@@ -30,7 +30,9 @@
                                                 <div class="d-flex">
                                                     {% if not timed_out:%}
                                                         <button title="Patient Profile" onclick="window.location.href='/patient_details{{patient.id}}'" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-user"></i></button>
-                                                        <button title="Upload" type="submit" data-toggle="modal" data-target="#upload{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-file"></i></button>
+                                                        {% if appointment: %}
+                                                            <button title="Upload" type="submit" data-toggle="modal" data-target="#upload{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-file"></i></button>
+                                                        {% endif %}
                                                     {% endif %}
                                                     {% if not patient.bed: %}
                                                         {% if not timed_out: %}
@@ -40,40 +42,42 @@
                                                         <button title="Release Patient" type="submit" data-toggle="modal" data-target="#releasebed{{patient.id}}" class="btn btn-danger shadow btn-xs sharp mr-1"><i class="fa fa-eject"></i></button>
                                                     {% endif %}
                                                 </div>
-                                                <div class="modal fade" id="upload{{patient.id}}">
-                                                    <div class="modal-dialog" role="document">
-                                                        <form method='POST' enctype = "multipart/form-data" action = "http://localhost:5000/upload">
-                                                            <div class="modal-content">
-                                                                <div class="modal-header">
-                                                                    <h5 class="modal-title">Upload</h5>
-                                                                </div>
-                                                                <div class="modal-body">
-                                                                    <div class="form-group">
-                                                                        <input type="hidden" name="patient_id" value="{{patient.id}}"></input>
-                                                                        <input type="hidden" name="appointment" value="{{appointment}}"></input>
-                                                                        <input type="hidden" name="form_no" value="1"></input>
-                                                                        <div class="input-group mb-3">
-                                                                            <div class="custom-file">
-                                                                                <input type="file" name="diagnosis" class="custom-file-input">
-                                                                                <label class="custom-file-label">Upload Diagnosis</label>
-                                                                            </div> 
-                                                                        </div>
-                                                                        <div class="input-group mb-3">
-                                                                            <div class="custom-file">
-                                                                                <input type="file" name="lab_result" class="custom-file-input">
-                                                                                <label class="custom-file-label">Upload Lab Result</label>
-                                                                            </div> 
+                                                {% if appointment: %}
+                                                    <div class="modal fade" id="upload{{patient.id}}">
+                                                        <div class="modal-dialog" role="document">
+                                                            <form method='POST' enctype = "multipart/form-data" action = "http://localhost:5000/upload">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title">Upload</h5>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <div class="form-group">
+                                                                            <input type="hidden" name="patient_id" value="{{patient.id}}"></input>
+                                                                            <input type="hidden" name="appointment" value="{{appointment}}"></input>
+                                                                            <input type="hidden" name="form_no" value="1"></input>
+                                                                            <div class="input-group mb-3">
+                                                                                <div class="custom-file">
+                                                                                    <input type="file" name="diagnosis" class="custom-file-input">
+                                                                                    <label class="custom-file-label">Upload Diagnosis</label>
+                                                                                </div> 
+                                                                            </div>
+                                                                            <div class="input-group mb-3">
+                                                                                <div class="custom-file">
+                                                                                    <input type="file" name="lab_result" class="custom-file-input">
+                                                                                    <label class="custom-file-label">Upload Lab Result</label>
+                                                                                </div> 
+                                                                            </div>
                                                                         </div>
                                                                     </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="submit" class="btn btn-primary">Upload</button>
+                                                                        <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
+                                                                    </div>
                                                                 </div>
-                                                                <div class="modal-footer">
-                                                                    <button type="submit" class="btn btn-primary">Upload</button>
-                                                                    <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
-                                                                </div>
-                                                            </div>
-                                                        </form>
+                                                            </form>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                {% endif %}
                                                 <div class="modal fade" id="occupybed{{patient.id}}">
                                                     <div class="modal-dialog" role="document">
                                                         <form method='POST'>

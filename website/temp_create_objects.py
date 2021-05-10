@@ -1,7 +1,8 @@
-from website import db
-from website.models import Hospital,Department,Appointment,User,Patient,Medical_Staff,Management_Staff,Patients, Appointment_Times
+from website import db,APPOINTMENT_TIME, APPOINTMENT_TIMEOUT
+from website.models import Hospital,Department,Appointment,User,Patient,Medical_Staff,Management_Staff,Patients, Appointment_Times,Time_Slot
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
+from website.users import html_date_to_python_date
 import datetime
 def create_stuff():
     
@@ -72,10 +73,10 @@ def create_stuff():
     phone_no = '+962111111111'
     dob = '2000-01-01'
 
-    new_patient = Medical_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='md', hospital=1, department=1, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
-    db.session.add(new_patient)
-    new_patient.appointment_times = new_patient1.id
-    new_patient1.medical_staff.append(new_patient)
+    medical_staff = Medical_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='md', hospital=1, department=1, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
+    db.session.add(medical_staff)
+    medical_staff.appointment_times = new_patient1.id
+    new_patient1.medical_staff.append(medical_staff)
     db.session.commit()
 
 
@@ -122,6 +123,20 @@ def create_stuff():
     db.session.commit()
     new_patient.create_patient_file()
     db.session.commit()
+
+    appointment_times = Appointment_Times.query.filter_by(id=1).first()
+    appointment_times.create_slots(date=html_date_to_python_date("2021-4-20"))
+    time_slot = db.session.query(Time_Slot).filter_by(id=3).first()
+    new_appointment = Appointment(appointment_date_time=datetime.datetime(2021, 4, 20,5,30), hospital=1, department=1, medical_staff=3, patient=6)
+    medical_staff.patients.append(new_patient)
+    db.session.execute(Patients.insert(), params={"patient_id":6, "medical_staff_id":3, "timeout":datetime.datetime(2021, 4, 20,5,30) + datetime.timedelta(days=50) })            
+    temp_slot = time_slot
+    db.session.query(Time_Slot).filter_by(id=time_slot[0]).delete()
+    db.session.add(new_appointment)
+    db.session.commit()
+    db.session.execute(Time_Slot.insert(), params={"id": temp_slot[0], "appointment_time_id":temp_slot[1], "start":temp_slot[2], "end":temp_slot[3], "date":temp_slot[4], "appointment_id":new_appointment.id, "taken":True})
+    db.session.commit()
+
 
 
     email = 'patient2@gmail.com'
