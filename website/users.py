@@ -551,38 +551,40 @@ def appointment_time_select_View():
     data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in time_slots]
     return jsonify(data)  
 
-@user_view.route("/appointment_time_select_phone")
+@user_view.route("/appointment_time_select_phone", methods=["POST"])
 @login_required
 def appointment_time_select_View_phone():
-    data=request.json
-    medical_staff_id = data['medical_staff_id']
-    appointment_date = data['appointment_date']
-    print(medical_staff_id)
-    print(appointment_date)
-    appointment_date = html_date_to_python_date(appointment_date)
-    data = [{"id": -1}]
+    if request.method == "POST":
+        if(request.mimetype == 'application/json'):
+            data=request.json
+            medical_staff_id = data['medical_staff_id']
+            appointment_date = data['appointment_date']
+            print(medical_staff_id)
+            print(appointment_date)
+            appointment_date = html_date_to_python_date(appointment_date)
+            data = [{"id": -1}]
 
 
-    if appointment_date.weekday() in WEEKEND:
-        return jsonify(data)
-    
-    time_slots = db.session.query(Time_Slot).filter_by(date=appointment_date.date()).all()
-    if time_slots:
-        available_times = []
-        for slot in time_slots:
-            if slot[-1] == False:
-                if slot not in available_times:
-                    available_times.append(slot)
-        data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in available_times]
-        return jsonify(data)
+            if appointment_date.weekday() in WEEKEND:
+                return jsonify(data)
+            
+            time_slots = db.session.query(Time_Slot).filter_by(date=appointment_date.date()).all()
+            if time_slots:
+                available_times = []
+                for slot in time_slots:
+                    if slot[-1] == False:
+                        if slot not in available_times:
+                            available_times.append(slot)
+                data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in available_times]
+                return jsonify(data)
 
-    doctor = Medical_Staff.query.filter_by(id=medical_staff_id).first()
-    appointment_times = Appointment_Times.query.filter_by(id=doctor.appointment_times).first()
-    appointment_times.create_slots(date=appointment_date)
-    time_slots = db.session.query(Time_Slot).filter_by(date=appointment_date.date()).all()
+            doctor = Medical_Staff.query.filter_by(id=medical_staff_id).first()
+            appointment_times = Appointment_Times.query.filter_by(id=doctor.appointment_times).first()
+            appointment_times.create_slots(date=appointment_date)
+            time_slots = db.session.query(Time_Slot).filter_by(date=appointment_date.date()).all()
 
-    data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in time_slots]
-    return jsonify(data)  
+            data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in time_slots]
+            return jsonify(data)  
 
 
 #My_Appointments(View/Edit/Delete)  View
@@ -664,6 +666,7 @@ def my_appointments_view():
 def patients_view():
     if current_user.is_medical_staff():
         if request.method == 'POST':
+            if(request.mimetype == 'application/json'):
             form_no = request.form.get("form_no")
             if form_no == "1":
                 patient_id = request.form.get("patient_id")
