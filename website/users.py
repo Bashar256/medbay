@@ -199,7 +199,7 @@ def appointment_upcoming():
                         return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
                 elif current_user.is_patient():
                     information = patient_appointments(current_user.id)
-                    for appointment,hospital,department,usr,diagnoses,lab_results in information:
+                    for appointment,hospital,department,usr in information:
                         if appointment.appointment_date_time > today:
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
@@ -1394,7 +1394,8 @@ def check_timeout(patient_timeout):
         return True
     return False
 
+
 def get_path(path):
     if 'website/' in path:
         path = path.replace('website/', '')
-    return path.replace("\\", "/")
+    return path.replace("/", "\\")
