@@ -756,6 +756,7 @@ def appointment_change_phone():
                             appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
                             time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
                             free_appointment_time = db.session.query(Time_Slot).filter_by(id=time_slot_id).first()
+                            print(free_appointment_time)
                             if (not free_appointment_time) or free_appointment_time[-1]:
                                 return jsonify({'status':'Please select one of the provided time slots'})
                             
