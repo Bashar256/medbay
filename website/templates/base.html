@@ -93,9 +93,11 @@
                     <div class="deznav-scroll">
                         <ul class="metismenu" id="menu">
                             {% if user.is_patient(): %}
+                            
                                 <button onclick="window.location.href='/book_appointment'" class="plus-box">
                                     <p>Create New Appointment</p>
                                 </button>
+                            
                             {% endif %}			
                                                 <!--Sidebar-->
                             <li><a href="/profile" class="ai-icon" aria-expanded="false">

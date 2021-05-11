@@ -28,7 +28,7 @@ def login_view():
             user.bad_logins = 0
             db.session.commit()
             if request.mimetype=='application/json':
-                return jsonify({'status':'Login Successful!'})
+                return jsonify({'status':'Login Successful!','role':user.role})
             return redirect(url_for('user_view.home_view'))
         elif request.mimetype=='application/json':
             return jsonify({'status':'Incorrect email or password.'})

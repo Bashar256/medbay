@@ -178,6 +178,10 @@ def appointment_upcoming():
     minute=[]
     weekday=[]
     wdays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] 
+    appointment_id=[]
+    department_id=[]
+    hospital_id=[]
+    staff_id=[]
     
     if request.mimetype == 'application/json':
             if load_user_request(request):
@@ -199,7 +203,7 @@ def appointment_upcoming():
                         return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
                 elif current_user.is_patient():
                     information = patient_appointments(current_user.id)
-                    for appointment,hospital,department,usr in information:
+                    for appointment,hospital,department,usr,diagnoses,lab_results in information:
                         if appointment.appointment_date_time > today:
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
@@ -211,9 +215,13 @@ def appointment_upcoming():
                             hour.append(appointment.appointment_date_time.hour)
                             minute.append(str(appointment.appointment_date_time.minute))
                             weekday.append(wdays[appointment.appointment_date_time.weekday()])
-                            print(appointment.appointment_id)
+                            appointment_id.append(appointment.id)
+                            hospital_id.append(department.hospital)
+                            department_id.append(department.id)
+                            staff_id.append(usr.id)
+
                     if day:
-                        return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
+                        return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday,'appointment_id':appointment_id,'hospital_id':hospital_id,'department_id':department_id,'staff_id':staff_id})
                
 
 
@@ -723,12 +731,10 @@ def appointment_change_phone():
                 data=request.json
                 form_no = data['form_no']
                 appointment_id = data['appointment_id']
-                appointment_date = data['appointment_date']
-                time_slot_id = data['appointment_time']
                 appointment = Appointment.query.filter_by(id=appointment_id).first()
                 if appointment:
                     if current_user.id == appointment.patient:
-                        if form_no == "1":
+                        if form_no == 1:
                             db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff, Patients.c.timeout==(appointment.appointment_date_time + datetime.timedelta(days=APPOINTMENT_TIMEOUT))).delete()
                             time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
                             temp_slot = time_slot
@@ -738,11 +744,14 @@ def appointment_change_phone():
                             db.session.commit()
                             return jsonify({'status':'Appointment Deleted!'})
                         
-                        elif form_no =="2":
+                        elif form_no ==2:
+                            appointment_date = data['appointment_date']
+                            time_slot_id = data['appointment_time']
                             medical_staff = Medical_Staff.query.filter_by(id=appointment.medical_staff).first()
                             appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
                             time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
                             free_appointment_time = db.session.query(Time_Slot).filter_by(id=time_slot_id).first()
+                            print(free_appointment_time)
                             if (not free_appointment_time) or free_appointment_time[-1]:
                                 return jsonify({'status':'Please select one of the provided time slots'})
                             
@@ -965,12 +974,12 @@ def upload_file_view():
 @login_required
 def download_view(filename):
     if current_user.is_patient():
-        filename = get_path(filename)
+        filename = save_path(filename)
         if os.path.isfile(filename):
             return send_file(get_path(filename), as_attachment=True)
 
     elif current_user.is_medical_staff():
-        filename = get_path(filename)
+        filename = save_path(filename)
         print(filename)
         if os.path.isfile(filename):
             return send_file(get_path(filename), as_attachment=True)       
