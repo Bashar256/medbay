@@ -215,8 +215,6 @@ def appointment_upcoming():
                             hour.append(appointment.appointment_date_time.hour)
                             minute.append(str(appointment.appointment_date_time.minute))
                             weekday.append(wdays[appointment.appointment_date_time.weekday()])
-                            print('AptID 1')
-                            print(appointment.id)
                             appointment_id.append(appointment.id)
                             hospital_id.append(department.hospital)
                             department_id.append(department.id)
@@ -733,13 +731,8 @@ def appointment_change_phone():
                 data=request.json
                 form_no = data['form_no']
                 appointment_id = data['appointment_id']
-                appointment_date = data['appointment_date']
-                time_slot_id = data['appointment_time']
                 appointment = Appointment.query.filter_by(id=appointment_id).first()
                 if appointment:
-                    print("APT 3")
-                    print(current_user.id)
-                    print(appointment.patient)
                     if current_user.id == appointment.patient:
                         if form_no == 1:
                             db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff, Patients.c.timeout==(appointment.appointment_date_time + datetime.timedelta(days=APPOINTMENT_TIMEOUT))).delete()
@@ -752,6 +745,8 @@ def appointment_change_phone():
                             return jsonify({'status':'Appointment Deleted!'})
                         
                         elif form_no ==2:
+                            appointment_date = data['appointment_date']
+                            time_slot_id = data['appointment_time']
                             medical_staff = Medical_Staff.query.filter_by(id=appointment.medical_staff).first()
                             appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
                             time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
