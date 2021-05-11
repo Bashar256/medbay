@@ -719,71 +719,68 @@ def my_appointments_view():
 def appointment_change_phone():
     if current_user.is_patient():
         if request.method == "POST":
-            form_no = request.form.get('form_no')
-            appointment_id = request.form.get('appointment_id')
-            appointment_date = request.form.get('appointment_date')
-            time_slot_id = request.form.get('appointment_time')
-            appointment = Appointment.query.filter_by(id=appointment_id).first()
-            if appointment:
-                if current_user.id == appointment.patient:
-                    if form_no == "1":
-                        db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff, Patients.c.timeout==(appointment.appointment_date_time + datetime.timedelta(days=APPOINTMENT_TIMEOUT))).delete()
-                        time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
-                        temp_slot = time_slot
-                        db.session.query(Time_Slot).filter_by(id=time_slot[0]).delete()      
-                        db.session.execute(Time_Slot.insert(), params={"id": temp_slot[0], "appointment_time_id":temp_slot[1], "start":temp_slot[2], "end":temp_slot[3], "date":temp_slot[4], "taken":False})          
-                        db.session.delete(appointment)
-                        db.session.commit()
-                        flash("Appointment Deleted!", category='update')
-                        return redirect(url_for("user_view.my_appointments_view"))
-                    
-                    elif form_no =="2":
-                        medical_staff = Medical_Staff.query.filter_by(id=appointment.medical_staff).first()
-                        appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
-                        time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
-                        free_appointment_time = db.session.query(Time_Slot).filter_by(id=time_slot_id).first()
-                        if (not free_appointment_time) or free_appointment_time[-1]:
-                            flash("Please select one of the provided time slots", category='error')
-                            return redirect(url_for("user_view.my_appointments_view"))
+            if(request.mimetype == 'application/json'):
+                data=request.json
+                form_no = data['form_no']
+                appointment_id = data['appointment_id']
+                appointment_date = data['appointment_date']
+                time_slot_id = data['appointment_time']
+                appointment = Appointment.query.filter_by(id=appointment_id).first()
+                if appointment:
+                    if current_user.id == appointment.patient:
+                        if form_no == "1":
+                            db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff, Patients.c.timeout==(appointment.appointment_date_time + datetime.timedelta(days=APPOINTMENT_TIMEOUT))).delete()
+                            time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
+                            temp_slot = time_slot
+                            db.session.query(Time_Slot).filter_by(id=time_slot[0]).delete()      
+                            db.session.execute(Time_Slot.insert(), params={"id": temp_slot[0], "appointment_time_id":temp_slot[1], "start":temp_slot[2], "end":temp_slot[3], "date":temp_slot[4], "taken":False})          
+                            db.session.delete(appointment)
+                            db.session.commit()
+                            return jsonify({'status':'Appointment Deleted!'})
                         
-                        appointment_date = html_date_to_python_date(appointment_date)
-                        appointment_date_time = datetime.datetime.combine(appointment_date,free_appointment_time[2])
-                        appointment.appointment_date_time = appointment_date_time
+                        elif form_no =="2":
+                            medical_staff = Medical_Staff.query.filter_by(id=appointment.medical_staff).first()
+                            appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
+                            time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
+                            free_appointment_time = db.session.query(Time_Slot).filter_by(id=time_slot_id).first()
+                            if (not free_appointment_time) or free_appointment_time[-1]:
+                                return jsonify({'status':'Please select one of the provided time slots'})
+                            
+                            appointment_date = html_date_to_python_date(appointment_date)
+                            appointment_date_time = datetime.datetime.combine(appointment_date,free_appointment_time[2])
+                            appointment.appointment_date_time = appointment_date_time
 
-                        temp_slot = time_slot
-                        db.session.query(Time_Slot).filter_by(id=time_slot[0]).delete()
-                        db.session.execute(Time_Slot.insert(), params={"id": temp_slot[0], "appointment_time_id":temp_slot[1], "start":temp_slot[2], "end":temp_slot[3], "date":temp_slot[4], "taken":False})
+                            temp_slot = time_slot
+                            db.session.query(Time_Slot).filter_by(id=time_slot[0]).delete()
+                            db.session.execute(Time_Slot.insert(), params={"id": temp_slot[0], "appointment_time_id":temp_slot[1], "start":temp_slot[2], "end":temp_slot[3], "date":temp_slot[4], "taken":False})
 
-                        free_temp_slot = free_appointment_time
-                        db.session.query(Time_Slot).filter_by(id=free_appointment_time[0]).delete()
-                        db.session.execute(Time_Slot.insert(), params={"id": free_temp_slot[0], "appointment_time_id":free_temp_slot[1], "start":free_temp_slot[2], "end":free_temp_slot[3], "date":free_temp_slot[4], "appointment_id":appointment_id, "taken":True})                           
+                            free_temp_slot = free_appointment_time
+                            db.session.query(Time_Slot).filter_by(id=free_appointment_time[0]).delete()
+                            db.session.execute(Time_Slot.insert(), params={"id": free_temp_slot[0], "appointment_time_id":free_temp_slot[1], "start":free_temp_slot[2], "end":free_temp_slot[3], "date":free_temp_slot[4], "appointment_id":appointment_id, "taken":True})                           
 
-                        db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff, Patients.c.timeout==(appointment.appointment_date_time + datetime.timedelta(days=APPOINTMENT_TIMEOUT))).delete()                        
-                        db.session.execute(Patients.insert(), params={"patient_id":current_user.id, "medical_staff_id":medical_staff.id, "timeout":appointment_date_time + datetime.timedelta(days=APPOINTMENT_TIMEOUT) })              
-                        
-                        db.session.commit()             
-                        flash("Appointment Changed!", category='update')
-                        return redirect(url_for("user_view.my_appointments_view"))
+                            db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff, Patients.c.timeout==(appointment.appointment_date_time + datetime.timedelta(days=APPOINTMENT_TIMEOUT))).delete()                        
+                            db.session.execute(Patients.insert(), params={"patient_id":current_user.id, "medical_staff_id":medical_staff.id, "timeout":appointment_date_time + datetime.timedelta(days=APPOINTMENT_TIMEOUT) })              
+                            
+                            db.session.commit()
+                            return jsonify({'status':'Appointment Changed!'})             
 
-                    flash("Please submit a correct form", category='error')
-                    return redirect(url_for("user_view.my_appointments_view"))
+                        return jsonify({'status':'Please submit a correct form'})
 
-                flash("You can only modify your appointments", category='error')
-                return redirect(url_for("user_view.my_appointments_view"))
+                    return jsonify({'status':'You can only modify your appointments'})
 
-            flash("Appointment Does not exist", category='error')
-            return redirect(url_for("user_view.my_appointments_view"))
+                return jsonify({'status':'Appointment Does not exist'})            
 
-        information = patient_appointments(current_user.id)
-        return render_template("my_appointments.html", user=current_user, information=information, today=today, max_appointment_date=today + datetime.timedelta(days=MAX_APPOINTMENT_DATE), sidebar=PATIENT_SIDEBAR)
 
-    if current_user.is_medical_staff():
-        information = medical_staff_appointments(current_user.id)
-        if not current_user.is_department_head():
-            return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=MEDICAL_STAFF_SIDEBAR)
-        return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=DEPARTMENT_HEAD_SIDEBAR)
+    #     information = patient_appointments(current_user.id)
+    #     return render_template("my_appointments.html", user=current_user, information=information, today=today, max_appointment_date=today + datetime.timedelta(days=MAX_APPOINTMENT_DATE), sidebar=PATIENT_SIDEBAR)
+
+    # if current_user.is_medical_staff():
+    #     information = medical_staff_appointments(current_user.id)
+    #     if not current_user.is_department_head():
+    #         return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=MEDICAL_STAFF_SIDEBAR)
+    #     return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=DEPARTMENT_HEAD_SIDEBAR)
     
-    abort(401)
+    # abort(401)
 
 
 #Doctor_Patients View 
