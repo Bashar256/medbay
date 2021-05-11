@@ -353,6 +353,7 @@ class Patient(User):
         #Patient folder
         name = "PatientNo"+str(self.id)
         directory = os.path.join(UPLOAD_DIRECTORY, name)
+        directory = get_path(directory)
         if not os.path.isdir(directory):
             os.mkdir(directory)
         self.patient_file = directory
@@ -361,6 +362,7 @@ class Patient(User):
         path = self.patient_file
         name = "Diagnoses"
         directory = os.path.join(path, name)
+        directory = get_path(directory)
         if not os.path.isdir(directory):
             os.mkdir(directory)
         self.diagnoses_file = directory
@@ -369,6 +371,7 @@ class Patient(User):
         path = self.patient_file
         name = "Lab results"
         directory = os.path.join(path, name)
+        directory = get_path(directory)
         if not os.path.isdir(directory):
             os.mkdir(directory)
         self.lab_results_file = directory
@@ -386,3 +389,6 @@ class Patient(User):
 
 
 
+
+def get_path(path):
+    return path.replace("\\", "/")
