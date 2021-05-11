@@ -1398,4 +1398,4 @@ def check_timeout(patient_timeout):
 def get_path(path):
     if 'website/' in path:
         path = path.replace('website/', '')
-    return path.replace("/", "\\")
+    return path.replace("\\", "/")
