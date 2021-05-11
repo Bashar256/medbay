@@ -162,7 +162,9 @@ def appointment_history():
                             minute.append(str(appointment.appointment_date_time.minute))
                             weekday.append(wdays[appointment.appointment_date_time.weekday()])
                 if day:
-                    return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
+                    return jsonify({'status':'good','day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
+                else:
+                    return jsonify({'status':'bad'})
 
 @user_view.route("/appointment_upcoming")
 @login_required
@@ -200,7 +202,9 @@ def appointment_upcoming():
                             minute.append(str(appointment.appointment_date_time.minute))
                             weekday.append(wdays[appointment.appointment_date_time.weekday()])
                     if day:
-                        return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
+                        return jsonify({'status':'good','day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
+                    else:
+                        return jsonify({'status':'bad'})
                 elif current_user.is_patient():
                     information = patient_appointments(current_user.id)
                     for appointment,hospital,department,usr,diagnoses,lab_results in information:
@@ -221,8 +225,9 @@ def appointment_upcoming():
                             staff_id.append(usr.id)
 
                     if day:
-                        return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday,'appointment_id':appointment_id,'hospital_id':hospital_id,'department_id':department_id,'staff_id':staff_id})
-               
+                        return jsonify({'status':'good','day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday,'appointment_id':appointment_id,'hospital_id':hospital_id,'department_id':department_id,'staff_id':staff_id})
+                    else:
+                        return jsonify({'status':'bad'})
 
 
 
