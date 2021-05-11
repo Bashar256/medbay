@@ -968,12 +968,12 @@ def upload_file_view():
 @login_required
 def download_view(filename):
     if current_user.is_patient():
-        filename = get_path(filename)
+        filename = save_path(filename)
         if os.path.isfile(filename):
             return send_file(get_path(filename), as_attachment=True)
 
     elif current_user.is_medical_staff():
-        filename = get_path(filename)
+        filename = save_path(filename)
         print(filename)
         if os.path.isfile(filename):
             return send_file(get_path(filename), as_attachment=True)       
