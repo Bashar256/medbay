@@ -215,6 +215,8 @@ def appointment_upcoming():
                             hour.append(appointment.appointment_date_time.hour)
                             minute.append(str(appointment.appointment_date_time.minute))
                             weekday.append(wdays[appointment.appointment_date_time.weekday()])
+                            print('AptID 1')
+                            print(appointment.id)
                             appointment_id.append(appointment.id)
                             hospital_id.append(department.hospital)
                             department_id.append(department.id)
@@ -733,6 +735,8 @@ def appointment_change_phone():
                 appointment_id = data['appointment_id']
                 appointment_date = data['appointment_date']
                 time_slot_id = data['appointment_time']
+                print('AptID 2')
+                print(appointment_id)
                 appointment = Appointment.query.filter_by(id=appointment_id).first()
                 if appointment:
                     if current_user.id == appointment.patient:
