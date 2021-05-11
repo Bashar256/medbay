@@ -353,6 +353,7 @@ class Patient(User):
         #Patient folder
         name = "PatientNo"+str(self.id)
         directory = os.path.join(UPLOAD_DIRECTORY, name)
+        directory = save_path(directory)
         if not os.path.isdir(directory):
             os.mkdir(directory)
         self.patient_file = directory
@@ -361,6 +362,7 @@ class Patient(User):
         path = self.patient_file
         name = "Diagnoses"
         directory = os.path.join(path, name)
+        directory = save_path(directory)
         if not os.path.isdir(directory):
             os.mkdir(directory)
         self.diagnoses_file = directory
@@ -369,6 +371,7 @@ class Patient(User):
         path = self.patient_file
         name = "Lab results"
         directory = os.path.join(path, name)
+        directory = save_path(directory)
         if not os.path.isdir(directory):
             os.mkdir(directory)
         self.lab_results_file = directory
@@ -383,3 +386,8 @@ class Patient(User):
         if last_visit.date() == datetime.today().date() and last_visit.hour == datetime.today().hour: 
             return
         return last_visit
+
+
+def save_path(path):
+    print(path, path.replace("\\", "/"))
+    return path.replace("\\", "/")
