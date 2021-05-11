@@ -211,7 +211,7 @@ def appointment_upcoming():
                             hour.append(appointment.appointment_date_time.hour)
                             minute.append(str(appointment.appointment_date_time.minute))
                             weekday.append(wdays[appointment.appointment_date_time.weekday()])
-                            print(appointment.appointment_id)
+                            print(appointment.id)
                             print (department.hospital)
                             print (department.id)
                             print(usr.id)
