@@ -22,7 +22,7 @@ def login_view():
     if request.method == 'POST':
         user = validate_login(request)
         if user:
-            login_user(user, remember=True, duration=SESSION_TIMEOUT)
+            login_user(user, remember=True)
             user.last_login = datetime.datetime.now()
             user.last_login_attempt = datetime.datetime.now()
             user.bad_logins = 0
