@@ -912,6 +912,7 @@ def upload_file_view():
 @user_view.route('/download/<path:filename>', methods=['GET', 'POST'])
 @login_required
 def download_view(filename):
+    print(filename)
     if current_user.is_patient():
         if "PatientNo" + str(current_user.id) in filename.split("_"):
             if os.path.isfile(filename):
@@ -920,6 +921,7 @@ def download_view(filename):
     if current_user.is_medical_staff():
         if "Doctor" + str(current_user.id) in filename.split("_"):
             if os.path.isfile(filename):
+                print(filename)
                 return send_file(get_path(filename), as_attachment=True)       
     abort(401)
 
@@ -1420,4 +1422,5 @@ def check_timeout(patient_timeout):
 def get_path(path):
     if 'website/' in path:
         path = path.replace('website/', '')
+    print(path)
     return path.replace("/", "\\")
