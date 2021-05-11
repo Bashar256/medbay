@@ -875,6 +875,7 @@ def upload_file_view():
             elif lab_result_file:
                 filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Lab_result" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")) + "." + lab_result_file.filename.split('.')[-1])
                 path = os.path.join(patient.lab_results_file, filename)
+
                 print(path,save_path(path))
                 lab_result_file.save(save_path(path))
                 new_lab_result = Lab_Result(path=path, date=datetime.datetime.now(), medical_staff=current_user.id, patient=patient_id, appointment=appointment.id)
@@ -1404,7 +1405,5 @@ def get_path(path):
     return path.replace("/", "\\")
 
 def save_path(path):
-    if 'website/' in path:
-        path = path.replace('website/', '')
     print(path, path.replace("\\", "/"))
     return path.replace("\\", "/")
