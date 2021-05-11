@@ -899,8 +899,6 @@ def download_view(filename):
     if current_user.is_medical_staff():
         if "Doctor" + str(current_user.id) in filename.split("_"):
             if os.path.isfile(filename):
-                print(filename)
-                print(get_path(filename))
                 return send_file(get_path(filename), as_attachment=True)       
     abort(401)
 
