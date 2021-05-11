@@ -212,6 +212,9 @@ def appointment_upcoming():
                             minute.append(str(appointment.appointment_date_time.minute))
                             weekday.append(wdays[appointment.appointment_date_time.weekday()])
                             print(appointment.appointment_id)
+                            print (department.hospital)
+                            print (department.id)
+                            print(usr.id)
                     if day:
                         return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
                
