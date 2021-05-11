@@ -864,7 +864,7 @@ def upload_file_view():
             if diganosis_file.filename:
                 filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Diagnosis" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")) + "." + diganosis_file.filename.split('.')[-1])
                 path = os.path.join(patient.diagnoses_file, filename)
-                diganosis_file.save(get_upload_path(path))
+                diganosis_file.save(get_path(path))
                 new_diagnosis = Diagnosis(path=path, date=datetime.datetime.now(), medical_staff=current_user.id, patient=patient_id, appointment=appointment.id)
                 db.session.add(new_diagnosis)
                 db.session.commit()
@@ -874,7 +874,7 @@ def upload_file_view():
             elif lab_result_file:
                 filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Lab_result" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")) + "." + lab_result_file.filename.split('.')[-1])
                 path = os.path.join(patient.lab_results_file, filename)
-                lab_result_file.save(get_upload_path(path))
+                lab_result_file.save(get_path(path))
                 new_lab_result = Lab_Result(path=path, date=datetime.datetime.now(), medical_staff=current_user.id, patient=patient_id, appointment=appointment.id)
                 db.session.add(new_lab_result)
                 db.session.commit()
@@ -894,12 +894,12 @@ def download_view(filename):
     if current_user.is_patient():
         if "PatientNo" + str(current_user.id) in filename.split("_"):
             if os.path.isfile(filename):
-                return send_file(get_download_path(filename), as_attachment=True)
+                return send_file(get_path(filename), as_attachment=True)
 
     if current_user.is_medical_staff():
         if "Doctor" + str(current_user.id) in filename.split("_"):
             if os.path.isfile(filename):
-                return send_file(get_download_path(filename), as_attachment=True)       
+                return send_file(get_path(filename), as_attachment=True)       
     abort(401)
 
 
@@ -1394,13 +1394,7 @@ def check_timeout(patient_timeout):
         return True
     return False
 
-
-def get_upload_path(path):
-    if 'website/' in path:
-        path = path.replace('website/', '')
-    return path.replace("/", "\\")
-
-def get_download_path(path):
+def get_path(path):
     if 'website/' in path:
         path = path.replace('website/', '')
     return path.replace("\\", "/")
