@@ -19,6 +19,7 @@ class Hospital(db.Model):
     medical_staff = db.relationship('Medical_Staff', backref='hospital_medical_staff')
     rooms = db.relationship("Room", backref="hospital_rooms")
     beds = db.relationship("Bed", backref="hospital_beds")
+    appointment_times = db.relationship("Appointment_Times", backref="hospital_appointment_times")
     
     def __repr__(self):
         return f"{self.name}"
@@ -86,6 +87,7 @@ class Appointment_Times(db.Model):
     id = db.Column(db.Integer, primary_key=True) 
     start = db.Column(db.DateTime, nullable=False)
     end = db.Column(db.DateTime, nullable=False)
+    hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'))
     medical_staff = db.relationship("Medical_Staff", backref="medical_staff_appointment_times")
     time_slots = db.relationship('Appointment', secondary='time_slot', lazy='subquery', backref=db.backref('appointment_time_slots', lazy=True))
     

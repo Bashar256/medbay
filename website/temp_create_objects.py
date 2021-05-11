@@ -50,16 +50,16 @@ def create_stuff():
     db.session.commit()
 
 
-    new_patient1 =  Appointment_Times(start=datetime.datetime(1,1,1,7,0), end=datetime.datetime(1,1,1,15,0))
+    new_patient1 =  Appointment_Times(start=datetime.datetime(1,1,1,7,0), end=datetime.datetime(1,1,1,15,0), hospital=1)
     db.session.add(new_patient1)
     db.session.commit()
 
 
-    new_patient2 =  Appointment_Times(start=datetime.datetime(1,1,1,9,0), end=datetime.datetime(1,1,1,17,0))
+    new_patient2 =  Appointment_Times(start=datetime.datetime(1,1,1,9,0), end=datetime.datetime(1,1,1,17,0), hospital=1)
     db.session.add(new_patient2)
     db.session.commit()
 
-    new_patient3 =  Appointment_Times(start=datetime.datetime(1,1,1,11,0), end=datetime.datetime(1,1,1,19,0))
+    new_patient3 =  Appointment_Times(start=datetime.datetime(1,1,1,11,0), end=datetime.datetime(1,1,1,19,0), hospital=1)
     db.session.add(new_patient3)
     db.session.commit()
 

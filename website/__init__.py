@@ -29,8 +29,6 @@ APPOINTMENT_TIMEOUT = 7 #Days
 MAX_APPOINTMENT_DATE = 30 #Days
 APPOINTMENT_TIME = 30 #Minutes
 BAD_LOGINS_LIMIT = 5 #Allowed Login Attempts
-SYMBOLS = ['*', '-', '_'] # Can add more
-
 
 app = Flask(__name__, static_folder='static')
 app.secret_key = '0930444342a12c461c38d7c0837e39eff978504b64b1d765'

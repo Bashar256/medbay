@@ -57,7 +57,9 @@
                                 <p>Email: {{staff.email}}
                             {% endif %}
                             {% if staff.is_medical_staff(): %}
+                                {% set days = ['Monday', 'Tuesday', 'Wedensday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
                                 <p>Appointment Hours: {{appointment_time.start.strftime("%H:%M") + "-" + appointment_time.end.strftime("%H:%M")}} </p>
+                                <p>Appointment Days: {% for day in days: %}{% if loop.index0 not in weekend %}{{days[loop.index0]}}{% if not loop.last: %}, {% endif %}{% endif %}{% endfor %} </p>
                             {% endif %}
                         </div>
                     </div>
