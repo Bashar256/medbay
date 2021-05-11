@@ -532,7 +532,7 @@ def doctor_details_view(hospital_id, department_id, staff_id,role="md"):
             return redirect(url_for("user_view.doctor_details_view", hospital_id=hospital_id, department_id=department_id, staff_id=staff_id, role=role))
         medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
         appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
-        return render_template("staff_details.html", user=current_user, max_appointment_date=today + datetime.timedelta(days=MAX_APPOINTMENT_DATE), today=today, staff=medical_staff, appointment_time=appointment_time, sidebar=PATIENT_SIDEBAR)
+        return render_template("staff_details.html", user=current_user, max_appointment_date=today + datetime.timedelta(days=MAX_APPOINTMENT_DATE), today=today + datetime.timedelta(days=1), weekend=WEEKEND, staff=medical_staff, appointment_time=appointment_time, sidebar=PATIENT_SIDEBAR)
     abort(401)
 
 @user_view.route("/book_appointment/<int:hospital_id>/<int:department_id>/staff_details_phone<int:staff_id><string:role>", methods=["POST", "GET"])
@@ -584,7 +584,7 @@ def doctor_details_view_phone(hospital_id, department_id, staff_id,role="md"):
         
         medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
         appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
-        return render_template("staff_details.html", user=current_user, max_appointment_date=today + datetime.timedelta(days=MAX_APPOINTMENT_DATE), today=today, staff=medical_staff, appointment_time=appointment_time, sidebar=PATIENT_SIDEBAR)
+        return render_template("staff_details.html", user=current_user, max_appointment_date=today + datetime.timedelta(days=MAX_APPOINTMENT_DATE), today=today + datetime.timedelta(days=1), weekend=WEEKEND, staff=medical_staff, appointment_time=appointment_time, sidebar=PATIENT_SIDEBAR)
     abort(401)
 
 
@@ -1137,7 +1137,7 @@ def staff_view():
         management_staff = Management_Staff.query.all()
         department = Department.query.filter_by(id=current_user.department).first()
         hospital = Hospital.query.filter_by(id=current_user.hospital).first()
-        appointment_times = Appointment_Times.query.all()
+        appointment_times = Appointment_Times.query.filter_by(hospital=current_user.hospital).all()
         return render_template("staff.html", user=current_user, hospital=hospital, doctors=medical_staff, departments=department, management_staff=management_staff, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     elif current_user.is_management_staff():
@@ -1166,6 +1166,17 @@ def staff_view():
 
                 flash("User doesn't exist", category="error")
                 return redirect(url_for("user_view.staff_view"))
+            elif form_no == "3":
+                appointment_start = request.form.get("appointment_hours_start")
+                appointment_end = request.form.get("appointment_hours_end")
+                hospital_id = request.form.get("hospital")
+                appointment_start = appointment_start.split(":")
+                appointment_end = appointment_end.split(":")
+                appointment_times = Appointment_Times(start=datetime.datetime(1,1,1,int(appointment_start[0]), int(appointment_start[1])), end=datetime.datetime(1,1,1,int(appointment_end[0]), int(appointment_end[1])), hospital=int(hospital_id))
+                db.session.add(appointment_times)
+                db.session.commit()
+                flash("Appointment Hours added to hospital", category="success")
+                return redirect(url_for("user_view.staff_view"))
             else:
                 flash("Use correct form", category="error")
                 return redirect(url_for("user_view.staff_view"))
@@ -1173,8 +1184,8 @@ def staff_view():
         management_staff = Management_Staff.query.all()
         departments = Department.query.filter_by(hospital=current_user.hospital).all()
         hospital = Hospital.query.filter_by(id=current_user.hospital).first()
-        appointment_times = Appointment_Times.query.all()
-        return render_template("staff.html", user=current_user, hospital=hospital, doctors=medical_staff, departments=departments, management_staff=management_staff, appointment_times=appointment_times, sidebar=MANAGEMENT_STAFF_SIDEBAR)
+        appointment_times = Appointment_Times.query.filter_by(hospital=current_user.hospital).all()
+        return render_template("staff.html", user=current_user, hospital=hospital, doctors=medical_staff, departments=departments, management_staff=management_staff, appointment_times=appointment_times, weekend=WEEKEND, sidebar=MANAGEMENT_STAFF_SIDEBAR)
 
     elif current_user.is_admin():
         if request.method == 'POST':

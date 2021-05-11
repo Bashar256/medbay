@@ -5,6 +5,7 @@
         <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addManagementStaff">+ Manager</button>
         {% if user.is_management_staff(): %}
             <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addMedicalStaff">+ Doctor</button>
+            <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addAppointmentTimes">+ Appointment Hours</button>
         {% elif user.is_admin(): %}
             <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addAdmin">+ Admin</button>
         {% endif %}
@@ -85,6 +86,34 @@
                             </div>
                             <input type="hidden" name="form_no" value="1">
                             <input type="hidden" class="form-control" name='role' value="md" >
+                    </div>
+                        <div class="modal-footer">
+                            <input type="submit" name="submit" value="Create Medical Staff" class="btn btn-primary"></input>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" id="addAppointmentTimes" style="display: none;" aria-modal="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Appointment Hours</h5>
+                        <button type="button" class="close" data-dismiss="modal"><span>×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form method='POST'>
+                            <div class="form-group">
+                            {% set days = ['Monday', 'Tuesday', 'Wedensday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+                                <label class="text-black font-w500">Appointments Hours Start</label>
+                                <input type="time" name="appointment_hours_start" class="form-control">
+                                <label class="text-black font-w500">Appointments Hours End</label>
+                                <input type="time" name="appointment_hours_end" class="form-control">
+                            </div>
+                            <input type="hidden" name="hospital" value="{{user.hospital}}">
+                            <input type="hidden" name="form_no" value="3">
+                            <small>The appointment hours are assigned to all days execept: {% for day in weekend: %}{{days[day]}} {% if not loop.last: %}, {% endif %}{% endfor %}</small>
                     </div>
                         <div class="modal-footer">
                             <input type="submit" name="submit" value="Create Medical Staff" class="btn btn-primary"></input>
