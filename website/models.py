@@ -1,7 +1,7 @@
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from datetime import datetime, timedelta
 from flask_login import UserMixin
-from website import db, app, UPLOAD_DIRECTORY
+from website import db, app, UPLOAD_DIRECTORY, WEEKEND, APPOINTMENT_TIME,APPOINTMENT_TIMEOUT
 from time import time
 import math
 import os
@@ -17,22 +17,22 @@ class Hospital(db.Model):
     departments = db.relationship('Department', backref='hospital_department')
     managers = db.relationship('Management_Staff', backref='hospital_managers')
     medical_staff = db.relationship('Medical_Staff', backref='hospital_medical_staff')
-    shifts = db.relationship("Shift", backref="hospital_shifts")
     rooms = db.relationship("Room", backref="hospital_rooms")
     beds = db.relationship("Bed", backref="hospital_beds")
     
     def __repr__(self):
         return f"{self.name}"
 
-    def hospital_beds_stats(self,hospital_id):
+    def hospital_beds_stats(self,hospital_id, room_type='patient'):
         total_beds = 0
         available_beds = 0
         if self.id == hospital_id:
             for room in self.rooms:
-                total_beds = total_beds + room.max_no_of_beds
-                for bed in room.beds:
-                    if not bed.occupied:
-                        available_beds = available_beds + 1
+                if room.room_type.lower() == room_type:
+                    total_beds = total_beds + room.max_no_of_beds
+                    for bed in room.beds:
+                        if not bed.occupied:
+                            available_beds = available_beds + 1
 
         return total_beds,available_beds
 
@@ -53,17 +53,58 @@ class Department(db.Model):
     def __repr__(self):
         return f"{self.name}"
 
-    def department_beds_stats(self,department_id):
+    def department_beds_stats(self,department_id, room_type='patient'):
         total_beds = 0
         available_beds = 0
         if self.id == department_id:
             for room in self.rooms:
-                total_beds = total_beds + room.max_no_of_beds
-                for bed in room.beds:
-                    if not bed.occupied:
-                        available_beds = available_beds + 1
+                if room.room_type.lower() == room_type:
+                    total_beds = total_beds + room.max_no_of_beds
+                    for bed in room.beds:
+                        if not bed.occupied:
+                            available_beds = available_beds + 1
                         
         return total_beds,available_beds
+
+
+#Time_Slots(For each appointment) Table 
+Time_Slot = db.Table('time_slot',
+    db.Column('id', db.Integer, primary_key=True),
+    db.Column('appointment_time_id', db.ForeignKey('appointment_times.id')),
+    db.Column('start', db.Time),
+    db.Column('end', db.Time),
+    db.Column('date', db.Date),
+    db.Column('appointment_id', db.ForeignKey('appointment.id')),
+    db.Column('taken', db.Boolean)
+)    
+
+
+#Appointment_Times Table
+class Appointment_Times(db.Model):
+    __tablename__ = 'appointment_times'
+    
+    id = db.Column(db.Integer, primary_key=True) 
+    start = db.Column(db.DateTime, nullable=False)
+    end = db.Column(db.DateTime, nullable=False)
+    medical_staff = db.relationship("Medical_Staff", backref="medical_staff_appointment_times")
+    time_slots = db.relationship('Appointment', secondary='time_slot', lazy='subquery', backref=db.backref('appointment_time_slots', lazy=True))
+    
+    def create_slots(self, date=None):
+        slots = self.time_slots()
+        for slot in slots:
+            if date:
+                db.session.execute(Time_Slot.insert(), params={"appointment_time_id":self.id, "start":slot.time(), "end":(slot + timedelta(minutes=APPOINTMENT_TIME)).time(), "date":date.date(), "taken":False})
+            else:
+                db.session.execute(Time_Slot.insert(), params={"appointment_time_id":self.id, "start":slot.time(), "end":(slot + timedelta(minutes=APPOINTMENT_TIME)).time(), "taken":False})
+        db.session.commit()
+
+    def time_slots(self):
+        slots = []
+        temp_slot = self.start
+        while temp_slot != self.end:
+            slots.append(temp_slot)
+            temp_slot = temp_slot + timedelta(minutes=APPOINTMENT_TIME)
+        return slots
 
 
 #Appointment Table
@@ -85,44 +126,6 @@ class Appointment(db.Model):
 
     def __gt__(self, other):
         return self.appointment_date_time > other.appointment_date_time
-
-
-#Schdules-Shifts Many-To-Many relationship Table
-Schedules = db.Table('schedules',
-    db.Column('schedule_id', db.Integer, db.ForeignKey('schedule.id')),
-    db.Column('shift_id', db.Integer, db.ForeignKey('shift.id')),
-)  
-
-
-#Schedule Table
-class Schedule(db.Model):
-    __tablename__ = 'schedule'
-    __table_args__= (
-        tuple(db.UniqueConstraint('name', 'hospital'))
-    )
-    
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(20,collation='NOCASE'), nullable=False, default='A')
-    hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'))
-    medical_staff = db.relationship('Medical_Staff', backref="schedule_medical_staff")
-    shifts = db.relationship('Shift', secondary=Schedules, lazy='subquery', backref=db.backref('medical_staff_shifts', lazy=True))
-    # month = db.Column(db.Integer, nullable=False)
-    def __gt__(self, other):
-        return self.name > other.name
-
-
-#Shift Table
-class Shift(db.Model):
-    __tablename__ = 'shift'
-    __table_args__= (
-        tuple(db.UniqueConstraint('name', 'hospital'))
-    )
-    
-    id = db.Column(db.Integer, primary_key=True)
-    shift_start = db.Column(db.Time(timezone=True), nullable=False)
-    shift_end = db.Column(db.Time(timezone=True), nullable=False)
-    name = db.Column(db.String(20,collation='NOCASE'), nullable=False)
-    hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'))
 
 
 #Diagnosis Table
@@ -157,9 +160,10 @@ class Room(db.Model):
     )
 
     id = db.Column(db.Integer, primary_key=True)
-    room_no = db.Column(db.String(15, collation='NOCASE'))
-    hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'))
-    department = db.Column(db.Integer, db.ForeignKey('department.id'))
+    room_no = db.Column(db.String(15, collation='NOCASE'), nullable=False)
+    room_type = db.Column(db.String(15, collation='NOCASE'), nullable=False)
+    hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'), nullable=False)
+    department = db.Column(db.Integer, db.ForeignKey('department.id'), nullable=False)
     beds =  db.relationship('Bed', backref='room_beds')
     max_no_of_beds = db.Column(db.Integer, nullable=False, default=4)
     
@@ -192,7 +196,7 @@ class Bed(db.Model):
     patient = db.relationship('Patient', uselist=False, backref='patient_bed')
     hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'))
     
-    def occupy_bed(self, patient):
+    def occupy_bed(self, patient=None):
         self.patient = patient
         self.occupied = True
 
@@ -203,16 +207,17 @@ class Bed(db.Model):
 
 #User Table
 class User(db.Model, UserMixin):
-
+    __tablename__ = 'user'
+   
     type = db.Column(db.String(32)) 
-
+    
     __mapper_args__ = {
         'polymorphic_identity': 'user',
         'polymorphic_on': type,
     }
 
     id = db.Column(db.Integer, primary_key=True)
-    
+
     # User authentication information. The collation='NOCASE' is required
     # to search case insensitively when USER_IFIND_MODE is 'nocase_collation'.
     email = db.Column(db.String(255, collation='NOCASE'), nullable=False, unique=True)
@@ -303,7 +308,7 @@ class Management_Staff(User):
 Patients = db.Table('patients',
     db.Column('patient_id', db.Integer, db.ForeignKey('patient.id')),
     db.Column('medical_staff_id', db.Integer, db.ForeignKey('medical_staff.id')),
-    db.Column('timeout', db.DateTime(timezone=True), nullable=False, default=datetime.today() + timedelta(days=7))
+    db.Column('timeout', db.DateTime(timezone=True), nullable=False, default=datetime.today() + timedelta(days=APPOINTMENT_TIMEOUT))
 )    
 
 
@@ -317,16 +322,16 @@ class Medical_Staff(User):
     id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     specialty = db.Column(db.String(50,collation='NOCASE'))
     department_head = db.Column(db.Boolean, default=False)
-
     hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'), nullable=False)
     department = db.Column(db.Integer, db.ForeignKey('department.id'), nullable=False)
-    schedule = db.Column(db.Integer, db.ForeignKey('schedule.id'), nullable=False, default=1)
     appointments = db.relationship('Appointment', backref='medical_staff_appointment')
     diagnoses = db.relationship('Diagnosis', backref='medical_staff_diagnosis')
     patients = db.relationship('Patient', secondary='patients', lazy='subquery', backref=db.backref('medical_staff_patients', lazy=True))
+    appointment_times = db.Column(db.Integer, db.ForeignKey('appointment_times.id'))
     def is_department_head(self):
         return self.department_head
-    
+        
+
 
 #Patient (Uses the User Table since it is derivd from the user)
 class Patient(User):

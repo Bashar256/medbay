@@ -28,14 +28,44 @@
                                             <p>Department: {{department}}</p>
                                             {% set days = ("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday") %}
                                             <p>Appointment Day: {{days[appointment.appointment_date_time.weekday()]}}</p>
-                                            <p>Appointment Time: {{appointment.appointment_date_time.hour}}:{{appointment.appointment_date_time.minute}}</p>
+                                            <p>Appointment Time: {{appointment.appointment_date_time.strftime("%H:%M")}}</p>
                                             {% if user.is_patient(): %}
                                                 <div class="text-center mt-4">
-                                                    <a href="/edit_appointment/{{appointment.id}}"><button type="submit" class="btn btn-primary btn-block">Edit</button></a>
+                                                    <button type="submit" class="btn btn-primary btn-block" data-toggle="modal" data-target="#EditAppointment{{appointment.id}}">Edit</button>
                                                 </div>
                                                 <div class="text-center mt-4">
                                                     <button type="submit" class="btn btn-danger btn-block" data-toggle="modal" data-target="#DeleteAppointment{{appointment.id}}">Delete</button>
                                                 </div>
+                                                <div class="modal fade" id="EditAppointment{{appointment.id}}">
+                                                    <div class="modal-dialog" role="document">
+                                                        <form method='POST'>
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Edit Appointment</h5>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="form-group">
+                                                                        <input type="hidden" name="medical_staff_id" id="medical_staff_id" value="{{usr.id}}">
+                                                                        <input type="hidden" name="appointment_id" value="{{appointment.id}}"></input>
+                                                                        <input type="hidden" name="form_no" value="2"></input>
+                                                                        <label class="text-black font-w500">Appointment Date</label>
+                                                                        <input type="date" name="appointment_date" id="appointment_date" value="{{appointment.appointment_date_time.strftime("%Y-%m-%d")}}" max="{{max_appointment_date.strftime("%Y-%m-%d")}}" min="{{today.strftime("%Y-%m-%d")}}" class="form-control">
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <label class="text-black font-w500">Appointment Time</label>
+                                                                        <select name="appointment_time" id="appointment_time" class="form-control" disabled>
+                                                                            <option>{{appointment.appointment_date_time.strftime("%H:%M")}}</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="submit" class="btn btn-primary">Edit</button>
+                                                                    <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div> 
                                                 <div class="modal fade" id="DeleteAppointment{{appointment.id}}">
                                                     <div class="modal-dialog" role="document">
                                                         <form method='POST'>
@@ -45,6 +75,7 @@
                                                                 </div>
                                                                 <div class="modal-body">
                                                                 <input type="hidden" name="appointment_id" value="{{appointment.id}}"></input>
+                                                                <input type="hidden" name="form_no" value="1"></input>
                                                                 Are you sure you want to delete this appointment?
                                                                 </div>
                                                                 <div class="modal-footer">
@@ -69,4 +100,45 @@
             </div>
         </div>	    
     </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script charset="utf-8" type="text/javascript">
+        $(function() {
+            var dropdown = {
+                appointment_date: $('#appointment_date'),
+                appointment_time: $('#appointment_time')
+            };
+
+            // function to call XHR and update appointment_time dropdown
+            function update_appointment_time() {
+                var appointment_date = dropdown.appointment_date.val();
+                var medical_staff_id = document.getElementById('medical_staff_id').value
+                dropdown.appointment_time.attr('disabled', 'disabled');
+
+                if (appointment_date.length) {
+                    dropdown.appointment_time.empty();
+                    $.getJSON("{{ url_for('user_view.appointment_time_select_View') }}", {appointment_date: appointment_date, medical_staff_id: medical_staff_id}, function(data) {
+                        data.forEach(function(item) {
+                            if (item.id == -1)
+                            {
+                                alert("Plese don't select a weekend day")
+                            }
+                            dropdown.appointment_time.append(
+                                $('<option>', {
+                                    value: item.id,
+                                    text: item.start
+                                })
+                            );
+                        });
+                        dropdown.appointment_time.removeAttr('disabled');
+                    });
+                }
+            }
+
+            // event listener to customer dropdown change
+            dropdown.appointment_date.on('change', function() {
+                update_appointment_time();
+            });
+
+        });
+    </script>
 {% endblock %}

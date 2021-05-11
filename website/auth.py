@@ -1,4 +1,3 @@
-from website.models import User, Patient, Management_Staff, Medical_Staff, Hospital, Department, Shift, Appointment,Patients
 from flask import Blueprint, Flask, redirect, url_for, render_template, request, flash, session, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,6 +5,7 @@ from website.validate import validate_patient_register, validate_login
 from website.temp_create_objects import create_stuff
 from website import db, mail, app, SESSION_TIMEOUT
 from website.users import load_user_request
+from website.models import User, Patient
 from flask_login import LoginManager
 from flask_mail import Message
 from threading import Thread
@@ -60,15 +60,15 @@ def register_view():
         #     return jsonify({'status':status})
         new_patient = validate_patient_register(request) 
         if new_patient:
-            #new_patient.create_patient_file()
+            new_patient.create_patient_file()
             db.session.add(new_patient)
             db.session.commit()
-            login_user(new_patient, remember=True)
+            login_user(new_patient, remember=True, duration=SESSION_TIMEOUT)
             confirm_email(new_patient)
             flash('Account created successfully !', category='register')
             return redirect(url_for('user_view.home_view'))
         return render_template("register.html")
-    #create_stuff()
+    # create_stuff()
     return render_template("register.html")
 
 @auth_view.route("/register_phone", methods=["POST", "GET"])
@@ -128,20 +128,20 @@ def reset_password_view():
             token = user.get_token()
             msg = Message('Password Reset Request',
                         sender=("MedBay Support", "noreply@medbay.org"),
-                        recipients=["dgkxsktjectbd@nucleant.org"])
+                        recipients=[user.email])
             msg.body = f'''To change your password please follow the link below:
             {url_for('auth_view.reset_token_view', token=token, _external=True)}'''
             Thread(target=send_email, args=[msg]).start()
             if request.mimetype=='application/json':
                 return jsonify({'status':'An Email was sent with the reset link'})
             flash("An Email was sent with the reset link", category="info")
-            return redirect(url_for("auth_view.reset_password")) 
+            return redirect(url_for("auth_view.reset_password_view")) 
              
         if request.mimetype=='application/json':
                 return jsonify({'status':'No such email'})
         flash("No such email", category="error")
-        return redirect(url_for("auth_view.reset_password"))
-    return render_template("reset password.html")
+        return redirect(url_for("auth_view.reset_password_view"))
+    return render_template("reset_password.html")
 
 
 #Password_Reset_Token View
@@ -157,12 +157,12 @@ def reset_token_view(token):
                 user.password = hashed_password
                 db.session.commit()
                 flash('Your password has been updated! You are now able to log in', category='update')
-                return redirect(url_for('auth_view.login'))
+                return redirect(url_for('auth_view.login_view'))
             else:
                 flash('Passwords must match', category='error')
                 return render_template("reset_token.html")
         flash('That is an invalid or expired token', category='warning')
-        return redirect(url_for('auth_view.reset_password'))
+        return redirect(url_for('auth_view.reset_password_view'))
     return render_template('reset_token.html')
 
 
@@ -200,7 +200,7 @@ def confirm_email(user):
     token = user.get_token()
     msg = Message('Email Confirmation',
                 sender=("MedBay Support", "noreply@medbay.org"),
-                recipients=["sebire3932@hype68.com"])
+                recipients=[user.email])
     msg.body = f'''To confirm your email please follow the link below:
     {url_for('auth_view.verify_email_view', token=token, _external=True)}'''
     Thread(target=send_email, args=[msg]).start()

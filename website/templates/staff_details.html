@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Staff Details{% endblock %}
 {% block body %}
-    {% if not user.is_patient(): %}
+    {% if user.is_patient(): %}
         <div class="form-head d-flex mb-3 mb-lg-5 align-items-start">
             <a href="javascript:void(0)" class="btn btn-primary" data-toggle="modal" data-target="#NewAppointment">+ New Appointment</a>
         </div>
@@ -14,8 +14,15 @@
                         </div>
                         <div class="modal-body">
                             <div class="form-group">
+                                <input type="hidden" name="medical_staff_id" id="medical_staff_id" value="{{staff.id}}">
                                 <label class="text-black font-w500">Appointment Date</label>
-                                <input type="date" name="appointment_date" id="appointment_date" onchange='calculateappointmenttime({{closest_appointment|safe}}, {{appointment_limit|safe}}) ;' class="form-control">
+                                <input type="date" name="appointment_date" id="appointment_date" max="{{max_appointment_date.strftime("%Y-%m-%d")}}" min="{{today.strftime("%Y-%m-%d")}}" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label class="text-black font-w500">Appointment Time</label>
+                                <select name="appointment_time" id="appointment_time" class="form-control" disabled>
+                                    <option>Select a Date First</option>
+                                </select>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -45,8 +52,13 @@
                             <h4>Presonal Information</h4>
                             <p>Name: {{staff.first_name + ' '+ staff.last_name}}</p>
                             <p>Age: {{staff.age()}}</p>
-                            <p>Phone Number: {{staff.phone_no}}</p>
-                            <p>Email: {{staff.email}}
+                            {% if not user.is_patient() %} 
+                                <p>Phone Number: {{staff.phone_no}}</p>
+                                <p>Email: {{staff.email}}
+                            {% endif %}
+                            {% if staff.is_medical_staff(): %}
+                                <p>Appointment Hours: {{appointment_time.start.strftime("%H:%M") + "-" + appointment_time.end.strftime("%H:%M")}} </p>
+                            {% endif %}
                         </div>
                     </div>
                     {% if user.is_management_staff() and staff.is_medical_staff(): %}
@@ -109,24 +121,45 @@
             </div>
         </div>
     </div>
-    <script>
-        function calculateappointmenttime(closest_appointment, appointment_limit)
-        {
-            var date = document.getElementById("appointment_date").value;
-            appointment_date = new Date(date);
-            closest_appointment = new Date(closest_appointment);
-            appointment_limit = new Date(appointment_limit);
-            console.log(appointment_date)
-            console.log(closest_appointment)
-            console.log(appointment_limit)
-            if (appointment_date >= closest_appointment && appointment_date <= appointment_limit )
-            {
-                alert("Good Pick");
-            }
-            else{
-                alert("Enter A valid appointment Date");
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script charset="utf-8" type="text/javascript">
+        $(function() {
+            var dropdown = {
+                appointment_date: $('#appointment_date'),
+                appointment_time: $('#appointment_time')
+            };
+
+            // function to call XHR and update appointment_time dropdown
+            function update_appointment_time() {
+                var appointment_date = dropdown.appointment_date.val();
+                var medical_staff_id = document.getElementById('medical_staff_id').value
+                dropdown.appointment_time.attr('disabled', 'disabled');
+
+                if (appointment_date.length) {
+                    dropdown.appointment_time.empty();
+                    $.getJSON("{{ url_for('user_view.appointment_time_select_View') }}", {appointment_date: appointment_date, medical_staff_id: medical_staff_id}, function(data) {
+                        data.forEach(function(item) {
+                            if (item.id == -1)
+                            {
+                                alert("Plese don't select a weekend day")
+                            }
+                            dropdown.appointment_time.append(
+                                $('<option>', {
+                                    value: item.id,
+                                    text: item.start
+                                })
+                            );
+                        });
+                        dropdown.appointment_time.removeAttr('disabled');
+                    });
+                }
             }
 
-        }
+            // event listener to customer dropdown change
+            dropdown.appointment_date.on('change', function() {
+                update_appointment_time();
+            });
+
+        });
     </script>
 {% endblock %}
