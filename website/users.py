@@ -614,11 +614,6 @@ def appointment_time_select_View_phone(medical_staff_id,appointment_date):
     if request.method=="GET":
         if(request.mimetype == 'application/json'):
             if load_user_request(request):
-<<<<<<< HEAD
-                # medical_staff_id = request.args.get('medical_staff_id')
-                # appointment_date = request.args.get('appointment_date')
-=======
->>>>>>> c7aecdbec127fe4dfc4fe042ef064f3c9a75d1e8
                 appointment_date = html_date_to_python_date(appointment_date)
                 data = [{"id": -1}]
 
