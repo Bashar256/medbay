@@ -735,10 +735,11 @@ def appointment_change_phone():
                 appointment_id = data['appointment_id']
                 appointment_date = data['appointment_date']
                 time_slot_id = data['appointment_time']
-                print('AptID 2')
-                print(appointment_id)
                 appointment = Appointment.query.filter_by(id=appointment_id).first()
                 if appointment:
+                    print("APT 3")
+                    print(current_user.id)
+                    print(appointment.patient)
                     if current_user.id == appointment.patient:
                         if form_no == "1":
                             db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff, Patients.c.timeout==(appointment.appointment_date_time + datetime.timedelta(days=APPOINTMENT_TIMEOUT))).delete()
