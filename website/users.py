@@ -110,10 +110,8 @@ def profile_view_phone():
     if request.mimetype == 'application/json':
             if load_user_request(request):
                 if current_user.is_patient():
-                    print('Is Patient')
                     return jsonify({'firstname':current_user.first_name,'lastname':current_user.last_name,'age':current_user.age(),'phone':current_user.phone_no,'email':current_user.email})
                 elif current_user.is_medical_staff():
-                    print('Is medical staff')
                     return jsonify({'firstname':current_user.first_name,'lastname':current_user.last_name,'age':current_user.age(),'phone':current_user.phone_no,'email':current_user.email})
                     
 
@@ -138,7 +136,6 @@ def appointment_history():
                     information = patient_appointments(current_user.id) 
                     for appointment,hospital,department,usr,diagnoses,lab_results in information:
                         if appointment.appointment_date_time < today:
-                            print("We IN")
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
                             year.append(appointment.appointment_date_time.year)
@@ -154,7 +151,6 @@ def appointment_history():
                     information = medical_staff_appointments(current_user.id)
                     for appointment,hospital,department,usr,diagnoses,lab_results in information:
                         if appointment.appointment_date_time < today:
-                            print("We IN")
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
                             year.append(appointment.appointment_date_time.year)
@@ -189,7 +185,6 @@ def appointment_upcoming():
                     information = medical_staff_appointments(current_user.id)
                     for appointment,hospital,department,usr,diagnoses,lab_results in information:
                         if appointment.appointment_date_time > today:
-                            print("We IN")
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
                             year.append(appointment.appointment_date_time.year)
@@ -448,7 +443,6 @@ def choose_medical_staff_phone(hospital_id,department_id):
     if request.mimetype == 'application/json':
             if load_user_request(request):
                 if current_user.is_patient():
-                    print("WE IN!!!") 
                     medical_staff = Medical_Staff.query.filter(Medical_Staff.department==department_id, Medical_Staff.hospital==hospital_id)
                     for i in medical_staff:
                         fname.append(i.first_name)
@@ -526,14 +520,10 @@ def appointment_time_select_View():
     
     time_slots = db.session.query(Time_Slot).filter_by(date=appointment_date.date()).all()
     if time_slots:
-        print("1")
         available_times = []
         for slot in time_slots:
-            print("2")
             if slot[-1] == False:
-                print("3")
                 if slot not in available_times:
-                    print("4")
                     available_times.append(slot)
 
         data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in available_times]
@@ -556,8 +546,6 @@ def appointment_time_select_View_phone(medical_staff_id,appointment_date):
             if load_user_request(request):
                 # medical_staff_id = request.args.get('medical_staff_id')
                 # appointment_date = request.args.get('appointment_date')
-                print(medical_staff_id)
-                print(appointment_date)
                 appointment_date = html_date_to_python_date(appointment_date)
                 data = [{"id": -1}]
 
@@ -704,7 +692,6 @@ def patients_view():
         appointments = []
         for patient in doctors_patients:
             appointments.append(patient.last_visit(current_user.id))
-        print(appointments)
         info = zip(doctors_patients, appointments, timed_out)
         if not current_user.is_department_head():
             return render_template("patients.html", user=current_user, info=info, sidebar=MEDICAL_STAFF_SIDEBAR)
@@ -721,11 +708,7 @@ def patients_view_phone():
                 data=request.json
                 form_no = data['form']
                 if form_no == 1:
-                    print('form=1')
                     patient_name = data['name']
-                    print('0')
-                    print(patient_name)
-                    print('1')
                     patient = Patient.query.filter_by(first_name=patient_name).first()
                     if patient:           
                         rooms = Room.query.filter_by(department=current_user.department).all()
@@ -742,7 +725,6 @@ def patients_view_phone():
 
                     return jsonify({'status':'No such patient.'})
                 elif form_no == 2:
-                    print('form=2')
                     patient_name = data['name']
                     patient = Patient.query.filter_by(first_name=patient_name).first()
                     if patient:
@@ -765,8 +747,6 @@ def patients_view_phone():
                 phone=[]
                 email=[]
                 patients_timeouts = db.session.query(Patients).filter_by(medical_staff_id=current_user.id).all()
-                print('1')
-                print(patients_timeouts)
                 timed_out = check_timeouts(patients_timeouts)
                 doctors_patients = current_user.patients
                 for patient in doctors_patients:
@@ -784,7 +764,6 @@ def patients_view_phone():
                         last.append("No Previous Appointments")
                     else :
                         last.append(patient.last_visit(current_user.id))
-                print('return')
                 return jsonify({'firstname':firstname,'lastname':lastname,'last':last,'IsAdmitted':is_admitted,'IsTimedOut':is_timedout,'age':age,'phone':phone,'email':email})
     
         # appointments = []
@@ -1053,7 +1032,7 @@ def staff_view():
                 staff = User.query.filter_by(id=staff_id).first()
                 if staff:
                     if staff.is_medical_staff():
-                        doctors_patients = db.session.query(Patients).filter_by(medical_staff_id=medical_staff.id).all()
+                        doctors_patients = db.session.query(Patients).filter_by(medical_staff_id=staff.id).all()
                         db.session.delete(doctors_patients)
                     db.session.delete(staff)
                     db.session.commit()
@@ -1081,7 +1060,7 @@ def staff_details_view(staff_id,role):
         information = medical_staff_appointments(staff_id)
         staff = Management_Staff.query.filter_by(id=staff_id).first()
         appointment_time = Appointment_Times.query.filter_by(id=staff.appointment_times).first()
-        return render_template("staff_details.html",user=current_user, information=information, shift=shift, staff=staff, appointment_time=appointment_time, sidebar=DEPARTMENT_HEAD_SIDEBAR)
+        return render_template("staff_details.html",user=current_user, information=information, staff=staff, appointment_time=appointment_time, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     elif current_user.is_management_staff():
         staff = Management_Staff.query.filter_by(id=staff_id).first()
@@ -1120,7 +1099,6 @@ def rooms_view():
             no_of_beds = request.form.get("no_of_beds")
             department_id = request.form.get("department_id")
             hospital_id = current_user.hospital
-            print(room_type,room_no,no_of_beds,department_id)
 
             if room_type == 'operation':
                 no_of_beds = 1
