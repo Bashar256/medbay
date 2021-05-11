@@ -864,7 +864,8 @@ def upload_file_view():
             if diganosis_file.filename:
                 filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Diagnosis" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")) + "." + diganosis_file.filename.split('.')[-1])
                 path = os.path.join(patient.diagnoses_file, filename)
-                diganosis_file.save(get_path(path))
+                print(path,save_path(path))
+                diganosis_file.save(save_path(path))
                 new_diagnosis = Diagnosis(path=path, date=datetime.datetime.now(), medical_staff=current_user.id, patient=patient_id, appointment=appointment.id)
                 db.session.add(new_diagnosis)
                 db.session.commit()
@@ -874,7 +875,8 @@ def upload_file_view():
             elif lab_result_file:
                 filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Lab_result" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")) + "." + lab_result_file.filename.split('.')[-1])
                 path = os.path.join(patient.lab_results_file, filename)
-                lab_result_file.save(get_path(path))
+                print(path,save_path(path))
+                lab_result_file.save(save_path(path))
                 new_lab_result = Lab_Result(path=path, date=datetime.datetime.now(), medical_staff=current_user.id, patient=patient_id, appointment=appointment.id)
                 db.session.add(new_lab_result)
                 db.session.commit()
@@ -896,8 +898,9 @@ def download_view(filename):
         if os.path.isfile(filename):
             return send_file(get_path(filename), as_attachment=True)
 
-    if current_user.is_medical_staff():
+    elif current_user.is_medical_staff():
         filename = get_path(filename)
+        print(filename)
         if os.path.isfile(filename):
             return send_file(get_path(filename), as_attachment=True)       
     abort(401)
@@ -1399,3 +1402,9 @@ def get_path(path):
     if 'website/' in path:
         path = path.replace('website/', '')
     return path.replace("/", "\\")
+
+def save_path(path):
+    if 'website/' in path:
+        path = path.replace('website/', '')
+    print(path, path.replace("\\", "/"))
+    return path.replace("\\", "/")
