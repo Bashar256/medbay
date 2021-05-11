@@ -203,6 +203,7 @@ def appointment_upcoming():
                     if day:
                         return jsonify({'day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
                 elif current_user.is_patient():
+                    print("IS USER")
                     information = patient_appointments(current_user.id)
                     for appointment,hospital,department,usr,diagnoses,lab_results in information:
                         if appointment.appointment_date_time > today:
@@ -1120,7 +1121,7 @@ def staff_view():
                 staff = User.query.filter_by(id=staff_id).first()
                 if staff:
                     if staff.is_medical_staff():
-                        doctors_patients = db.session.query(Patients).filter_by(medical_staff_id=medical_staff.id).all()
+                        doctors_patients = db.session.query(Patients).filter_by(medical_staff_id=staff.id).all()
                         db.session.delete(doctors_patients)
                     db.session.delete(staff)
                     db.session.commit()
@@ -1148,7 +1149,7 @@ def staff_details_view(staff_id,role):
         information = medical_staff_appointments(staff_id)
         staff = Management_Staff.query.filter_by(id=staff_id).first()
         appointment_time = Appointment_Times.query.filter_by(id=staff.appointment_times).first()
-        return render_template("staff_details.html",user=current_user, information=information, shift=shift, staff=staff, appointment_time=appointment_time, sidebar=DEPARTMENT_HEAD_SIDEBAR)
+        return render_template("staff_details.html",user=current_user, information=information, staff=staff, appointment_time=appointment_time, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     elif current_user.is_management_staff():
         staff = Management_Staff.query.filter_by(id=staff_id).first()
