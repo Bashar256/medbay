@@ -741,7 +741,7 @@ def appointment_change_phone():
                     print(current_user.id)
                     print(appointment.patient)
                     if current_user.id == appointment.patient:
-                        if form_no == "1":
+                        if form_no == 1:
                             db.session.query(Patients).filter(Patients.c.patient_id==current_user.id, Patients.c.medical_staff_id==appointment.medical_staff, Patients.c.timeout==(appointment.appointment_date_time + datetime.timedelta(days=APPOINTMENT_TIMEOUT))).delete()
                             time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
                             temp_slot = time_slot
@@ -751,7 +751,7 @@ def appointment_change_phone():
                             db.session.commit()
                             return jsonify({'status':'Appointment Deleted!'})
                         
-                        elif form_no =="2":
+                        elif form_no ==2:
                             medical_staff = Medical_Staff.query.filter_by(id=appointment.medical_staff).first()
                             appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
                             time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
