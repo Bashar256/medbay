@@ -892,12 +892,14 @@ def upload_file_view():
 @login_required
 def download_view(filename):
     if current_user.is_patient():
-            if os.path.isfile(filename):
-                return send_file(get_path(filename), as_attachment=True)
+        filename = get_path(filename)
+        if os.path.isfile(filename):
+            return send_file(get_path(filename), as_attachment=True)
 
     if current_user.is_medical_staff():
-            if os.path.isfile(filename):
-                return send_file(get_path(filename), as_attachment=True)       
+        filename = get_path(filename)
+        if os.path.isfile(filename):
+            return send_file(get_path(filename), as_attachment=True)       
     abort(401)
 
 
