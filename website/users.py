@@ -1039,8 +1039,9 @@ def test_download():
     if request.mimetype=='application/json':
         if current_user.is_patient():
             info = patient_lab_results(current_user.id)
-            print(info.results.path)
-            return jsonify({'status':1})
+            for (lab_result,usr) in info:
+                print(lab_result.path)
+                return jsonify({'status':1})
 
 
 #Diagnoses View
