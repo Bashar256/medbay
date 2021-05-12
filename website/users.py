@@ -1041,7 +1041,7 @@ def test_download():
             info = patient_diagnoses(current_user.id)
             for (diagnosis,usr) in info:
                 print(diagnosis.path)
-                return jsonify({'status':1})
+                return jsonify({'status':diagnosis.path})
 
 
 #Diagnoses View
