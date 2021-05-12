@@ -1080,16 +1080,27 @@ def diagnoses_view(patient_id=None):
 def hospitals_view():
     if current_user.is_admin():
         if request.method == "POST":
-            name = request.form.get('name')
-            new_hospital = Hospital.query.filter_by(name=name).first()
-            if new_hospital:
-                flash('Hospital already exists!', category='error')
+            form_no = request.form.get("form_no")
+            if form_no == "1":
+                name = request.form.get('name')
+                new_hospital = Hospital.query.filter_by(name=name).first()
+                if new_hospital:
+                    flash('Hospital already exists!', category='error')
+                    return redirect(url_for('user_view.hospitals_view'))
+                new_hospital = Hospital(name=name)
+                db.session.add(new_hospital)
+                db.session.commit()
+                flash('Hospital Added!', category='success')
                 return redirect(url_for('user_view.hospitals_view'))
-            new_hospital = Hospital(name=name)
-            db.session.add(new_hospital)
-            db.session.commit()
-            flash('Hospital Added!', category='success')
-            return redirect(url_for('user_view.hospitals_view'))
+            elif form_no == "2":
+                hospital_id = request.form.get("hospital")
+                hospital = Hospital.query.filter_by(id=hospital_id).first()
+                if hospital:
+                    db.session.delete(hospital)
+                    db.session.commit()
+                    flash('Hospital Deleted!', category='success')
+                    return redirect(url_for('user_view.hospitals_view'))
+
         hospitals = Hospital.query.all()
         departments= Department.query.all()
         return render_template("hospitals.html", user=current_user, hospitals=hospitals, departments=departments, sidebar=ADMIN_SIDEBAR)
