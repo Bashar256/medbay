@@ -1039,7 +1039,7 @@ def test_download():
     if request.mimetype=='application/json':
         if current_user.is_patient():
             info = patient_lab_results(current_user.id)
-            print(info.path)
+            print(info.results.path)
             return jsonify({'status':1})
 
 
