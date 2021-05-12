@@ -134,7 +134,7 @@ def appointment_history():
             if load_user_request(request):
                 if current_user.is_patient():
                     information = patient_appointments(current_user.id) 
-                    for appointment,hospital,department,usr,diagnoses,lab_results in information:
+                    for appointment,hospital,department,usr,diagnoses,lab_result in information:
                         if appointment.appointment_date_time < today:
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
@@ -146,7 +146,7 @@ def appointment_history():
                             hour.append(appointment.appointment_date_time.hour)
                             minute.append(str(appointment.appointment_date_time.minute))
                             weekday.append(wdays[appointment.appointment_date_time.weekday()])
-                            print(lab_results.path)
+                            print(lab_result.path)
 
                 elif current_user.is_medical_staff():
                     information = medical_staff_appointments(current_user.id)
