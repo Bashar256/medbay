@@ -146,6 +146,7 @@ def appointment_history():
                             hour.append(appointment.appointment_date_time.hour)
                             minute.append(str(appointment.appointment_date_time.minute))
                             weekday.append(wdays[appointment.appointment_date_time.weekday()])
+                            print(lab_results.path)
 
                 elif current_user.is_medical_staff():
                     information = medical_staff_appointments(current_user.id)
@@ -391,20 +392,7 @@ def edit_profile_view_phone():
             db.session.commit()
             return jsonify({'status':'Your Information was changed'})
 
-        #return jsonify({'status':status})
 
-    # elif current_user.is_patient():
-    #     return render_template("edit_profile.html",user=current_user, sidebar=PATIENT_SIDEBAR)
-
-    # elif current_user.is_medical_staff():
-    #     if not current_user.is_department_head():
-    #         return render_template("edit_profile.html",user=current_user, sidebar=MEDICAL_STAFF_SIDEBAR)
-    #     return render_template("edit_profile.html",user=current_user, sidebar=DEPARTMENT_HEAD_SIDEBAR)
-    # elif current_user.is_management_staff():
-    #     return render_template("edit_profile.html",user=current_user, sidebar=MANAGEMENT_STAFF_SIDEBAR)
-        
-    # elif current_user.is_admin():
-    #     return render_template("edit_profile.html",user=current_user, sidebar=ADMIN_SIDEBAR)    
         
 
 #Appointment_Booking View
