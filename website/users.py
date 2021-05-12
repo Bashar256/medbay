@@ -1000,6 +1000,7 @@ def patient_details_view(patient_id):
     abort(401)
 
 
+
 #Lab_Results View
 @user_view.route("/lab_results", methods=["POST", "GET"])
 @user_view.route("/lab_results/<int:patient_id>", methods=["POST", "GET"])
@@ -1031,6 +1032,15 @@ def lab_results_view(patient_id=None):
         info = patient_lab_results(current_user.id)
         return render_template("lab_results.html", user=current_user, info=info, sidebar=PATIENT_SIDEBAR)
     abort(401)
+
+@user_view.route("/test_download", methods=["POST", "GET"])
+@login_required
+def test_download():
+    if request.mimetype=='application/json':
+        if current_user.is_patient():
+            info = patient_lab_results(current_user.id)
+            print(info.path)
+            return jsonify({'status':1})
 
 
 #Diagnoses View
