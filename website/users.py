@@ -1036,6 +1036,7 @@ def lab_results_view(patient_id=None):
 @user_view.route("/test_download", methods=["POST", "GET"])
 @login_required
 def test_download():
+    diag=''
     if request.mimetype=='application/json':
         if current_user.is_patient():
             info = patient_diagnoses(current_user.id)
