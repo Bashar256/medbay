@@ -1327,6 +1327,17 @@ def rooms_view():
     abort(401)
 
 
+@user_view.route("/rooms_ohone", methods=['GET', 'POST'])
+@login_required
+def rooms_view_phone():
+    if current_user.is_medical_staff():
+        hospitals = Hospital.query.all()
+        my_hospital = Hospital.query.filter_by(id=current_user.hospital).first()
+        departments = Department.query.filter_by(hospital=current_user.hospital).all()
+        hospital_name=my_hospital.name
+        beds=my_hospital.hospital_beds_stats(my_hospital.id)
+
+
 @user_view.route("/operation_rooms", methods=['GET', 'POST'])
 @login_required
 def operation_rooms_view():
