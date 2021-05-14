@@ -1340,17 +1340,24 @@ def rooms_view_phone():
         depts=[]
         depts_rooms=[]
         single_room=[]
+        no_departments=0
+        no_rooms_in_department=[]
         for d in departments:
+            i=0
+            no_departments+=1
             depts.append(d.name)
             for room in d.rooms:
                 if room.room_type !="operation":
+                    i+=1
                     beds1 = room.room_stats(room.id)
                     single_room.append(room.room_no)
                     single_room.append(beds1[0])
                     single_room.append(beds1[1])
             depts_rooms.append(single_room)
+            no_rooms_in_department.append[i]
 
-        print(depts_rooms)
+        print(no_departments)
+        print(no_rooms_in_department)
         return jsonify({'hospital':hospital_name,'beds':beds,'occupied':occupied})
 
 
