@@ -1435,6 +1435,7 @@ def operation_rooms_view_phone():
                     else:
                         r.append("Free")
                         all_rooms.append(r)
+        return jsonify({'rooms':all_rooms})
 
                     
 #Custom error pages
