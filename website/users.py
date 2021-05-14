@@ -1354,7 +1354,7 @@ def rooms_view_phone():
                     single_room.append(beds1[0])
                     single_room.append(beds1[1])
             depts_rooms.append(single_room)
-            no_rooms_in_department.append[i]
+            no_rooms_in_department.append[str(i)]
 
         print(no_departments)
         print(no_rooms_in_department)
