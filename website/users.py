@@ -1045,7 +1045,11 @@ def test_download():
                 diag = dg.split('/')[-1]
                 print("split")
                 print(diag)
+        if diag:
             return jsonify({'status':diag})
+        else:
+            return jsonify({'status':'No diagnoses'})
+        
 
 
 #Diagnoses View
