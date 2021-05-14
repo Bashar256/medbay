@@ -1348,7 +1348,7 @@ def rooms_view_phone():
                     single_room.append(room.room_no)
                     single_room.append(beds1[0])
                     single_room.append(beds1[1])
-                depts_rooms.append(single_room)
+            depts_rooms.append(single_room)
 
         print(depts_rooms)
         return jsonify({'hospital':hospital_name,'beds':beds,'occupied':occupied})
