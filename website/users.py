@@ -1348,7 +1348,7 @@ def rooms_view_phone():
             depts.append(d.name)
             for room in d.rooms:
                 if room.room_type !="operation":
-                    single_room.clear()
+                    single_room=[]
                     i+=1
                     beds1 = room.room_stats(room.id)
                     single_room.append(room.room_no)
