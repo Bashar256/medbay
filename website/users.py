@@ -1041,6 +1041,8 @@ def test_download():
             info = patient_diagnoses(current_user.id)
             for (diagnosis,usr) in info:
                 print(diagnosis.path)
+                diag = diagnosis.path.split('/')[-1]
+                print(diag)
                 return jsonify({'status':diagnosis.path})
 
 
