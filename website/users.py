@@ -1354,10 +1354,13 @@ def rooms_view_phone():
                     single_room.append(beds1[0])
                     single_room.append(beds1[1])
                     single_room.append(d.name)
+            
+                all_rooms.append(single_room)
+                single_room.clear
             no_rooms_in_department.append(i)
-            all_rooms.append(single_room)
 
-        print(single_room)
+
+        print(all_rooms)
         return jsonify({'hospital':hospital_name,'beds':beds,'occupied':occupied})
 
 
