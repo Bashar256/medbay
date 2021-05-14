@@ -1338,7 +1338,7 @@ def rooms_view_phone():
         beds=my_hospital.hospital_beds_stats(my_hospital.id)
         print(hospital_name)
         print(beds)
-        return True
+        return jsonify({'hopital':hospital_name,'beds':beds})
 
 
 @user_view.route("/operation_rooms", methods=['GET', 'POST'])
