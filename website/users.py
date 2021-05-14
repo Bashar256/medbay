@@ -1343,7 +1343,7 @@ def rooms_view_phone():
         no_rooms_in_department=[]
         for d in departments:
             i=0
-            no_departments+=1
+
             depts.append(d.name)
             for room in d.rooms:
                 if room.room_type !="operation":
