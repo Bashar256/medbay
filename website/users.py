@@ -1337,9 +1337,18 @@ def rooms_view_phone():
         hospital_name=my_hospital.name
         beds=my_hospital.hospital_beds_stats(my_hospital.id)
         occupied=beds[0]-beds[1]
-        print(hospital_name)
-        print(beds)
-        print(occupied)
+        depts=[]
+        depts_rooms=[]
+        single_room=[]
+        for d in departments:
+            depts.append(d.name)
+            for room in d.rooms:
+                if room.room_type !="operation":
+                    beds1 = room.room_stats(room.id)
+                    single_room.append(room.room_no,beds1[0],beds1[1])
+                depts_rooms.append(single_room)
+
+        print(depts_rooms)
         return jsonify({'hospital':hospital_name,'beds':beds,'occupied':occupied})
 
 
