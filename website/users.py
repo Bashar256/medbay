@@ -1356,7 +1356,7 @@ def rooms_view_phone():
                     single_room.append(d.name)
             
                 all_rooms.append(single_room)
-                single_room.clear
+                single_room.clear()
             no_rooms_in_department.append(i)
 
 
