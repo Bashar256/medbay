@@ -1418,7 +1418,25 @@ def operation_rooms_view():
     abort(401)
 
 
+@user_view.route("/operation_rooms_phone", methods=['GET', 'POST'])
+@login_required
+def operation_rooms_view_phone():
+    if current_user.is_medical_staff():
+        departments = Department.query.filter_by(hospital=current_user.hospital).all()
+        all_rooms = []
+        for department in departments:
+            for room in department.rooms:
+                if room.room_type == 'operation':
+                    r=[]
+                    r.append(department.name)
+                    r.append(room.room_no)
+                    if room.is_full():
+                        r.append("Booked")
+                    else:
+                        r.append("Free")
+                        all_rooms.append(r)
 
+                    
 #Custom error pages
 user_view.errorhandler(400)
 def bad_request(error):
