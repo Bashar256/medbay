@@ -1340,7 +1340,6 @@ def rooms_view_phone():
         depts=[]
         single_room=[]
         all_rooms=[]
-        no_departments=0
         no_rooms_in_department=[]
         for d in departments:
             i=0
@@ -1359,8 +1358,7 @@ def rooms_view_phone():
             no_rooms_in_department.append(i)
 
 
-        print(all_rooms)
-        return jsonify({'hospital':hospital_name,'beds':beds,'occupied':occupied})
+        return jsonify({'hospital':hospital_name,'beds':beds,'occupied':occupied,'departments':depts,'rooms_department':no_rooms_in_department,'rooms':all_rooms})
 
 
 @user_view.route("/operation_rooms", methods=['GET', 'POST'])
