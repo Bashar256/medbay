@@ -1041,11 +1041,11 @@ def test_download():
             info = patient_diagnoses(current_user.id)
             for (diagnosis,usr) in info:
                 print("path")
-                print(diagnosis.path)
-                diag = diagnosis.path.split('/')[-1]
+                dg=str(diagnosis.path)
+                diag = dg.split('/')[-1]
                 print("split")
                 print(diag)
-                return jsonify({'status':diagnosis.path})
+            return jsonify({'status':diag})
 
 
 #Diagnoses View
