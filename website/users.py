@@ -1336,6 +1336,8 @@ def rooms_view_phone():
         departments = Department.query.filter_by(hospital=current_user.hospital).all()
         hospital_name=my_hospital.name
         beds=my_hospital.hospital_beds_stats(my_hospital.id)
+        print(hospital_name)
+        print(beds)
 
 
 @user_view.route("/operation_rooms", methods=['GET', 'POST'])
