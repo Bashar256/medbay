@@ -1,7 +1,7 @@
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from datetime import datetime, timedelta
 from flask_login import UserMixin
-from website import db, app, UPLOAD_DIRECTORY, WEEKEND, APPOINTMENT_TIME,APPOINTMENT_TIMEOUT
+from website import db, app, UPLOAD_DIRECTORY, APPOINTMENT_TIME,APPOINTMENT_TIMEOUT
 from time import time
 import math
 import os

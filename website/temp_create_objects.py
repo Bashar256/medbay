@@ -1,7 +1,6 @@
-from website import db,APPOINTMENT_TIME, APPOINTMENT_TIMEOUT
+from website import db
 from website.models import Hospital,Department,Appointment,User,Patient,Medical_Staff,Management_Staff,Patients, Appointment_Times,Time_Slot
 from werkzeug.security import generate_password_hash, check_password_hash
-import os
 from website.users import html_date_to_python_date
 import datetime
 

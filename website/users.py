@@ -1,8 +1,8 @@
-from website import db, app, UPLOAD_FOLDER, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, APPOINTMENT_TIMEOUT, MAX_APPOINTMENT_DATE, SESSION_TIMEOUT, WEEKEND, ROOM_TYPES
+from website import db, app, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, APPOINTMENT_TIMEOUT, MAX_APPOINTMENT_DATE, SESSION_TIMEOUT, WEEKEND, ROOM_TYPES
 from website.models import  Hospital, Department, Appointment, Management_Staff, Medical_Staff, Patient, Patients, Diagnosis, User, Lab_Result, Room, Bed, Appointment_Times, Time_Slot
 from flask import Blueprint, render_template, url_for, redirect, request, flash, abort, session, send_file, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
 from website.validate import validate_staff_register, create_random_password
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager
@@ -1207,7 +1207,7 @@ def staff_view():
     elif current_user.is_admin():
         if request.method == 'POST':
             form_no = request.form.get("form_no")
-            if form_no =="1":
+            if form_no == "1":
                 if validate_staff_register(request):
                     flash("User Added Successfully", category="success")
                     return redirect(url_for("user_view.staff_view"))
@@ -1216,8 +1216,7 @@ def staff_view():
                 staff = User.query.filter_by(id=staff_id).first()
                 if staff:
                     if staff.is_medical_staff():
-                        doctors_patients = db.session.query(Patients).filter_by(medical_staff_id=staff.id).all()
-                        db.session.delete(doctors_patients)
+                        db.session.query(Patients).filter_by(medical_staff_id=staff.id).delete()
                     db.session.delete(staff)
                     db.session.commit()
                     flash("User deleteed!", category="update")

@@ -1,5 +1,4 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
 from datetime import timedelta
 from flask_mail import Mail
 from flask import Flask
@@ -60,8 +59,6 @@ app.register_error_handler(503, service_unavaiable)
 
 app.register_blueprint(auth_view, url_prefix="/")
 app.register_blueprint(user_view, url_prefix="/")
-
-from .models import User
 
 with app.app_context():
     db.create_all(app=app)

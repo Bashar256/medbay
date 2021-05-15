@@ -1,7 +1,7 @@
 from website.models import Patient, User, Medical_Staff, Management_Staff, Hospital, Appointment_Times
 from werkzeug.security import check_password_hash, generate_password_hash
 from website import db, app, mail, BAD_LOGINS_LIMIT
-from flask_login import current_user, login_user
+from flask_login import current_user
 from flask import flash, url_for
 from flask_mail import Message
 import datetime
@@ -89,7 +89,6 @@ def validate_staff_register(request):
     role = request.form.get('role')
     department = request.form.get('department')
     appointment_times_id = request.form.get('appointment_times')
-    submit = request.form.get('submit')
     dpt_head = request.form.get('dpt_head')
     hospital_id = request.form.get('hospital_id')
     appointment_time = Appointment_Times.query.filter_by(id=appointment_times_id).first()
@@ -106,8 +105,7 @@ def validate_staff_register(request):
     elif len(phone_no) != 13:
         flash("Enter a correct phone number format", category="error")
     else:
-        print(submit, role)
-        if submit == "Create Management Staff" and role.lower() == "ms":
+        if role.lower() == "ms":
             if hospital_id:
                 if Hospital.query.filter_by(id=hospital_id).first():
                     new_user = Management_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=hospital_id, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
@@ -116,7 +114,7 @@ def validate_staff_register(request):
                     return False
             else:
                 new_user = Management_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=current_user.hospital, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
-        elif submit == "Create Medical Staff" and role.lower() == 'md':
+        elif role.lower() == 'md':
             if dpt_head.lower() == 'false':
                 department_head = False
             elif dpt_head.lower() == 'true':
@@ -130,7 +128,7 @@ def validate_staff_register(request):
             else:
                 flash("Please Specify times for this doctor", category="error")
                 return False
-        elif submit == "Create Admin" and role.lower() == "a":
+        elif role.lower() == "a":
             new_user = User(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
         else:
             flash("Please Submit from the correct form and Specify role", category="error")
