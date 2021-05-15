@@ -1036,22 +1036,24 @@ def lab_results_view(patient_id=None):
 @user_view.route("/test_download", methods=["POST", "GET"])
 @login_required
 def test_download():
-    path=''
-    file=''
+    path=[]
+    file=[]
+    name=[]
+    email=[]
+    date=[]
     if request.mimetype=='application/json':
         if current_user.is_patient():
             info = patient_diagnoses(current_user.id)
             for (diagnosis,usr) in info:
-                print(usr)
-                print(usr.email)
-                print(diagnosis.date.strftime("%d-%m-%y"))
-                path=str(diagnosis.path)
-                file = path.split('/')[-1]
- 
+                name.append(usr)
+                email.append(usr.email)
+                date.append(diagnosis.date.strftime("%d-%m-%y"))
+                path.append(diagnosis.path)
+                file.append(diagnosis.path.split('/')[-1])
         if path:
-            return jsonify({'status':'True','Path':path,'Split':file})
+            return jsonify({'Path':path,'Split':file,'Name':name,'Email':email,'Date':date})
         else:
-            return jsonify({'status':'False','Path':path,'Split':file})
+            pass
         
 
 
