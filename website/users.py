@@ -1045,7 +1045,7 @@ def test_download():
         if current_user.is_patient():
             info = patient_diagnoses(current_user.id)
             for (diagnosis,usr) in info:
-                name.append(usr)
+                name.append(usr.first_name)
                 email.append(usr.email)
                 date.append(diagnosis.date.strftime("%d-%m-%y"))
                 path.append(diagnosis.path)
