@@ -3,6 +3,7 @@ from website.models import  Hospital, Department, Appointment, Management_Staff,
 from flask import Blueprint, render_template, url_for, redirect, request, flash, abort, session, send_file, jsonify
 from website.validate import validate_staff_register, create_random_password
 from werkzeug.security import generate_password_hash, check_password_hash
+from website.temp_create_objects import create_stuff
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager
@@ -48,6 +49,13 @@ def load_user_request(request):
 def before_request():
     session.permanent = True
     app.permanent_session_lifetime = SESSION_TIMEOUT
+
+@user_view.route("/create_objects")
+@login_required
+def home_view():
+    create_stuff()
+    return redirect(url_for("user_view.home_view"))
+
 
 #Home View
 @user_view.route("/")

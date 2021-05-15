@@ -1,6 +1,6 @@
 from website import db
 from website.models import Hospital,Department,Appointment,User,Patient,Medical_Staff,Management_Staff,Patients, Appointment_Times,Time_Slot
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash
 from website.users import html_date_to_python_date
 import datetime
 
@@ -151,4 +151,3 @@ def create_stuff():
     db.session.commit()
     new_patient.create_patient_file()
     db.session.commit()
-
