@@ -391,5 +391,4 @@ class Patient(User):
 
 
 def save_path(path):
-    print(path, path.replace("\\", "/"))
     return path.replace("\\", "/")

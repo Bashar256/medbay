@@ -4,8 +4,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from website.users import html_date_to_python_date
 import datetime
+
 def create_stuff():
-    
     today = datetime.datetime.today()
     name = 'Shmeisani hospital'
     new_patient = Hospital(name=name)
