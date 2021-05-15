@@ -2,7 +2,6 @@ from flask import Blueprint, Flask, redirect, url_for, render_template, request,
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from website.validate import validate_patient_register, validate_login
-from website.temp_create_objects import create_stuff
 from website import db, mail, app, SESSION_TIMEOUT
 from website.users import load_user_request
 from website.models import User, Patient
@@ -12,7 +11,6 @@ from threading import Thread
 import datetime
 import base64
 import os
-
 auth_view = Blueprint("auth_view", __name__, static_folder="static", template_folder="templates")
 
 
@@ -68,7 +66,6 @@ def register_view():
             flash('Account created successfully !', category='register')
             return redirect(url_for('user_view.home_view'))
         return render_template("register.html")
-    create_stuff()
     return render_template("register.html")
 
 @auth_view.route("/register_phone", methods=["POST", "GET"])
