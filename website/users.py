@@ -52,7 +52,7 @@ def before_request():
 
 @user_view.route("/create_objects")
 @login_required
-def home_view():
+def create_objects_view():
     create_stuff()
     return redirect(url_for("user_view.home_view"))
 
