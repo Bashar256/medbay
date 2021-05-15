@@ -165,6 +165,8 @@ def reset_token_view(token):
 @login_required
 def email_confirmation_View():
     confirm_email(current_user)
+    if request.mimetype=='application/json':
+        return jsonify({'status':'A confirmation email was sent to you.'})
     flash("A confirmation email was sent to you.", category="info")
     return redirect(url_for("user_view.profile_view"))
 

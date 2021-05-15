@@ -146,7 +146,7 @@ def appointment_history():
                             hour.append(appointment.appointment_date_time.hour)
                             minute.append(str(appointment.appointment_date_time.minute))
                             weekday.append(wdays[appointment.appointment_date_time.weekday()])
-                            print(lab_result.path)
+                            
 
                 elif current_user.is_medical_staff():
                     information = medical_staff_appointments(current_user.id)
