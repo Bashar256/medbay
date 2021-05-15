@@ -1033,9 +1033,31 @@ def lab_results_view(patient_id=None):
         return render_template("lab_results.html", user=current_user, info=info, sidebar=PATIENT_SIDEBAR)
     abort(401)
 
-@user_view.route("/test_download", methods=["POST", "GET"])
+@user_view.route("/lab_download", methods=["POST", "GET"])
 @login_required
-def test_download():
+def lab_download():
+    path=[]
+    file=[]
+    name=[]
+    email=[]
+    date=[]
+    if request.mimetype=='application/json':
+        if current_user.is_patient():
+            info = patient_lab_results(current_user.id)
+            for (lab,usr) in info:
+                name.append(usr.first_name)
+                email.append(usr.email)
+                date.append(lab.date.strftime("%d-%m-%y"))
+                path.append(lab.path)
+                file.append(lab.path.split('/')[-1])
+        if path:
+            return jsonify({'Path':path,'Split':file,'Name':name,'Email':email,'Date':date})
+        else:
+            pass
+
+@user_view.route("/diagnoses_download", methods=["POST", "GET"])
+@login_required
+def diagnoses_download():
     path=[]
     file=[]
     name=[]
