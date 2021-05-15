@@ -1030,12 +1030,25 @@ def lab_results_view(patient_id=None):
 @user_view.route("/test_download", methods=["POST", "GET"])
 @login_required
 def test_download():
+    path=[]
+    file=[]
+    name=[]
+    email=[]
+    date=[]
     if request.mimetype=='application/json':
         if current_user.is_patient():
             info = patient_diagnoses(current_user.id)
             for (diagnosis,usr) in info:
-                print(diagnosis.path)
-                return jsonify({'status':diagnosis.path})
+                name.append(usr.first_name)
+                email.append(usr.email)
+                date.append(diagnosis.date.strftime("%d-%m-%y"))
+                path.append(diagnosis.path)
+                file.append(diagnosis.path.split('/')[-1])
+        if path:
+            return jsonify({'Path':path,'Split':file,'Name':name,'Email':email,'Date':date})
+        else:
+            pass
+        
 
 
 #Diagnoses View
@@ -1321,6 +1334,40 @@ def rooms_view():
     abort(401)
 
 
+@user_view.route("/rooms_phone", methods=['GET', 'POST'])
+@login_required
+def rooms_view_phone():
+    if current_user.is_medical_staff():
+        hospitals = Hospital.query.all()
+        my_hospital = Hospital.query.filter_by(id=current_user.hospital).first()
+        departments = Department.query.filter_by(hospital=current_user.hospital).all()
+        hospital_name=my_hospital.name
+        beds=my_hospital.hospital_beds_stats(my_hospital.id)
+        occupied=beds[0]-beds[1]
+        depts=[]
+        single_room=[]
+        all_rooms=[]
+        no_rooms_in_department=[]
+        for d in departments:
+            i=0
+
+            depts.append(d.name)
+            for room in d.rooms:
+                if room.room_type !="operation":
+                    single_room=[]
+                    i+=1
+                    beds1 = room.room_stats(room.id)
+                    single_room.append(room.room_no)
+                    single_room.append(beds1[0])
+                    single_room.append(beds1[1])
+                    single_room.append(d.name)
+                    all_rooms.append(single_room)
+            no_rooms_in_department.append(i)
+
+
+        return jsonify({'hospital':hospital_name,'beds':beds,'occupied':occupied,'departments':depts,'rooms_department':no_rooms_in_department,'rooms':all_rooms})
+
+
 @user_view.route("/operation_rooms", methods=['GET', 'POST'])
 @login_required
 def operation_rooms_view():
@@ -1378,7 +1425,26 @@ def operation_rooms_view():
     abort(401)
 
 
+@user_view.route("/operation_rooms_phone", methods=['GET', 'POST'])
+@login_required
+def operation_rooms_view_phone():
+    if current_user.is_medical_staff():
+        departments = Department.query.filter_by(hospital=current_user.hospital).all()
+        all_rooms = []
+        for department in departments:
+            for room in department.rooms:
+                if room.room_type == 'operation':
+                    r=[]
+                    r.append(department.name)
+                    r.append(room.room_no)
+                    if room.is_full():
+                        r.append("Booked")
+                    else:
+                        r.append("Free")
+                        all_rooms.append(r)
+        return jsonify({'rooms':all_rooms})
 
+                    
 #Custom error pages
 user_view.errorhandler(400)
 def bad_request(error):
