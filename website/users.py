@@ -1005,7 +1005,6 @@ def patient_details_view(patient_id):
     abort(401)
 
 
-
 #Lab_Results View
 @user_view.route("/lab_results", methods=["POST", "GET"])
 @user_view.route("/lab_results/<int:patient_id>", methods=["POST", "GET"])
