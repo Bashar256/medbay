@@ -794,14 +794,15 @@ def patients_view():
             form_no = request.form.get("form_no")
             if form_no == "1":
                 patient_id = request.form.get("patient_id")
+                room_type = request.form.get("room_type")
                 patient = Patient.query.filter_by(id=patient_id).first()
                 if patient:           
-                    rooms = Room.query.filter_by(department=current_user.department).all()
+                    rooms = Room.query.filter_by(room_type=room_type).all()
                     for room in rooms:
                         if not room.is_full():
                             for bed in room.beds:
                                 if not bed.occupied:
-                                    bed.occupy_bed(patient)
+                                    bed.occupy_bed(current_user.id, patient)
                                     patient.bed = bed.id
                                     db.session.commit()
                                     flash("Patient admitted", category="success")
@@ -820,6 +821,7 @@ def patients_view():
                     if bed:
                         bed.release_bed()
                         patient.bed = None
+                        current_user.booked_beds.remove(bed)
                         db.session.commit()
                         flash("Patient disscharged", category="success")
                         return redirect(url_for("user_view.patients_view"))               
@@ -830,12 +832,21 @@ def patients_view():
         timed_out = check_timeouts(patients_timeouts)
         doctors_patients = current_user.patients
         appointments = []
+        beds = []
+        rooms = []
         for patient in doctors_patients:
             appointments.append(patient.last_visit(current_user.id))
-        info = zip(doctors_patients, appointments, timed_out)
+            bed = Bed.query.filter_by(id=patient.bed).first()
+            beds.append(bed)
+            if bed:
+                room = Room.query.filter_by(id=bed.room).first()
+                rooms.append(room)
+            else:
+                rooms.append(None)
+        info = zip(doctors_patients, appointments, timed_out, beds, rooms)
         if not current_user.is_department_head():
-            return render_template("patients.html", user=current_user, info=info, sidebar=MEDICAL_STAFF_SIDEBAR)
-        return render_template("patients.html", user=current_user, info=info, sidebar=DEPARTMENT_HEAD_SIDEBAR)
+            return render_template("patients.html", user=current_user, info=info, room_types=ROOM_TYPES, sidebar=MEDICAL_STAFF_SIDEBAR)
+        return render_template("patients.html", user=current_user, room_types=ROOM_TYPES, info=info, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     abort(401)
 
@@ -1306,6 +1317,7 @@ def rooms_view():
             hospital_id = current_user.hospital
 
             if room_type == 'operation':
+                room_no = "OR " + room_no
                 no_of_beds = 1
 
             if int(no_of_beds) > 4 or int(no_of_beds) < 1:
@@ -1404,37 +1416,15 @@ def operation_rooms_view():
         return render_template("operation_rooms.html", user=current_user, departments=departments, rooms=rooms, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     elif current_user.is_management_staff():
-        if request.method == 'POST':
+        if request.method =="POST":
             room_id = request.form.get("room_id")
             room = Room.query.filter_by(id=room_id).first()
             if room:
-                if room.room_type == "operation":
-                    form_no = request.form.get("form_no")
-                    if form_no == "1":
-                        beds = room.beds
-                        for bed in beds:
-                            bed.occupy_bed()
-                        db.session.commit()
-                        flash("Surgery room is booked", category="success")
-                        return redirect(url_for("user_view.operation_rooms_view")) 
-
-                    elif form_no == "2":
-                        beds = room.beds
-                        for bed in beds:
-                            bed.release_bed()
-                        db.session.commit()
-                        flash("Surgery room is no longer booked", category="success")
-                        return redirect(url_for("user_view.operation_rooms_view")) 
-
-                    flash("No such form exists", category="error")
-                    return redirect(url_for("user_view.operation_rooms_view"))
-
-                flash("This is not an operation room", category="error")
-                return redirect(url_for("user_view.operation_rooms_view"))  
-
-            flash("The Room doesn't exist", category="error")
-            return redirect(url_for("user_view.operation_rooms_view"))
-
+                db.session.delete(room)
+                db.session.commit()
+                flash("Operation room removed", category="success")
+                return redirect(url_for("user_view.operation_rooms_view"))
+            flash("Operation room doesn't exist", category="error")
         departments = Department.query.filter_by(hospital=current_user.hospital).all()
         rooms = []
         for department in departments:

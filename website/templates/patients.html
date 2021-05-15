@@ -14,22 +14,24 @@
                                 <tr>	
                                     <th><strong>Patient Name</strong></th>
                                     <th><strong>Last Visit</strong></th>
+                                    <th><strong>Room</strong></th>
                                     <th><strong>Diagnosis</strong></th>
                                     <th><strong>Lab Results</strong></th>
                                     <th><strong>Action</strong></th>
                                 </tr>
                             </thead>
                                 <tbody>
-                                    {% for (patient, appointment, timed_out) in info: %}
+                                    {% for (patient, appointment, timed_out, bed, room) in info: %}
                                         <tr>
                                             <td><div class="d-flex align-items-center"> <span class="w-space-no">{{patient.first_name + ' ' + patient.last_name}}</span></div></td>
                                             <td>{% if appointment: %}{{appointment.strftime("%d-%m-%y") }}{% else: %}<p>No previous appoinment</p>{% endif %}</td>
+                                            <td>{{room.room_no}}</td>
                                             <td><a href="/diagnoses/{{patient.id}}">Diagnoses</a></td>
                                             <td><div></div><a href="/lab_results/{{patient.id}}">Lab Results</a></td>
                                             <td>
                                                 <div class="d-flex">
-                                                    {% if not timed_out:%}
                                                         <button title="Patient Profile" onclick="window.location.href='/patient_details{{patient.id}}'" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-user"></i></button>
+                                                    {% if not timed_out:%}
                                                         {% if appointment: %}
                                                             <button title="Upload" type="submit" data-toggle="modal" data-target="#upload{{patient.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-file"></i></button>
                                                         {% endif %}
@@ -89,6 +91,11 @@
                                                                     <div class="form-group">
                                                                         <input type="hidden" name="patient_id" value="{{patient.id}}"></input>
                                                                         <input type="hidden" name="form_no" value="1"></input>
+                                                                        <select name="room_type" class="form-control">
+                                                                            {% for room_type in room_types: %}
+                                                                                <option value="{{room_type.lower()}}">{{room_type.lower()}} room</option>
+                                                                            {% endfor %}
+                                                                        </select>
                                                                         Are you sure you want to admit the patient to the hospital ?
                                                                     </div>
                                                                 </div>
