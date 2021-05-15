@@ -50,12 +50,6 @@ def before_request():
     session.permanent = True
     app.permanent_session_lifetime = SESSION_TIMEOUT
 
-@user_view.route("/create_objects")
-@login_required
-def create_objects_view():
-    create_stuff()
-    return redirect(url_for("user_view.home_view"))
-
 
 #Home View
 @user_view.route("/")
