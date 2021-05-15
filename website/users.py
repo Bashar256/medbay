@@ -1041,15 +1041,16 @@ def test_download():
         if current_user.is_patient():
             info = patient_diagnoses(current_user.id)
             for (diagnosis,usr) in info:
-                print("path")
-                dg=str(diagnosis.path)
-                diag = dg.split('/')[-1]
-                print("split")
-                print(diag)
+                print(usr)
+                print(usr.email)
+                print(diagnosis.date.strftime("%d-%m-%y"))
+                path=str(diagnosis.path)
+                file = path.split('/')[-1]
+ 
         if diag:
-            return jsonify({'status':diag})
+            return jsonify({'status':'True','Path':path,'Split':file})
         else:
-            return jsonify({'status':'No diagnoses'})
+            return jsonify({'status':'False','Path':path,'Split':file})
         
 
 
