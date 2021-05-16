@@ -1,9 +1,9 @@
 from flask import Blueprint, redirect, url_for, render_template, request, flash, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
-from website import db, mail, app, SESSION_TIMEOUT, CIPHER_SUIT, TIME, IV
+from website import db, mail, app, SESSION_TIMEOUT
 from website.validate import validate_patient_register, validate_login
 from werkzeug.security import generate_password_hash
-from website.functions import decrypt_email, encrypt_email, string_to_bytes
+from website.functions import decrypt_email, encrypt_email
 from website.users import load_user_request
 from website.models import User, Patient
 from flask_mail import Message
