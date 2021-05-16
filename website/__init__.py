@@ -1,9 +1,10 @@
+from cryptography.fernet import Fernet
 from flask_sqlalchemy import SQLAlchemy
 from datetime import timedelta
 from flask_mail import Mail
 from flask import Flask
 import os
-
+from cryptography.fernet import Fernet
 DB_NAME = "database.db"
 SESSION_TIMEOUT = timedelta(minutes=30)
 
@@ -28,6 +29,12 @@ APPOINTMENT_TIMEOUT = 7 #Days
 MAX_APPOINTMENT_DATE = 30 #Days
 APPOINTMENT_TIME = 30 #Minutes
 BAD_LOGINS_LIMIT = 5 #Allowed Login Attempts
+
+KEY = b'zbtVjU7LhrzkuuiqYBPSBo7Ow0_5S1ps6OHYjrGkJD8='
+CIPHER_SUIT = Fernet(KEY)
+TIME = 1621160904
+IV = b'\xdcQ\x89DF\x80\xc5\xaa}\x9f\xd5\xd1\xf7\x15\xa8\xeb'
+SALT = b'$2b$12$yVJ0Luokbi3C/LRAwu0Kju'
 
 app = Flask(__name__, static_folder='static')
 app.secret_key = '0930444342a12c461c38d7c0837e39eff978504b64b1d765'

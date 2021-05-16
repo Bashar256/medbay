@@ -1,8 +1,8 @@
+from website import db, app, UPLOAD_DIRECTORY, APPOINTMENT_TIME,APPOINTMENT_TIMEOUT
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from datetime import datetime, timedelta
+from website.functions import save_path
 from flask_login import UserMixin
-from website import db, app, UPLOAD_DIRECTORY, APPOINTMENT_TIME,APPOINTMENT_TIMEOUT
-from time import time
 import math
 import os
 
@@ -265,6 +265,7 @@ class User(db.Model, UserMixin):
             return True
         return False
 
+
     def age(self):
         dob = self.date_of_birth.split('-')
         years = int(dob[0])
@@ -391,7 +392,3 @@ class Patient(User):
         if last_visit.date() == datetime.today().date() and last_visit.hour == datetime.today().hour: 
             return
         return last_visit
-
-
-def save_path(path):
-    return path.replace("\\", "/")

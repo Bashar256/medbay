@@ -21,7 +21,7 @@
                             <p>Name: {{user.first_name + ' '+ user.last_name}}</p>
                             <p>Age: {{user.age()}}</p>
                             <p>Phone Number: {{user.phone_no}}</p>
-                            <p>Email: {{user.email}}
+                            <p>Email: {{user_email}}
                                 {% if not user.confirmed: %}
                                     <a href="/confirm_email"><button class="btn btn-primary">Confirm Email</button></a>
                                 {% endif %}
