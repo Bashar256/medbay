@@ -868,15 +868,15 @@ def patients_view_phone():
                 data=request.json
                 form_no = data['form']
                 if form_no == 1:
-                    patient_name = data['name']
-                    patient = Patient.query.filter_by(first_name=patient_name).first()
+                    patient_id = data['patient_id']
+                    patient = Patient.query.filter_by(id=patient_id).first()
                     if patient:           
-                        rooms = Room.query.filter_by(department=current_user.department).all()
+                        rooms = Room.query.filter_by(room_type='patient').all()
                         for room in rooms:
                             if not room.is_full():
                                 for bed in room.beds:
                                     if not bed.occupied:
-                                        bed.occupy_bed(patient)
+                                        bed.occupy_bed(current_user.id, patient)
                                         patient.bed = bed.id
                                         db.session.commit()
                                         return jsonify({'status':'Patient Admitted'})
@@ -885,13 +885,14 @@ def patients_view_phone():
 
                     return jsonify({'status':'No such patient.'})
                 elif form_no == 2:
-                    patient_name = data['name']
-                    patient = Patient.query.filter_by(first_name=patient_name).first()
+                    patient_id = data['patient_id']
+                    patient = Patient.query.filter_by(id=patient_id).first()
                     if patient:
                         bed = Bed.query.filter_by(id=patient.bed).first()
                         if bed:
                             bed.release_bed()
                             patient.bed = None
+                            current_user.booked_beds.remove(bed)
                             db.session.commit()
                             return jsonify({'status':'Patient Discharged'})               
                 return jsonify({'status':'No such patient.'})
@@ -906,6 +907,7 @@ def patients_view_phone():
                 age=[]
                 phone=[]
                 email=[]
+                p_id=[]
                 patients_timeouts = db.session.query(Patients).filter_by(medical_staff_id=current_user.id).all()
                 timed_out = check_timeouts(patients_timeouts)
                 doctors_patients = current_user.patients
@@ -916,6 +918,7 @@ def patients_view_phone():
                     age.append(patient.age())
                     phone.append(patient.phone_no)
                     email.append(patient.email)
+                    p_id.append(patient.id)
                     if patient.bed:
                         is_admitted.append('Discharge')
                     else:
@@ -924,7 +927,7 @@ def patients_view_phone():
                         last.append("No Previous Appointments")
                     else :
                         last.append(patient.last_visit(current_user.id))
-                return jsonify({'firstname':firstname,'lastname':lastname,'last':last,'IsAdmitted':is_admitted,'IsTimedOut':is_timedout,'age':age,'phone':phone,'email':email})
+                return jsonify({'firstname':firstname,'lastname':lastname,'last':last,'IsAdmitted':is_admitted,'IsTimedOut':is_timedout,'age':age,'phone':phone,'email':email,'patient_id':p_id})
     
         # appointments = []
         # for patient in doctors_patients:
