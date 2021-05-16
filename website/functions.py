@@ -1,5 +1,5 @@
 import datetime
-from website import CIPHER_SUIT, TIME, IV
+from website import CIPHER_SUIT, TIME
 def html_date_to_python_date(date, time=None):
     date = date.split('-')
     if time:
@@ -40,7 +40,7 @@ def bytes_to_string(bytes):
 
 
 def encrypt_email(email):
-    return CIPHER_SUIT.encrypt_at_time(string_to_bytes(email), TIME, IV)
+    return CIPHER_SUIT.encrypt_at_time(string_to_bytes(email), TIME)
 
     
 def decrypt_email(email):

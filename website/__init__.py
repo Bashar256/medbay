@@ -33,7 +33,6 @@ BAD_LOGINS_LIMIT = 5 #Allowed Login Attempts
 KEY = b'zbtVjU7LhrzkuuiqYBPSBo7Ow0_5S1ps6OHYjrGkJD8='
 CIPHER_SUIT = Fernet(KEY)
 TIME = 1621160904
-IV = b'\xdcQ\x89DF\x80\xc5\xaa}\x9f\xd5\xd1\xf7\x15\xa8\xeb'
 SALT = b'$2b$12$yVJ0Luokbi3C/LRAwu0Kju'
 
 app = Flask(__name__, static_folder='static')
