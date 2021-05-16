@@ -960,8 +960,8 @@ def upload_file_view():
             patient = Patient.query.filter_by(id=patient_id).first()
             if diagnosis_file.filename:
                 filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Diagnosis" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")) + "." + diagnosis_file.filename.split('.')[-1])
-                path = save_path(os.path.join(patient.diagnoses_file, filename))
-                diagnosis_file.save(path)
+                path = os.path.join(patient.diagnoses_file, filename)
+                diagnosis_file.save(save_path(path))
 
                 with open(path, 'rb') as file:
                     original = file.read()
@@ -983,7 +983,6 @@ def upload_file_view():
                 with open(path, 'rb') as file:
                     original = file.read()
                 encrypted = encrypt_file(original)
-                os.remove(original)
                 with open(path, 'wb') as encrypted_file:
                     encrypted_file.write(encrypted) 
 
