@@ -73,4 +73,4 @@ def decrypt_file(file):
 
 def delete_temp_file(filename):
     time.sleep(15)
-    os.remove(filename)
+    os.remove(save_path(filename))

@@ -977,8 +977,8 @@ def upload_file_view():
 
             elif lab_result_file:
                 filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Lab_result" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")) + "." + lab_result_file.filename.split('.')[-1])
-                path = save_path(os.path.join(patient.lab_results_file, filename))
-                lab_result_file.save(path)
+                path = os.path.join(patient.lab_results_file, filename)
+                lab_result_file.save(save_path(path))
                 
                 with open(path, 'rb') as file:
                     original = file.read()
