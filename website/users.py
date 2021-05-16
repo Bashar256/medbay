@@ -51,6 +51,13 @@ def before_request():
     app.permanent_session_lifetime = SESSION_TIMEOUT
 
 
+#Page to create basic objects
+@user_view.route("/create_objects")
+def create_objects_view():
+    create_stuff()
+    return redirect(url_for("auth_view.login_view"))
+
+
 #Home View
 @user_view.route("/")
 @user_view.route("/home")

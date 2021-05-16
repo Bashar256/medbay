@@ -8,7 +8,7 @@ from website.models import User, Patient
 from flask_mail import Message
 from threading import Thread
 import datetime
-from website.temp_create_objects import create_stuff
+
 auth_view = Blueprint("auth_view", __name__, static_folder="static", template_folder="templates")
 
 
@@ -64,7 +64,6 @@ def register_view():
             flash('Account created successfully !', category='register')
             return redirect(url_for('user_view.home_view'))
         return render_template("register.html")
-    create_stuff()
     return render_template("register.html")
 
 @auth_view.route("/register_phone", methods=["POST", "GET"])
