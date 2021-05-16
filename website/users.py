@@ -178,6 +178,7 @@ def appointment_history():
                 else:
                     return jsonify({'status':'bad'})
 
+
 @user_view.route("/appointment_upcoming")
 @login_required
 def appointment_upcoming():
