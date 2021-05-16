@@ -75,6 +75,3 @@ def delete_temp_file(filename):
     time.sleep(15)
     if os.path.isfile(filename):
         os.remove(filename)
-        print("Temp File Deleted")
-    else:
-        print("Temp File Not Found")
