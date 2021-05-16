@@ -3,7 +3,6 @@ from datetime import timedelta
 from flask_mail import Mail
 from flask import Flask
 import os
-from Crypto.Ciphers import AES
 
 DB_NAME = "database.db"
 SESSION_TIMEOUT = timedelta(minutes=30)
@@ -30,9 +29,7 @@ MAX_APPOINTMENT_DATE = 30 #Days
 APPOINTMENT_TIME = 30 #Minutes
 BAD_LOGINS_LIMIT = 5 #Allowed Login Attempts
 
-KEY = b'\xb7\x9azB?\xf2K\xf6\x9e\x00\x84$]\xa7\x9cR\x1b_\x8b\x99\x11\xb8\xc9\x07\x93\xa1\xee\xacL\xcfKX'
-IV = b'\xdb\xfb\xe8(\xb1\x91c\xcc \xed\xa9\xf0$\x80\xdd\x97'
-CIPHER_SUIT = AES.new(KEY, AES.MODE_CBC, IV)
+KEY = b'58kLIogvoC6iix-mV4Gs1YBfJrY4Tj6VLhlj0_vQ6uQ='
 
 app = Flask(__name__, static_folder='static')
 app.secret_key = '0930444342a12c461c38d7c0837e39eff978504b64b1d765'

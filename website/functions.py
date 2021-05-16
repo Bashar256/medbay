@@ -1,5 +1,7 @@
+from cryptography.fernet import Fernet
+from website import KEY
+from website.models import User
 import datetime
-from website import CIPHER_SUIT
 def html_date_to_python_date(date, time=None):
     date = date.split('-')
     if time:
@@ -40,8 +42,17 @@ def bytes_to_string(bytes):
 
 
 def encrypt_email(email):
-    return CIPHER_SUIT.encrypt(email)
+    f = Fernet(KEY)
+    return f.encrypt(string_to_bytes(email))
 
     
 def decrypt_email(email):
-    return CIPHER_SUIT.decrypt(email)
+    f = Fernet(KEY)
+    return bytes_to_string(f.decrypt(email))
+
+
+def search_user_by_email(email):
+    users = User.query.all()
+    for user in users:
+        if decrypt_email(user.email) == email:
+            return user

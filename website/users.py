@@ -1,6 +1,6 @@
 from website import db, app, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, APPOINTMENT_TIMEOUT, MAX_APPOINTMENT_DATE, SESSION_TIMEOUT, WEEKEND, ROOM_TYPES
 from website.models import  Hospital, Department, Appointment, Management_Staff, Medical_Staff, Patient, Patients, Diagnosis, User, Lab_Result, Room, Bed, Appointment_Times, Time_Slot
-from website.functions import html_date_to_python_date, get_path, save_path, check_timeout, check_timeouts, encrypt_email, decrypt_email
+from website.functions import html_date_to_python_date, get_path, save_path, check_timeout, check_timeouts, encrypt_email, decrypt_email, search_user_by_email
 from flask import Blueprint, render_template, url_for, redirect, request, flash, abort, session, send_file, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from website.temp_create_objects import create_stuff
@@ -38,7 +38,7 @@ def load_user_request(request):
             api_key = base64.b64decode(api_key).decode('utf-8')
         except TypeError:
             pass
-        user = User.query.filter_by(email=encrypt_email(api_key)).first()
+        user = search_user_by_email(api_key)
         if user:
             return user
 
@@ -243,8 +243,6 @@ def appointment_upcoming():
                         return jsonify({'status':'bad'})
 
 
-
-
 #Edit_Profile View
 @user_view.route("/edit_profile", methods=["POST", "GET"])
 @login_required
@@ -260,15 +258,14 @@ def edit_profile_view():
         gender = request.form.get('gender')
         phone_no = request.form.get('phone_no')
         dob = request.form.get('dob')
-        email = encrypt_email(email)
        
-        user = User.query.filter_by(email=current_user.email).first()
-        if user.email != email:
-            old_user = User.query.filter_by(email=email).first()
+        user = current_user
+        if decrypt_email(user.email) != email:
+            old_user = search_user_by_email(email)
             if old_user:
                 flash("Email already exists", category="error")
             else:
-                user.email = email
+                user.email = encrypt_email(email)
                 user.confirmed = False
                 user.confirmed_on = None
                 count = count + 1
@@ -347,15 +344,15 @@ def edit_profile_view_phone():
             gender = data['gender']
             phone_no = data['phone_no']
             dob = data['dob']
-            email = encrypt_email(email)
+
         count = 0
-        user = User.query.filter_by(email=current_user.email).first()
-        if user.email != email:
-            old_user = User.query.filter_by(email=email).first()
+        user = current_user
+        if decrypt_email(user.email) != email:
+            old_user = encrypt_email(email)
             if old_user:
                 return jsonify({'status':'Email already exists'})
             else:
-                user.email = email
+                user.email = encrypt_email(email)
                 user.confirmed = False
                 user.confirmed_on = None
                 count = count + 1
@@ -919,7 +916,7 @@ def patients_view_phone():
                     is_timedout.append(timed_out)
                     age.append(patient.age())
                     phone.append(patient.phone_no)
-                    email.append(patient.email)
+                    email.append(decrypt_email(patient.email))
                     p_id.append(patient.id)
                     if patient.bed:
                         is_admitted.append('Discharge')
@@ -1063,9 +1060,9 @@ def lab_download():
     if request.mimetype=='application/json':
         if current_user.is_patient():
             info = patient_lab_results(current_user.id)
-            for (lab,usr) in info:
-                name.append(usr.first_name)
-                email.append(usr.email)
+            for (lab,user) in info:
+                name.append(user.first_name)
+                email.append(decrypt_email(user.email))
                 date.append(lab.date.strftime("%d-%m-%y"))
                 path.append(lab.path)
                 file.append(lab.path.split('/')[-1])
@@ -1085,9 +1082,9 @@ def diagnoses_download():
     if request.mimetype=='application/json':
         if current_user.is_patient():
             info = patient_diagnoses(current_user.id)
-            for (diagnosis,usr) in info:
-                name.append(usr.first_name)
-                email.append(usr.email)
+            for (diagnosis,user) in info:
+                name.append(user.first_name)
+                email.append(decrypt_email(user.email))
                 date.append(diagnosis.date.strftime("%d-%m-%y"))
                 path.append(diagnosis.path)
                 file.append(diagnosis.path.split('/')[-1])

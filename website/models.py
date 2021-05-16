@@ -1,7 +1,6 @@
 from website import db, app, UPLOAD_DIRECTORY, APPOINTMENT_TIME,APPOINTMENT_TIMEOUT
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from datetime import datetime, timedelta
-from website.functions import save_path
 from flask_login import UserMixin
 import math
 import os
@@ -392,3 +391,7 @@ class Patient(User):
         if last_visit.date() == datetime.today().date() and last_visit.hour == datetime.today().hour: 
             return
         return last_visit
+
+
+def save_path(path):
+    return path.replace("\\", "/")

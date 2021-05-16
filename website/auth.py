@@ -3,7 +3,7 @@ from flask_login import login_user, login_required, logout_user, current_user
 from website import db, mail, app, SESSION_TIMEOUT
 from website.validate import validate_patient_register, validate_login
 from werkzeug.security import generate_password_hash
-from website.functions import decrypt_email, encrypt_email
+from website.functions import decrypt_email, encrypt_email, search_user_by_email
 from website.users import load_user_request
 from website.models import User, Patient
 from flask_mail import Message
@@ -79,7 +79,7 @@ def register_view_phone():
         phone_no = data['phone_no']
         dob = data['dob']
 
-        patient = Patient.query.filter_by(email=encrypt_email(email)).first()
+        patient = search_user_by_email(email)
         
         if patient:
             status='Email already exists.'
@@ -118,7 +118,8 @@ def reset_password_view():
             email = data['email']
         else:
             email = request.form.get("email")
-        user = User.query.filter_by(email=encrypt_email(email)).first()
+        user = search_user_by_email(email)
+        
         if user:
             token = user.get_token()
             msg = Message('Password Reset Request',

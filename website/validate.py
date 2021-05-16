@@ -1,7 +1,7 @@
 from website.models import Patient, User, Medical_Staff, Management_Staff, Hospital, Appointment_Times
 from werkzeug.security import check_password_hash, generate_password_hash
 from website import db, app, mail, BAD_LOGINS_LIMIT
-from website.functions import  encrypt_email
+from website.functions import  search_user_by_email, encrypt_email
 from flask_login import current_user
 from flask import flash, url_for
 from flask_mail import Message
@@ -19,8 +19,7 @@ def validate_login(request):
         email = request.form.get('email')
         password = request.form.get('password')
 
-    user = User.query.filter_by(email=encrypt_email(email)).first()
-
+    user = search_user_by_email(email)
     if user:
         user.block_login = False
         if datetime.datetime.now() >= (user.last_login_attempt + datetime.timedelta(minutes=5)):
@@ -60,7 +59,7 @@ def validate_patient_register(request):
     phone_no = request.form.get('phone_no')
     dob = request.form.get('dob')
 
-    patient = Patient.query.filter_by(email=encrypt_email(email)).first()
+    patient = search_user_by_email(email)
 
     if patient:
         flash('Email already exists.', category='error')
@@ -94,7 +93,7 @@ def validate_staff_register(request):
     dpt_head = request.form.get('dpt_head')
     hospital_id = request.form.get('hospital_id')
     appointment_time = Appointment_Times.query.filter_by(id=appointment_times_id).first()
-    staff = User.query.filter_by(email=encrypt_email(email)).first()
+    staff = search_user_by_email(email)
     password = create_random_password()
 
     if staff:
