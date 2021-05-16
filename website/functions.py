@@ -2,6 +2,9 @@ from cryptography.fernet import Fernet
 from website import KEY
 from website.models import User
 import datetime
+import os
+import time
+
 def html_date_to_python_date(date, time=None):
     date = date.split('-')
     if time:
@@ -25,11 +28,13 @@ def check_timeout(patient_timeout):
 
 
 def get_path(path):
+    path = str(path)
     if 'website/' in path:
         path = path.replace('website/', '')
     return path.replace("\\", "/")
 
 def save_path(path):
+    path = str(path)
     return path.replace("\\", "/")
 
 
@@ -56,3 +61,16 @@ def search_user_by_email(email):
     for user in users:
         if decrypt_email(user.email) == email:
             return user
+
+def encrypt_file(file):
+    f = Fernet(KEY)
+    return f.encrypt(file)
+
+    
+def decrypt_file(file):
+    f = Fernet(KEY)
+    return f.decrypt(file)
+
+def delete_temp_file(filename):
+    time.sleep(15)
+    os.remove(filename)

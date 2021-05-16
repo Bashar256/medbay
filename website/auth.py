@@ -149,8 +149,7 @@ def reset_token_view(token):
             password = request.form.get("password1")
             confirm_password = request.form.get("password2")
             if password == confirm_password:
-                hashed_password = generate_password_hash(password)
-                user.password = hashed_password
+                user.password = generate_password_hash(password)
                 db.session.commit()
                 flash('Your password has been updated! You are now able to log in', category='update')
                 return redirect(url_for('auth_view.login_view'))

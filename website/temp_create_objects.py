@@ -1,5 +1,5 @@
 from website.models import Hospital,Department,Appointment,User,Patient,Medical_Staff,Management_Staff,Patients, Appointment_Times,Time_Slot
-from website.functions import html_date_to_python_date, string_to_bytes, encrypt_email
+from website.functions import html_date_to_python_date, encrypt_email
 from werkzeug.security import generate_password_hash
 from website import db
 import datetime

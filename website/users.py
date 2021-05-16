@@ -1,6 +1,6 @@
 from website import db, app, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, APPOINTMENT_TIMEOUT, MAX_APPOINTMENT_DATE, SESSION_TIMEOUT, WEEKEND, ROOM_TYPES
+from website.functions import html_date_to_python_date, get_path, save_path, check_timeout, check_timeouts, encrypt_email, decrypt_email, search_user_by_email, encrypt_file, decrypt_file, delete_temp_file
 from website.models import  Hospital, Department, Appointment, Management_Staff, Medical_Staff, Patient, Patients, Diagnosis, User, Lab_Result, Room, Bed, Appointment_Times, Time_Slot
-from website.functions import html_date_to_python_date, get_path, save_path, check_timeout, check_timeouts, encrypt_email, decrypt_email, search_user_by_email
 from flask import Blueprint, render_template, url_for, redirect, request, flash, abort, session, send_file, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from website.temp_create_objects import create_stuff
@@ -8,6 +8,7 @@ from website.validate import validate_staff_register
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager
+from threading import Thread
 import datetime
 import base64
 import os
@@ -328,7 +329,9 @@ def edit_profile_view():
         
     elif current_user.is_admin():
         return render_template("edit_profile.html",user=current_user, sidebar=ADMIN_SIDEBAR)    
-        
+
+
+#Edit Profile On Phone View
 @user_view.route("/edit_profile_phone", methods=["POST", "GET"])
 @login_required
 def edit_profile_view_phone():
@@ -957,8 +960,15 @@ def upload_file_view():
             patient = Patient.query.filter_by(id=patient_id).first()
             if diagnosis_file.filename:
                 filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Diagnosis" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")) + "." + diagnosis_file.filename.split('.')[-1])
-                path = os.path.join(patient.diagnoses_file, filename)
-                diagnosis_file.save(save_path(path))
+                path = save_path(os.path.join(patient.diagnoses_file, filename))
+                diagnosis_file.save(path)
+
+                with open(path, 'rb') as file:
+                    original = file.read()
+                encrypted = encrypt_file(original)
+                with open(path, 'wb') as encrypted_file:
+                    encrypted_file.write(encrypted)   
+
                 new_diagnosis = Diagnosis(path=path, date=datetime.datetime.now(), medical_staff=current_user.id, patient=patient_id, appointment=appointment.id)
                 db.session.add(new_diagnosis)
                 db.session.commit()
@@ -967,8 +977,16 @@ def upload_file_view():
 
             elif lab_result_file:
                 filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Lab_result" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")) + "." + lab_result_file.filename.split('.')[-1])
-                path = os.path.join(patient.lab_results_file, filename)
-                lab_result_file.save(save_path(path))
+                path = save_path(os.path.join(patient.lab_results_file, filename))
+                lab_result_file.save(path)
+                
+                with open(path, 'rb') as file:
+                    original = file.read()
+                encrypted = encrypt_file(original)
+                os.remove(original)
+                with open(path, 'wb') as encrypted_file:
+                    encrypted_file.write(encrypted) 
+
                 new_lab_result = Lab_Result(path=path, date=datetime.datetime.now(), medical_staff=current_user.id, patient=patient_id, appointment=appointment.id)
                 db.session.add(new_lab_result)
                 db.session.commit()
@@ -985,14 +1003,24 @@ def upload_file_view():
 @user_view.route('/download/<path:filename>', methods=['GET', 'POST'])
 @login_required
 def download_view(filename):
-    if current_user.is_patient():
-        if os.path.isfile(filename):
+    if os.path.isfile(filename):
+        
+        with open(filename, 'rb') as enc_file:
+            encrypted = enc_file.read()
+        decrypted = decrypt_file(encrypted)
+        name = filename.split(".")[0]
+        name = name + "_D"
+        filename = name + "." + filename.split(".")[-1] 
+        with open(filename, 'wb') as dec_file:
+            dec_file.write(decrypted)
+        Thread(target=delete_temp_file, args=[filename]).start()
+        if current_user.is_patient():
             return send_file(get_path(filename), as_attachment=True)
 
-    elif current_user.is_medical_staff():
-        if os.path.isfile(filename):
-            return send_file(get_path(filename), as_attachment=True)       
-    abort(401)
+        elif current_user.is_medical_staff():
+            return send_file(get_path(filename), as_attachment=True)
+        abort(401)
+    abort(404)
 
 
 #Patient_Profile View
@@ -1026,7 +1054,7 @@ def lab_results_view(patient_id=None):
         if request.method == "POST":
             lab_result_id = request.form.get("lab_result_id")
             lab_result = Lab_Result.query.filter(Lab_Result.id==lab_result_id, Lab_Result.medical_staff==current_user.id).first()
-            if lab_result:
+            if lab_result: 
                 os.remove(lab_result.path)
                 db.session.delete(lab_result)
                 db.session.commit()
