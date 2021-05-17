@@ -1,5 +1,5 @@
 from website import db, app, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, APPOINTMENT_TIMEOUT, MAX_APPOINTMENT_DATE, SESSION_TIMEOUT, WEEKEND, ROOM_TYPES
-from website.functions import html_date_to_python_date, get_path, save_path, check_timeout, check_timeouts, encrypt_email, decrypt_email, search_user_by_email, encrypt_file, decrypt_file, delete_temp_file
+from website.functions import html_date_to_python_date, get_path, save_path, check_timeout, check_timeouts, encrypt_email, decrypt_email, search_user_by_email, encrypt_file, decrypted_filename
 from website.models import  Hospital, Department, Appointment, Management_Staff, Medical_Staff, Patient, Patients, Diagnosis, User, Lab_Result, Room, Bed, Appointment_Times, Time_Slot
 from flask import Blueprint, render_template, url_for, redirect, request, flash, abort, session, send_file, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -1003,19 +1003,9 @@ def upload_file_view():
 @login_required
 def download_view(filename):
     if os.path.isfile(filename):
-        
-        with open(filename, 'rb') as enc_file:
-            encrypted = enc_file.read()
-        decrypted = decrypt_file(encrypted)
-        name = filename.split(".")[0]
-        name = name + "_D"
-        filename = name + "." + filename.split(".")[-1] 
-        with open(filename, 'wb') as dec_file:
-            dec_file.write(decrypted)
-        Thread(target=delete_temp_file, args=[filename]).start()
+        filename = decrypted_filename(filename)
         if current_user.is_patient():
             return send_file(get_path(filename), as_attachment=True)
-
         elif current_user.is_medical_staff():
             return send_file(get_path(filename), as_attachment=True)
         abort(401)
@@ -1076,6 +1066,7 @@ def lab_results_view(patient_id=None):
         return render_template("lab_results.html", user=current_user, info=info, sidebar=PATIENT_SIDEBAR)
     abort(401)
 
+
 @user_view.route("/lab_download", methods=["POST", "GET"])
 @login_required
 def lab_download():
@@ -1091,8 +1082,9 @@ def lab_download():
                 name.append(user.first_name)
                 email.append(decrypt_email(user.email))
                 date.append(lab.date.strftime("%d-%m-%y"))
-                path.append(lab.path)
-                file.append(lab.path.split('/')[-1])
+                filename = decrypted_filename(lab.path)
+                path.append(filename)
+                file.append(filename.split('/')[-1])
         if path:
             return jsonify({'Path':path,'Split':file,'Name':name,'Email':email,'Date':date})
         else:
@@ -1113,8 +1105,9 @@ def diagnoses_download():
                 name.append(user.first_name)
                 email.append(decrypt_email(user.email))
                 date.append(diagnosis.date.strftime("%d-%m-%y"))
-                path.append(diagnosis.path)
-                file.append(diagnosis.path.split('/')[-1])
+                filename = decrypted_filename(diagnosis.path)
+                path.append(filename)
+                file.append(filename.split('/')[-1])
         if path:
             return jsonify({'Path':path,'Split':file,'Name':name,'Email':email,'Date':date})
         else:

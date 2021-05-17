@@ -1,6 +1,7 @@
 from cryptography.fernet import Fernet
 from website import KEY
 from website.models import User
+from threading import Thread
 import datetime
 import os
 import time
@@ -70,6 +71,19 @@ def encrypt_file(file):
 def decrypt_file(file):
     f = Fernet(KEY)
     return f.decrypt(file)
+
+
+def decrypted_filename(path):
+    with open(path, 'rb') as enc_file:
+        encrypted = enc_file.read()
+    decrypted = decrypt_file(encrypted)
+    name = path.split(".")[0]
+    name = name + "_D"
+    filename = name + "." + path.split(".")[-1] 
+    with open(filename, 'wb') as dec_file:
+        dec_file.write(decrypted)
+    Thread(target=delete_temp_file, args=[filename]).start()
+    return filename
 
 def delete_temp_file(filename):
     time.sleep(15)
