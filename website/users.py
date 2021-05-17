@@ -929,14 +929,6 @@ def patients_view_phone():
                         last.append(patient.last_visit(current_user.id))
                 return jsonify({'firstname':firstname,'lastname':lastname,'last':last,'IsAdmitted':is_admitted,'IsTimedOut':is_timedout,'age':age,'phone':phone,'email':email,'patient_id':p_id})
     
-        # appointments = []
-        # for patient in doctors_patients:
-        #     appointments.append(patient.last_visit(current_user.id))
-
-        # info = zip(doctors_patients, appointments, timed_out)
-        # if not current_user.is_department_head():
-        #     return render_template("patients.html", user=current_user, info=info, sidebar=MEDICAL_STAFF_SIDEBAR)
-        # return render_template("patients.html", user=current_user, info=info, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     abort(401)
 
@@ -1049,6 +1041,44 @@ def lab_results_view(patient_id=None):
         return render_template("lab_results.html", user=current_user, info=info, sidebar=PATIENT_SIDEBAR)
     abort(401)
 
+
+@user_view.route("/lab_results_phone/<int:patient_id>", methods=["POST", "GET"])
+@login_required
+def lab_results_view_phone(patient_id=None):
+    if request.mimetype=='application/json':
+        if current_user.is_medical_staff():
+            if request.method == "POST":
+                data=request.json
+                lab_result_id = data["lab_result_id"]
+                lab_result = Lab_Result.query.filter(Lab_Result.id==lab_result_id, Lab_Result.medical_staff==current_user.id).first()
+                if lab_result:
+                    os.remove(lab_result.path)
+                    db.session.delete(lab_result)
+                    db.session.commit()
+                    return jsonify({'status':'Lab result deleted successfuly'})
+                return jsonify({'status':'Already deleted or you\'re not allowed to delete this file'}) 
+
+            results = Lab_Result.query.filter(Lab_Result.medical_staff==current_user.id, Lab_Result.patient==patient_id).all()
+            patient = medical_staffs_patient(current_user.id, patient_id)
+            patients = []
+            date=[]
+            path=[]
+            file=[]
+            lab_result_id=[]
+            for i in range(len(results)):
+                patients.append(patient)
+            info = zip(results, patients)
+            for (lab,usr) in info:
+                date.append(lab.date.strftime("%d-%m-%y"))
+                path.append(lab.path)
+                file.append(lab.path.split('/')[-1])
+                lab_result_id.append(lab.id)
+            if path:
+                return jsonify({'Path':path,'Split':file,'Date':date,'Lab_id':lab_result_id})
+            else:
+                pass
+            
+
 @user_view.route("/lab_download", methods=["POST", "GET"])
 @login_required
 def lab_download():
@@ -1092,6 +1122,44 @@ def diagnoses_download():
             return jsonify({'Path':path,'Split':file,'Name':name,'Email':email,'Date':date})
         else:
             pass
+
+@user_view.route("/diagnoses_phone/<int:patient_id>", methods=["POST", "GET"])
+@login_required
+def diagnoses_view_phone(patient_id=None):
+    if request.mimetype=='application/json':
+        if current_user.is_medical_staff():
+            if request.method == "POST":
+                data=request.json
+                diagnosis_id = data["diagnosis_id"]
+                diagnosis = Diagnosis.query.filter(Diagnosis.id==diagnosis_id, Diagnosis.medical_staff==current_user.id).first()
+                if diagnosis:
+                    os.remove(diagnosis.path)
+                    db.session.delete(diagnosis)
+                    db.session.commit()
+                    return jsonify({'status':'Diagnosis deleted successfuly'})
+                return jsonify({'status':'Already deleted or you\'re not allowed to delete this file'})
+
+            diagnoses = Diagnosis.query.filter(Diagnosis.medical_staff==current_user.id, Diagnosis.patient==patient_id).all()
+            patient = medical_staffs_patient(current_user.id, patient_id)
+            patients = []
+            date=[]
+            path=[]
+            file=[]
+            d_id=[]
+            for i in range(len(diagnoses)):
+                patients.append(patient)
+            info = zip(diagnoses,patients)
+            for (diagnosis,usr) in info:
+                date.append(diagnosis.date.strftime("%d-%m-%y"))
+                path.append(diagnosis.path)
+                file.append(diagnosis.path.split('/')[-1])
+                d_id.append(diagnosis.id)
+            if path:
+                return jsonify({'Path':path,'Split':file,'Date':date,'Diagnoses_id':d_id})
+            else:
+                pass
+            
+
         
 
 
