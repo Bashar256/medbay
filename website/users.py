@@ -8,7 +8,6 @@ from website.validate import validate_staff_register
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager
-from threading import Thread
 import datetime
 import base64
 import os
@@ -1085,10 +1084,11 @@ def lab_results_view_phone(patient_id=None):
             for i in range(len(results)):
                 patients.append(patient)
             info = zip(results, patients)
-            for (lab,usr) in info:
+            for (lab,user) in info:
                 date.append(lab.date.strftime("%d-%m-%y"))
                 path.append(lab.path)
-                file.append(lab.path.split('/')[-1])
+                filename = decrypted_filename(lab.path)
+                file.append(filename.split('/')[-1])
                 lab_result_id.append(lab.id)
             if path:
                 return jsonify({'Path':path,'Split':file,'Date':date,'Lab_id':lab_result_id})
@@ -1111,8 +1111,8 @@ def lab_download():
                 name.append(user.first_name)
                 email.append(decrypt_email(user.email))
                 date.append(lab.date.strftime("%d-%m-%y"))
+                path.append(lab.path)
                 filename = decrypted_filename(lab.path)
-                path.append(filename)
                 file.append(filename.split('/')[-1])
         if path:
             return jsonify({'Path':path,'Split':file,'Name':name,'Email':email,'Date':date})
@@ -1134,8 +1134,8 @@ def diagnoses_download():
                 name.append(user.first_name)
                 email.append(decrypt_email(user.email))
                 date.append(diagnosis.date.strftime("%d-%m-%y"))
+                path.append(diagnosis.path)
                 filename = decrypted_filename(diagnosis.path)
-                path.append(filename)
                 file.append(filename.split('/')[-1])
         if path:
             return jsonify({'Path':path,'Split':file,'Name':name,'Email':email,'Date':date})
@@ -1168,10 +1168,11 @@ def diagnoses_view_phone(patient_id=None):
             for i in range(len(diagnoses)):
                 patients.append(patient)
             info = zip(diagnoses,patients)
-            for (diagnosis,usr) in info:
+            for (diagnosis,user) in info:
                 date.append(diagnosis.date.strftime("%d-%m-%y"))
                 path.append(diagnosis.path)
-                file.append(diagnosis.path.split('/')[-1])
+                filename = decrypted_filename(diagnosis.path)
+                file.append(filename.split('/')[-1])
                 d_id.append(diagnosis.id)
             if path:
                 return jsonify({'Path':path,'Split':file,'Date':date,'Diagnoses_id':d_id})
