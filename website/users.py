@@ -434,7 +434,6 @@ def book_appointment_view():
 @login_required
 def book_appointment_view_department():
     if current_user.is_patient(): 
-        hospitals = Hospital.query.all()
         departments = Department.query.all()
         dept_name=[]
         dept_id=[]
@@ -489,7 +488,7 @@ def choose_medical_staff_phone(hospital_id,department_id):
 def doctor_details_view(hospital_id, department_id, staff_id,role="md"):  
     if current_user.is_patient():
         if request.method == 'POST':
-            if not current_user.confirmed:
+            if current_user.confirmed:
                 appointment_date = request.form.get('appointment_date')
                 time_slot_id = request.form.get('appointment_time')
                 medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
@@ -807,7 +806,7 @@ def patients_view():
                 room_type = request.form.get("room_type")
                 patient = Patient.query.filter_by(id=patient_id).first()
                 if patient:           
-                    rooms = Room.query.filter_by(room_type=room_type).all()
+                    rooms = Room.query.filter(Room.hospital==current_user.hospital, Room.room_type==room_type).all()
                     for room in rooms:
                         if not room.is_full():
                             for bed in room.beds:
@@ -872,7 +871,7 @@ def patients_view_phone():
                     patient_id = data['patient_id']
                     patient = Patient.query.filter_by(id=patient_id).first()
                     if patient:           
-                        rooms = Room.query.filter_by(room_type='patient').all()
+                        rooms = Room.query.filter(Room.hospital==current_user.hospital, Room.room_type=='patient').all()
                         for room in rooms:
                             if not room.is_full():
                                 for bed in room.beds:
@@ -1179,9 +1178,6 @@ def diagnoses_view_phone(patient_id=None):
             else:
                 pass
             
-
-        
-
 
 #Diagnoses View
 @user_view.route("/diagnoses", methods=["POST", "GET"])

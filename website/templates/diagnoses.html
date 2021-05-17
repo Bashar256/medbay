@@ -18,7 +18,6 @@
                                 <tr>
                                     {% if user.is_patient(): %}
                                         <th><strong>Name</strong></th>
-                                        <th><strong>Email</strong></th>
                                     {% endif %}
                                     <th><strong>Date</strong></th>
                                     <th><strong>Results</strong></th>
@@ -29,7 +28,6 @@
                                     <tr>
                                         {% if user.is_patient(): %}
                                             <td><div class="d-flex align-items-center"> <span class="w-space-no">{{usr}}</span></div></td>
-                                            <td>{{usr.email}}</td>
                                         {% endif %}
                                         <td>{{diagnosis.date.strftime("%d-%m-%y")}}</td>
                                         <td>
