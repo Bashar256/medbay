@@ -541,7 +541,7 @@ def doctor_details_view_phone(hospital_id, department_id, staff_id,role="md"):
         if request.method == 'POST':
                 if(request.mimetype == 'application/json'):
                     if load_user_request(request):
-                        if not current_user.confirmed:
+                        if current_user.confirmed:
                             data=request.json
                             appointment_date = data['appointment_date']
                             time_slot_id = data['appointment_time']
