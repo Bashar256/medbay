@@ -146,7 +146,7 @@ def appointment_history():
             if load_user_request(request):
                 if current_user.is_patient():
                     information = patient_appointments(current_user.id) 
-                    for appointment,hospital,department,usr in information:
+                    for appointment,hospital,department,usr,diagnosis,lab in information:
                         if appointment.appointment_date_time < today:
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
@@ -162,7 +162,7 @@ def appointment_history():
 
                 elif current_user.is_medical_staff():
                     information = medical_staff_appointments(current_user.id)
-                    for appointment,hospital,department,usr in information:
+                    for appointment,hospital,department,usr,diagnosis,lab in information:
                         if appointment.appointment_date_time < today:
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
@@ -203,7 +203,7 @@ def appointment_upcoming():
             if load_user_request(request):
                 if current_user.is_medical_staff():
                     information = medical_staff_appointments(current_user.id)
-                    for appointment,hospital,department,usr in information:
+                    for appointment,hospital,department,usr,diagnosis,lab in information:
                         if appointment.appointment_date_time > today:
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
@@ -221,7 +221,7 @@ def appointment_upcoming():
                         return jsonify({'status':'bad'})
                 elif current_user.is_patient():
                     information = patient_appointments(current_user.id)
-                    for appointment,hospital,department,usr in information:
+                    for appointment,hospital,department,usr,diagnosis,lab in information:
                         if appointment.appointment_date_time > today:
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
