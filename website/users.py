@@ -649,7 +649,7 @@ def appointment_time_select_View_phone(medical_staff_id,appointment_date):
                 appointment_times.create_slots(date=appointment_date)
                 time_slots = db.session.query(Time_Slot).filter_by(date=appointment_date.date()).all()
 
-                data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in time_slots]
+                data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__(),"end":(time_slot[3].strftime("%H:%M")).__str__()} for time_slot in time_slots]
                 return jsonify(data)  
 
 
