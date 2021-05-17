@@ -434,7 +434,6 @@ def book_appointment_view():
 @login_required
 def book_appointment_view_department():
     if current_user.is_patient(): 
-        hospitals = Hospital.query.all()
         departments = Department.query.all()
         dept_name=[]
         dept_id=[]
@@ -489,7 +488,7 @@ def choose_medical_staff_phone(hospital_id,department_id):
 def doctor_details_view(hospital_id, department_id, staff_id,role="md"):  
     if current_user.is_patient():
         if request.method == 'POST':
-            if not current_user.confirmed:
+            if current_user.confirmed:
                 appointment_date = request.form.get('appointment_date')
                 time_slot_id = request.form.get('appointment_time')
                 medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
