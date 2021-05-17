@@ -641,7 +641,7 @@ def appointment_time_select_View_phone(medical_staff_id,appointment_date):
                         if slot[-1] == False:
                             if slot not in available_times:
                                 available_times.append(slot)
-                    data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in available_times]
+                    data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__(),"end":(time_slot[3].strftime("%H:%M")).__str__()} for time_slot in available_times]
                     return jsonify(data)
 
                 doctor = Medical_Staff.query.filter_by(id=medical_staff_id).first()
