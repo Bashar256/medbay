@@ -30,7 +30,7 @@
                             <p>Name: {{patient.first_name + ' '+ patient.last_name}}</p>
                             <p>Age: {{patient.age()}}</p>
                             <p>Phone Number: {{patient.phone_no}}</p>
-                            <p>Email: {{patient.email}}</p>
+                            <p>Email: {{patient_email}}</p>
                         </div>
                     </div>
                     {% if user.is_patient() or user.is_medical_staff(): %}
@@ -50,8 +50,8 @@
                                                 <div id="default_collapse{{loop.index}}" class="collapse accordion__body" data-parent="#accordion-one">
                                                     <div class="accordion__body--text">
                                                         <div class="pt-4">
-                                                            <p>Patient: {{patient.first_name + ' '+ patient.last_name}}</p>
-                                                            <p>Doctor: {{medical_staff.first_name + ' '+ medical_staff.last_name}}</p>
+                                                            <p>Patient: {{patient.first_name + ' ' + patient.last_name}}</p>
+                                                            <p>Doctor: {{medical_staff.first_name + ' ' + medical_staff.last_name}}</p>
                                                             <p>Hospital: {{hospital}}</p>
                                                             <p>Department: {{department}}</p>
                                                             {% set days = ("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday") %}

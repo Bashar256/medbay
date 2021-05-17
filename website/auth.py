@@ -1,8 +1,9 @@
 from flask import Blueprint, redirect, url_for, render_template, request, flash, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
+from website import db, mail, app, SESSION_TIMEOUT
 from website.validate import validate_patient_register, validate_login
 from werkzeug.security import generate_password_hash
-from website import db, mail, app, SESSION_TIMEOUT
+from website.functions import decrypt_email, encrypt_email, search_user_by_email
 from website.users import load_user_request
 from website.models import User, Patient
 from flask_mail import Message
@@ -10,7 +11,6 @@ from threading import Thread
 import datetime
 
 auth_view = Blueprint("auth_view", __name__, static_folder="static", template_folder="templates")
-
 
 
 @auth_view.route("/login", methods=["POST", "GET"])
@@ -79,7 +79,7 @@ def register_view_phone():
         phone_no = data['phone_no']
         dob = data['dob']
 
-        patient = Patient.query.filter_by(email=email).first()
+        patient = search_user_by_email(email)
         
         if patient:
             status='Email already exists.'
@@ -99,7 +99,7 @@ def register_view_phone():
             status='Success'
             
         if status=='Success':
-            new_patient =  Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p', last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
+            new_patient =  Patient(email=encrypt_email(email), first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p', last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
             new_patient.create_patient_file()
             db.session.add(new_patient)
             db.session.commit()
@@ -118,12 +118,13 @@ def reset_password_view():
             email = data['email']
         else:
             email = request.form.get("email")
-        user = User.query.filter_by(email=email).first()
+        user = search_user_by_email(email)
+        
         if user:
             token = user.get_token()
             msg = Message('Password Reset Request',
                         sender=("MedBay Support", "noreply@medbay.org"),
-                        recipients=[user.email])
+                        recipients=[email])
             msg.body = f'''To change your password please follow the link below:
             {url_for('auth_view.reset_token_view', token=token, _external=True)}'''
             Thread(target=send_email, args=[msg]).start()
@@ -148,8 +149,7 @@ def reset_token_view(token):
             password = request.form.get("password1")
             confirm_password = request.form.get("password2")
             if password == confirm_password:
-                hashed_password = generate_password_hash(password)
-                user.password = hashed_password
+                user.password = generate_password_hash(password)
                 db.session.commit()
                 flash('Your password has been updated! You are now able to log in', category='update')
                 return redirect(url_for('auth_view.login_view'))
@@ -197,7 +197,7 @@ def confirm_email(user):
     token = user.get_token()
     msg = Message('Email Confirmation',
                 sender=("MedBay Support", "noreply@medbay.org"),
-                recipients=[user.email])
+                recipients=[decrypt_email(user.email)])
     msg.body = f'''To confirm your email please follow the link below:
     {url_for('auth_view.verify_email_view', token=token, _external=True)}'''
     Thread(target=send_email, args=[msg]).start()

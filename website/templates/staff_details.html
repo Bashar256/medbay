@@ -54,7 +54,7 @@
                             <p>Age: {{staff.age()}}</p>
                             {% if not user.is_patient() %} 
                                 <p>Phone Number: {{staff.phone_no}}</p>
-                                <p>Email: {{staff.email}}
+                                <p>Email: {{staff_email}}
                             {% endif %}
                             {% if staff.is_medical_staff(): %}
                                 {% set days = ['Monday', 'Tuesday', 'Wedensday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}

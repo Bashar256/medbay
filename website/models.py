@@ -1,8 +1,7 @@
+from website import db, app, UPLOAD_DIRECTORY, APPOINTMENT_TIME,APPOINTMENT_TIMEOUT
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from datetime import datetime, timedelta
 from flask_login import UserMixin
-from website import db, app, UPLOAD_DIRECTORY, APPOINTMENT_TIME,APPOINTMENT_TIMEOUT
-from time import time
 import math
 import os
 
@@ -264,6 +263,7 @@ class User(db.Model, UserMixin):
         if self.role.lower() == 'a':
             return True
         return False
+
 
     def age(self):
         dob = self.date_of_birth.split('-')
