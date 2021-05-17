@@ -1,5 +1,5 @@
 from website import db, app, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, APPOINTMENT_TIMEOUT, MAX_APPOINTMENT_DATE, SESSION_TIMEOUT, WEEKEND, ROOM_TYPES
-from website.functions import html_date_to_python_date, get_path, save_path, check_timeout, check_timeouts, encrypt_email, decrypt_email, search_user_by_email, encrypt_file, decrypt_file, delete_temp_file
+from website.functions import html_date_to_python_date, get_path, save_path, check_timeout, check_timeouts, encrypt_email, decrypt_email, search_user_by_email, encrypt_file, decrypted_filename
 from website.models import  Hospital, Department, Appointment, Management_Staff, Medical_Staff, Patient, Patients, Diagnosis, User, Lab_Result, Room, Bed, Appointment_Times, Time_Slot
 from flask import Blueprint, render_template, url_for, redirect, request, flash, abort, session, send_file, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -8,7 +8,6 @@ from website.validate import validate_staff_register
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager
-from threading import Thread
 import datetime
 import base64
 import os
@@ -995,19 +994,9 @@ def upload_file_view():
 @login_required
 def download_view(filename):
     if os.path.isfile(filename):
-        
-        with open(filename, 'rb') as enc_file:
-            encrypted = enc_file.read()
-        decrypted = decrypt_file(encrypted)
-        name = filename.split(".")[0]
-        name = name + "_D"
-        filename = name + "." + filename.split(".")[-1] 
-        with open(filename, 'wb') as dec_file:
-            dec_file.write(decrypted)
-        Thread(target=delete_temp_file, args=[filename]).start()
+        filename = decrypted_filename(filename)
         if current_user.is_patient():
             return send_file(get_path(filename), as_attachment=True)
-
         elif current_user.is_medical_staff():
             return send_file(get_path(filename), as_attachment=True)
         abort(401)
@@ -1095,10 +1084,11 @@ def lab_results_view_phone(patient_id=None):
             for i in range(len(results)):
                 patients.append(patient)
             info = zip(results, patients)
-            for (lab,usr) in info:
+            for (lab,user) in info:
                 date.append(lab.date.strftime("%d-%m-%y"))
                 path.append(lab.path)
-                file.append(lab.path.split('/')[-1])
+                filename = decrypted_filename(lab.path)
+                file.append(filename.split('/')[-1])
                 lab_result_id.append(lab.id)
             if path:
                 return jsonify({'Path':path,'Split':file,'Date':date,'Lab_id':lab_result_id})
@@ -1122,7 +1112,8 @@ def lab_download():
                 email.append(decrypt_email(user.email))
                 date.append(lab.date.strftime("%d-%m-%y"))
                 path.append(lab.path)
-                file.append(lab.path.split('/')[-1])
+                filename = decrypted_filename(lab.path)
+                file.append(filename.split('/')[-1])
         if path:
             return jsonify({'Path':path,'Split':file,'Name':name,'Email':email,'Date':date})
         else:
@@ -1144,7 +1135,8 @@ def diagnoses_download():
                 email.append(decrypt_email(user.email))
                 date.append(diagnosis.date.strftime("%d-%m-%y"))
                 path.append(diagnosis.path)
-                file.append(diagnosis.path.split('/')[-1])
+                filename = decrypted_filename(diagnosis.path)
+                file.append(filename.split('/')[-1])
         if path:
             return jsonify({'Path':path,'Split':file,'Name':name,'Email':email,'Date':date})
         else:
@@ -1176,10 +1168,11 @@ def diagnoses_view_phone(patient_id=None):
             for i in range(len(diagnoses)):
                 patients.append(patient)
             info = zip(diagnoses,patients)
-            for (diagnosis,usr) in info:
+            for (diagnosis,user) in info:
                 date.append(diagnosis.date.strftime("%d-%m-%y"))
                 path.append(diagnosis.path)
-                file.append(diagnosis.path.split('/')[-1])
+                filename = decrypted_filename(diagnosis.path)
+                file.append(filename.split('/')[-1])
                 d_id.append(diagnosis.id)
             if path:
                 return jsonify({'Path':path,'Split':file,'Date':date,'Diagnoses_id':d_id})
