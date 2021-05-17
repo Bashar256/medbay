@@ -145,7 +145,7 @@ def appointment_history():
             if load_user_request(request):
                 if current_user.is_patient():
                     information = patient_appointments(current_user.id) 
-                    for appointment,hospital,department,usr in information:
+                    for appointment,hospital,department,usr,diagnosis,lab in information:
                         if appointment.appointment_date_time < today:
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
@@ -161,7 +161,7 @@ def appointment_history():
 
                 elif current_user.is_medical_staff():
                     information = medical_staff_appointments(current_user.id)
-                    for appointment,hospital,department,usr in information:
+                    for appointment,hospital,department,usr,diagnosis,lab in information:
                         if appointment.appointment_date_time < today:
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
@@ -202,7 +202,7 @@ def appointment_upcoming():
             if load_user_request(request):
                 if current_user.is_medical_staff():
                     information = medical_staff_appointments(current_user.id)
-                    for appointment,hospital,department,usr in information:
+                    for appointment,hospital,department,usr,diagnosis,lab in information:
                         if appointment.appointment_date_time > today:
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
@@ -220,7 +220,7 @@ def appointment_upcoming():
                         return jsonify({'status':'bad'})
                 elif current_user.is_patient():
                     information = patient_appointments(current_user.id)
-                    for appointment,hospital,department,usr in information:
+                    for appointment,hospital,department,usr,diagnosis,lab in information:
                         if appointment.appointment_date_time > today:
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
@@ -641,7 +641,7 @@ def appointment_time_select_View_phone(medical_staff_id,appointment_date):
                         if slot[-1] == False:
                             if slot not in available_times:
                                 available_times.append(slot)
-                    data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in available_times]
+                    data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__(),"end":(time_slot[3].strftime("%H:%M")).__str__()} for time_slot in available_times]
                     return jsonify(data)
 
                 doctor = Medical_Staff.query.filter_by(id=medical_staff_id).first()
@@ -649,7 +649,7 @@ def appointment_time_select_View_phone(medical_staff_id,appointment_date):
                 appointment_times.create_slots(date=appointment_date)
                 time_slots = db.session.query(Time_Slot).filter_by(date=appointment_date.date()).all()
 
-                data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in time_slots]
+                data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__(),"end":(time_slot[3].strftime("%H:%M")).__str__()} for time_slot in time_slots]
                 return jsonify(data)  
 
 
