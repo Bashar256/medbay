@@ -8,6 +8,7 @@ from flask_mail import Message
 import datetime
 import string
 import random
+from flask import jsonify
 
 
 def validate_login(request):
@@ -28,6 +29,8 @@ def validate_login(request):
             user.bad_logins = 0
 
         if user.block_login:
+            if request.mimetype=='application/json':
+                return jsonify({'status':'Please wait for the 5 min block to end'})
             flash("Please wait for the 5 min block to end", category="warning")
             return 
 
@@ -40,11 +43,15 @@ def validate_login(request):
             user.bad_logins = user.bad_logins + 1
 
         if user.bad_logins >= BAD_LOGINS_LIMIT:
+            if request.mimetype=='application/json':
+                return jsonify({'status':'To many bad attempts access will be blocked for 5 mins'})
             flash("To many bad attempts access will be blocked for 5 mins", category="warning")
             user.block_login = True
             user.bad_logins = 0
             
         db.session.commit()
+    if request.mimetype=='application/json':
+        return jsonify({'status':'Invalid Information'})
     flash('Invalid Information', category='error')
     return 
 
