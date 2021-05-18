@@ -28,8 +28,6 @@ def validate_login(request):
             user.bad_logins = 0
 
         if user.block_login:
-            if request.mimetype=='application/json':
-                return jsonify({'status':'Please wait for the 5 min block to end'})
             flash("Please wait for the 5 min block to end", category="warning")
             return 
 
