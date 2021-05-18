@@ -1,8 +1,8 @@
 from flask import Blueprint, redirect, url_for, render_template, request, flash, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
-from website import db, mail, app, SESSION_TIMEOUT
+from website import db, mail, app, SESSION_TIMEOUT,BAD_LOGINS_LIMIT
 from website.validate import validate_patient_register, validate_login
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash,check_password_hash
 from website.functions import decrypt_email, encrypt_email, search_user_by_email
 from website.users import load_user_request
 from website.models import User, Patient
@@ -31,7 +31,46 @@ def login_view():
     
     return render_template("login.html")
 
+@auth_view.route("/login_phone", methods=["POST", "GET"])
+def login_view_phone():
+    if request.method == 'POST':
+        if request.mimetype=='application/json':
+            data=request.json
+            email = data['email']
+            password = data['password']
 
+            user = search_user_by_email(email)
+            if user:
+                user.block_login = False
+                if datetime.datetime.now() >= (user.last_login_attempt + datetime.timedelta(minutes=5)):
+                    user.block_login = False
+                    user.last_login_attempt = datetime.datetime.now()
+                    user.bad_logins = 0
+
+                if user.block_login:
+                    return jsonify({'status':'Please wait for the 5 min block to end'})
+                    
+
+                if check_password_hash(user.password, password):
+                    login_user(user, remember=True)
+                    user.last_login = datetime.datetime.now()
+                    user.last_login_attempt = datetime.datetime.now()
+                    user.bad_logins = 0
+                    db.session.commit()
+                    return jsonify({'status':'Login Successful!','role':user.role})
+
+                if datetime.datetime.now() < (user.last_login_attempt + datetime.timedelta(minutes=5)):
+                    user.last_login_attempt = datetime.datetime.now()
+                    user.bad_logins = user.bad_logins + 1
+
+                if user.bad_logins >= BAD_LOGINS_LIMIT:
+                    user.block_login = True
+                    user.bad_logins = 0
+                    return jsonify({'status':'To many bad attempts access will be blocked for 5 mins'})
+                
+                db.session.commit()
+            
+            return jsonify({'status':'Incorrect username or password!'})
 
 #Logout View
 @auth_view.route("/logout",methods=["POST", "GET"])
