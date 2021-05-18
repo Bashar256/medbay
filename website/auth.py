@@ -41,7 +41,6 @@ def login_view_phone():
 
             user = search_user_by_email(email)
             if user:
-                user.block_login = False
                 if datetime.datetime.now() >= (user.last_login_attempt + datetime.timedelta(minutes=5)):
                     user.block_login = False
                     user.last_login_attempt = datetime.datetime.now()
