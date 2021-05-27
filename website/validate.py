@@ -60,7 +60,7 @@ def validate_patient_register(request):
     gender = request.form.get('gender')
     phone_no = request.form.get('phone_no')
     dob = request.form.get('dob')
-    print(dob)
+
     patient = search_user_by_email(email)
 
     if patient:
