@@ -1,5 +1,4 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
 from datetime import timedelta
 from flask_mail import Mail
 from flask import Flask
@@ -29,6 +28,8 @@ APPOINTMENT_TIMEOUT = 7 #Days
 MAX_APPOINTMENT_DATE = 30 #Days
 APPOINTMENT_TIME = 30 #Minutes
 BAD_LOGINS_LIMIT = 5 #Allowed Login Attempts
+
+KEY = b'58kLIogvoC6iix-mV4Gs1YBfJrY4Tj6VLhlj0_vQ6uQ='
 
 app = Flask(__name__, static_folder='static')
 app.secret_key = '0930444342a12c461c38d7c0837e39eff978504b64b1d765'
@@ -60,8 +61,6 @@ app.register_error_handler(503, service_unavaiable)
 
 app.register_blueprint(auth_view, url_prefix="/")
 app.register_blueprint(user_view, url_prefix="/")
-
-from .models import User
 
 with app.app_context():
     db.create_all(app=app)

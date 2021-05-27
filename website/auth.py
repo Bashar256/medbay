@@ -1,20 +1,16 @@
-from flask import Blueprint, Flask, redirect, url_for, render_template, request, flash, session, jsonify
+from flask import Blueprint, redirect, url_for, render_template, request, flash, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
+from website import db, mail, app, SESSION_TIMEOUT,BAD_LOGINS_LIMIT
 from website.validate import validate_patient_register, validate_login
-from website.temp_create_objects import create_stuff
-from website import db, mail, app, SESSION_TIMEOUT
+from werkzeug.security import generate_password_hash,check_password_hash
+from website.functions import decrypt_email, encrypt_email, search_user_by_email
 from website.users import load_user_request
 from website.models import User, Patient
-from flask_login import LoginManager
 from flask_mail import Message
 from threading import Thread
 import datetime
-import base64
-import os
 
 auth_view = Blueprint("auth_view", __name__, static_folder="static", template_folder="templates")
-
 
 
 @auth_view.route("/login", methods=["POST", "GET"])
@@ -35,7 +31,45 @@ def login_view():
     
     return render_template("login.html")
 
+@auth_view.route("/login_phone", methods=["POST", "GET"])
+def login_view_phone():
+    if request.method == 'POST':
+        if request.mimetype=='application/json':
+            data=request.json
+            email = data['email']
+            password = data['password']
 
+            user = search_user_by_email(email)
+            if user:
+                if datetime.datetime.now() >= (user.last_login_attempt + datetime.timedelta(minutes=5)):
+                    user.block_login = False
+                    user.last_login_attempt = datetime.datetime.now()
+                    user.bad_logins = 0
+
+                if user.block_login:
+                    return jsonify({'status':'Please wait for the 5 min block to end'})
+                    
+
+                if check_password_hash(user.password, password):
+                    login_user(user, remember=True)
+                    user.last_login = datetime.datetime.now()
+                    user.last_login_attempt = datetime.datetime.now()
+                    user.bad_logins = 0
+                    db.session.commit()
+                    return jsonify({'status':'Login Successful!','role':user.role})
+
+                if datetime.datetime.now() < (user.last_login_attempt + datetime.timedelta(minutes=5)):
+                    user.last_login_attempt = datetime.datetime.now()
+                    user.bad_logins = user.bad_logins + 1
+
+                if user.bad_logins >= BAD_LOGINS_LIMIT:
+                    user.block_login = True
+                    user.bad_logins = 0
+                    return jsonify({'status':'To many bad attempts access will be blocked for 5 mins'})
+                
+                db.session.commit()
+            
+            return jsonify({'status':'Incorrect username or password!'})
 
 #Logout View
 @auth_view.route("/logout",methods=["POST", "GET"])
@@ -55,9 +89,6 @@ def logout_view():
 @auth_view.route("/register", methods=["POST", "GET"])
 def register_view():
     if request.method == 'POST':
-        # if request.mimetype=='application/json':
-        #     status=validate_patient_register_phone(request)
-        #     return jsonify({'status':status})
         new_patient = validate_patient_register(request) 
         if new_patient:
             new_patient.create_patient_file()
@@ -68,7 +99,10 @@ def register_view():
             flash('Account created successfully !', category='register')
             return redirect(url_for('user_view.home_view'))
         return render_template("register.html")
+<<<<<<< HEAD
    # create_stuff()
+=======
+>>>>>>> b0631fcb58ce8f3daece52fd0b8682641eb2f42a
     return render_template("register.html")
 
 @auth_view.route("/register_phone", methods=["POST", "GET"])
@@ -84,7 +118,7 @@ def register_view_phone():
         phone_no = data['phone_no']
         dob = data['dob']
 
-        patient = Patient.query.filter_by(email=email).first()
+        patient = search_user_by_email(email)
         
         if patient:
             status='Email already exists.'
@@ -104,7 +138,7 @@ def register_view_phone():
             status='Success'
             
         if status=='Success':
-            new_patient =  Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p', last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
+            new_patient =  Patient(email=encrypt_email(email), first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p', last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
             new_patient.create_patient_file()
             db.session.add(new_patient)
             db.session.commit()
@@ -123,12 +157,13 @@ def reset_password_view():
             email = data['email']
         else:
             email = request.form.get("email")
-        user = User.query.filter_by(email=email).first()
+        user = search_user_by_email(email)
+        
         if user:
             token = user.get_token()
             msg = Message('Password Reset Request',
                         sender=("MedBay Support", "noreply@medbay.org"),
-                        recipients=[user.email])
+                        recipients=[email])
             msg.body = f'''To change your password please follow the link below:
             {url_for('auth_view.reset_token_view', token=token, _external=True)}'''
             Thread(target=send_email, args=[msg]).start()
@@ -153,8 +188,7 @@ def reset_token_view(token):
             password = request.form.get("password1")
             confirm_password = request.form.get("password2")
             if password == confirm_password:
-                hashed_password = generate_password_hash(password)
-                user.password = hashed_password
+                user.password = generate_password_hash(password)
                 db.session.commit()
                 flash('Your password has been updated! You are now able to log in', category='update')
                 return redirect(url_for('auth_view.login_view'))
@@ -171,6 +205,8 @@ def reset_token_view(token):
 @login_required
 def email_confirmation_View():
     confirm_email(current_user)
+    if request.mimetype=='application/json':
+        return jsonify({'status':'A confirmation email was sent to you.'})
     flash("A confirmation email was sent to you.", category="info")
     return redirect(url_for("user_view.profile_view"))
 
@@ -200,7 +236,7 @@ def confirm_email(user):
     token = user.get_token()
     msg = Message('Email Confirmation',
                 sender=("MedBay Support", "noreply@medbay.org"),
-                recipients=[user.email])
+                recipients=["bashar.n.bader@gmail.com", decrypt_email(user.email)])
     msg.body = f'''To confirm your email please follow the link below:
     {url_for('auth_view.verify_email_view', token=token, _external=True)}'''
     Thread(target=send_email, args=[msg]).start()

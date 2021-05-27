@@ -1,8 +1,7 @@
+from website import db, app, UPLOAD_DIRECTORY, APPOINTMENT_TIME,APPOINTMENT_TIMEOUT
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from datetime import datetime, timedelta
 from flask_login import UserMixin
-from website import db, app, UPLOAD_DIRECTORY, WEEKEND, APPOINTMENT_TIME,APPOINTMENT_TIMEOUT
-from time import time
 import math
 import os
 
@@ -197,8 +196,10 @@ class Bed(db.Model):
     occupied = db.Column(db.Boolean, nullable=False, default=False)
     patient = db.relationship('Patient', uselist=False, backref='patient_bed')
     hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'))
+    booked_by = db.Column(db.Integer, db.ForeignKey('medical_staff.id'))
     
-    def occupy_bed(self, patient=None):
+    def occupy_bed(self, doctor_id, patient=None):
+        self.booked_by = doctor_id
         self.patient = patient
         self.occupied = True
 
@@ -263,6 +264,7 @@ class User(db.Model, UserMixin):
             return True
         return False
 
+
     def age(self):
         dob = self.date_of_birth.split('-')
         years = int(dob[0])
@@ -326,6 +328,7 @@ class Medical_Staff(User):
     department_head = db.Column(db.Boolean, default=False)
     hospital = db.Column(db.Integer, db.ForeignKey('hospital.id'), nullable=False)
     department = db.Column(db.Integer, db.ForeignKey('department.id'), nullable=False)
+    booked_beds = db.relationship('Bed', backref='medical_staff_booked_rooms')
     appointments = db.relationship('Appointment', backref='medical_staff_appointment')
     diagnoses = db.relationship('Diagnosis', backref='medical_staff_diagnosis')
     patients = db.relationship('Patient', secondary='patients', lazy='subquery', backref=db.backref('medical_staff_patients', lazy=True))
@@ -391,5 +394,4 @@ class Patient(User):
 
 
 def save_path(path):
-    print(path, path.replace("\\", "/"))
     return path.replace("\\", "/")

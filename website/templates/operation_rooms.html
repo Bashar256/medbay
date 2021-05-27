@@ -31,46 +31,21 @@
                                                     {% if user.is_management_staff(): %}
                                                         <td>
                                                             <div class="d-flex">
-                                                                {% if not room.is_full() :%}
-                                                                    <button type="submit" data-toggle="modal" data-target="#occupybed{{room.id}}" class="btn btn-primary shadow btn-xs sharp mr-1"><i class="fa fa-bed"></i></butto>
-                                                                {% else: %}
-                                                                    <button type="submit" data-toggle="modal" data-target="#releasebed{{room.id}}" class="btn btn-danger shadow btn-xs sharp mr-1"><i class="fa fa-eject"></i></button>
+                                                                {% if not room.is_full() %}
+                                                                    <button type="submit" data-toggle="modal" data-target="#delete{{room.id}}" class="btn btn-danger shadow btn-xs sharp mr-1"><i class="fa fa-trash"></i></button>
                                                                 {% endif %}
                                                             </div>            
-                                                            <div class="modal fade" id="occupybed{{room.id}}">
+                                                            <div class="modal fade" id="delete{{room.id}}">
                                                                 <div class="modal-dialog" role="document">
                                                                     <form method='POST'>
                                                                         <div class="modal-content">
                                                                             <div class="modal-header">
-                                                                                <h5 class="modal-title">Schedule Opeation</h5>
+                                                                                <h5 class="modal-title">Remove Opeation</h5>
                                                                             </div>
                                                                             <div class="modal-body">
                                                                                 <div class="form-group">
-                                                                                    <input type="hidden" name="form_no" value="1"></input>
                                                                                     <input type="hidden" name="room_id" value="{{room.id}}"></input>
-                                                                                    Are you sure you want to reserve this room for an operation ?
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="modal-footer">
-                                                                                <button type="submit" class="btn btn-primary">Confirm</button>
-                                                                                <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
-                                                                            </div>
-                                                                        </div>
-                                                                    </form>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal fade" id="releasebed{{room.id}}">
-                                                                <div class="modal-dialog" role="document">
-                                                                    <form method='POST'>
-                                                                        <div class="modal-content">
-                                                                            <div class="modal-header">
-                                                                                <h5 class="modal-title">Release Opeation Room</h5>
-                                                                            </div>
-                                                                            <div class="modal-body">
-                                                                                <div class="form-group">
-                                                                                    <input type="hidden" name="form_no" value="2"></input>
-                                                                                    <input type="hidden" name="room_id" value="{{room.id}}"></input>
-                                                                                    Are you sure you want to make this room available again for scheduling ?
+                                                                                    Are you sure you want to remove this room from the hospital ?
                                                                                 </div>
                                                                             </div>
                                                                             <div class="modal-footer">

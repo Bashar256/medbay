@@ -1,8 +1,10 @@
-from website import db, app, UPLOAD_FOLDER, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, APPOINTMENT_TIMEOUT, MAX_APPOINTMENT_DATE, SESSION_TIMEOUT, WEEKEND, ROOM_TYPES
+from website import db, app, ADMIN_SIDEBAR, PATIENT_SIDEBAR, MEDICAL_STAFF_SIDEBAR, MANAGEMENT_STAFF_SIDEBAR, DEPARTMENT_HEAD_SIDEBAR, APPOINTMENT_TIMEOUT, MAX_APPOINTMENT_DATE, SESSION_TIMEOUT, WEEKEND, ROOM_TYPES
+from website.functions import html_date_to_python_date, get_path, save_path, check_timeout, check_timeouts, encrypt_email, decrypt_email, search_user_by_email, encrypt_file, decrypted_filename
 from website.models import  Hospital, Department, Appointment, Management_Staff, Medical_Staff, Patient, Patients, Diagnosis, User, Lab_Result, Room, Bed, Appointment_Times, Time_Slot
 from flask import Blueprint, render_template, url_for, redirect, request, flash, abort, session, send_file, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from website.validate import validate_staff_register, create_random_password
+from website.temp_create_objects import create_stuff
+from website.validate import validate_staff_register
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager
@@ -36,7 +38,7 @@ def load_user_request(request):
             api_key = base64.b64decode(api_key).decode('utf-8')
         except TypeError:
             pass
-        user = User.query.filter_by(email=api_key).first()
+        user = search_user_by_email(api_key)
         if user:
             return user
 
@@ -49,12 +51,19 @@ def before_request():
     session.permanent = True
     app.permanent_session_lifetime = SESSION_TIMEOUT
 
+
+#Page to create basic objects
+@user_view.route("/create_objects")
+def create_objects_view():
+    create_stuff()
+    return redirect(url_for("auth_view.login_view"))
+
+
 #Home View
 @user_view.route("/")
 @user_view.route("/home")
 @login_required
 def home_view():
-    create_random_password()
     if current_user.is_patient():
         return render_template("home.html",user=current_user, sidebar=PATIENT_SIDEBAR)
     elif current_user.is_management_staff():
@@ -89,18 +98,19 @@ def about_us_view():
 @user_view.route("/profile")
 @login_required
 def profile_view():
+    user_email = decrypt_email(current_user.email)
     if current_user.is_patient():
         information = patient_appointments(current_user.id)  
-        return render_template("profile.html",user=current_user, information=information, today=today, sidebar=PATIENT_SIDEBAR)    
+        return render_template("profile.html",user=current_user, information=information, today=today, user_email=user_email, sidebar=PATIENT_SIDEBAR)    
     elif current_user.is_medical_staff():
         information = medical_staff_appointments(current_user.id)
         if not current_user.is_department_head():
-            return render_template("profile.html",user=current_user, information=information, today=today, sidebar=MEDICAL_STAFF_SIDEBAR)
-        return render_template("profile.html",user=current_user, information=information, today=today, sidebar=DEPARTMENT_HEAD_SIDEBAR)
+            return render_template("profile.html",user=current_user, information=information, today=today, user_email=user_email, sidebar=MEDICAL_STAFF_SIDEBAR)
+        return render_template("profile.html",user=current_user, information=information, today=today, user_email=user_email, sidebar=DEPARTMENT_HEAD_SIDEBAR)
     elif current_user.is_management_staff():
-        return render_template("profile.html",user=current_user, sidebar=MANAGEMENT_STAFF_SIDEBAR)
+        return render_template("profile.html",user=current_user, user_email=user_email, sidebar=MANAGEMENT_STAFF_SIDEBAR)
     elif current_user.is_admin():
-        return render_template("profile.html",user=current_user, sidebar=ADMIN_SIDEBAR)
+        return render_template("profile.html",user=current_user, user_email=user_email, sidebar=ADMIN_SIDEBAR)
     abort(401)
 
 
@@ -109,10 +119,11 @@ def profile_view():
 def profile_view_phone():
     if request.mimetype == 'application/json':
             if load_user_request(request):
+                email = decrypt_email(current_user.email)
                 if current_user.is_patient():
-                    return jsonify({'firstname':current_user.first_name,'lastname':current_user.last_name,'age':current_user.age(),'phone':current_user.phone_no,'email':current_user.email})
+                    return jsonify({'firstname':current_user.first_name,'lastname':current_user.last_name,'age':current_user.age(),'phone':current_user.phone_no,'email':email})
                 elif current_user.is_medical_staff():
-                    return jsonify({'firstname':current_user.first_name,'lastname':current_user.last_name,'age':current_user.age(),'phone':current_user.phone_no,'email':current_user.email})
+                    return jsonify({'firstname':current_user.first_name,'lastname':current_user.last_name,'age':current_user.age(),'phone':current_user.phone_no,'email':email})
                     
 
 @user_view.route("/appointment_history")
@@ -134,7 +145,7 @@ def appointment_history():
             if load_user_request(request):
                 if current_user.is_patient():
                     information = patient_appointments(current_user.id) 
-                    for appointment,hospital,department,usr,diagnoses,lab_result in information:
+                    for appointment,hospital,department,usr,diagnosis,lab in information:
                         if appointment.appointment_date_time < today:
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
@@ -146,11 +157,11 @@ def appointment_history():
                             hour.append(appointment.appointment_date_time.hour)
                             minute.append(str(appointment.appointment_date_time.minute))
                             weekday.append(wdays[appointment.appointment_date_time.weekday()])
-                            print(lab_result.path)
+                            
 
                 elif current_user.is_medical_staff():
                     information = medical_staff_appointments(current_user.id)
-                    for appointment,hospital,department,usr,diagnoses,lab_results in information:
+                    for appointment,hospital,department,usr,diagnosis,lab in information:
                         if appointment.appointment_date_time < today:
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
@@ -166,6 +177,7 @@ def appointment_history():
                     return jsonify({'status':'good','day':day,'month':month,'year':year,'firstname':firstname,'lastname':lastname,'hospital':hospital_name,'department':department_name,'hour':hour,'minute':minute,'weekday':weekday})
                 else:
                     return jsonify({'status':'bad'})
+
 
 @user_view.route("/appointment_upcoming")
 @login_required
@@ -190,7 +202,7 @@ def appointment_upcoming():
             if load_user_request(request):
                 if current_user.is_medical_staff():
                     information = medical_staff_appointments(current_user.id)
-                    for appointment,hospital,department,usr,diagnoses,lab_results in information:
+                    for appointment,hospital,department,usr,diagnosis,lab in information:
                         if appointment.appointment_date_time > today:
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
@@ -208,7 +220,7 @@ def appointment_upcoming():
                         return jsonify({'status':'bad'})
                 elif current_user.is_patient():
                     information = patient_appointments(current_user.id)
-                    for appointment,hospital,department,usr,diagnoses,lab_results in information:
+                    for appointment,hospital,department,usr,diagnosis,lab in information:
                         if appointment.appointment_date_time > today:
                             day.append(appointment.appointment_date_time.day)
                             month.append(appointment.appointment_date_time.month)
@@ -231,8 +243,6 @@ def appointment_upcoming():
                         return jsonify({'status':'bad'})
 
 
-
-
 #Edit_Profile View
 @user_view.route("/edit_profile", methods=["POST", "GET"])
 @login_required
@@ -248,14 +258,14 @@ def edit_profile_view():
         gender = request.form.get('gender')
         phone_no = request.form.get('phone_no')
         dob = request.form.get('dob')
-
-        user = User.query.filter_by(email=current_user.email).first()
-        if user.email != email:
-            old_user = User.query.filter_by(email=email).first()
+       
+        user = current_user
+        if decrypt_email(user.email) != email:
+            old_user = search_user_by_email(email)
             if old_user:
                 flash("Email already exists", category="error")
             else:
-                user.email = email
+                user.email = encrypt_email(email)
                 user.confirmed = False
                 user.confirmed_on = None
                 count = count + 1
@@ -318,7 +328,9 @@ def edit_profile_view():
         
     elif current_user.is_admin():
         return render_template("edit_profile.html",user=current_user, sidebar=ADMIN_SIDEBAR)    
-        
+
+
+#Edit Profile On Phone View
 @user_view.route("/edit_profile_phone", methods=["POST", "GET"])
 @login_required
 def edit_profile_view_phone():
@@ -336,14 +348,13 @@ def edit_profile_view_phone():
             dob = data['dob']
 
         count = 0
-        error = 0
-        user = User.query.filter_by(email=current_user.email).first()
-        if user.email != email:
-            old_user = User.query.filter_by(email=email).first()
+        user = current_user
+        if decrypt_email(user.email) != email:
+            old_user = encrypt_email(email)
             if old_user:
                 return jsonify({'status':'Email already exists'})
             else:
-                user.email = email
+                user.email = encrypt_email(email)
                 user.confirmed = False
                 user.confirmed_on = None
                 count = count + 1
@@ -423,7 +434,6 @@ def book_appointment_view():
 @login_required
 def book_appointment_view_department():
     if current_user.is_patient(): 
-        hospitals = Hospital.query.all()
         departments = Department.query.all()
         dept_name=[]
         dept_id=[]
@@ -478,7 +488,7 @@ def choose_medical_staff_phone(hospital_id,department_id):
 def doctor_details_view(hospital_id, department_id, staff_id,role="md"):  
     if current_user.is_patient():
         if request.method == 'POST':
-            if not current_user.confirmed:
+            if current_user.confirmed:
                 appointment_date = request.form.get('appointment_date')
                 time_slot_id = request.form.get('appointment_time')
                 medical_staff = Medical_Staff.query.filter_by(id=staff_id).first()
@@ -530,7 +540,7 @@ def doctor_details_view_phone(hospital_id, department_id, staff_id,role="md"):
         if request.method == 'POST':
                 if(request.mimetype == 'application/json'):
                     if load_user_request(request):
-                        if not current_user.confirmed:
+                        if current_user.confirmed:
                             data=request.json
                             appointment_date = data['appointment_date']
                             time_slot_id = data['appointment_time']
@@ -630,7 +640,7 @@ def appointment_time_select_View_phone(medical_staff_id,appointment_date):
                         if slot[-1] == False:
                             if slot not in available_times:
                                 available_times.append(slot)
-                    data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in available_times]
+                    data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__(),"end":(time_slot[3].strftime("%H:%M")).__str__()} for time_slot in available_times]
                     return jsonify(data)
 
                 doctor = Medical_Staff.query.filter_by(id=medical_staff_id).first()
@@ -638,7 +648,7 @@ def appointment_time_select_View_phone(medical_staff_id,appointment_date):
                 appointment_times.create_slots(date=appointment_date)
                 time_slots = db.session.query(Time_Slot).filter_by(date=appointment_date.date()).all()
 
-                data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__()} for time_slot in time_slots]
+                data = [{"id": time_slot[0], "start": (time_slot[2].strftime("%H:%M")).__str__(),"end":(time_slot[3].strftime("%H:%M")).__str__()} for time_slot in time_slots]
                 return jsonify(data)  
 
 
@@ -744,7 +754,6 @@ def appointment_change_phone():
                             appointment_time = Appointment_Times.query.filter_by(id=medical_staff.appointment_times).first()
                             time_slot = db.session.query(Time_Slot).filter_by(appointment_id=appointment_id).first()
                             free_appointment_time = db.session.query(Time_Slot).filter_by(id=time_slot_id).first()
-                            print(free_appointment_time)
                             if (not free_appointment_time) or free_appointment_time[-1]:
                                 return jsonify({'status':'Please select one of the provided time slots'})
                             
@@ -794,14 +803,15 @@ def patients_view():
             form_no = request.form.get("form_no")
             if form_no == "1":
                 patient_id = request.form.get("patient_id")
+                room_type = request.form.get("room_type")
                 patient = Patient.query.filter_by(id=patient_id).first()
                 if patient:           
-                    rooms = Room.query.filter_by(department=current_user.department).all()
+                    rooms = Room.query.filter(Room.hospital==current_user.hospital, Room.room_type==room_type).all()
                     for room in rooms:
                         if not room.is_full():
                             for bed in room.beds:
                                 if not bed.occupied:
-                                    bed.occupy_bed(patient)
+                                    bed.occupy_bed(current_user.id, patient)
                                     patient.bed = bed.id
                                     db.session.commit()
                                     flash("Patient admitted", category="success")
@@ -820,6 +830,7 @@ def patients_view():
                     if bed:
                         bed.release_bed()
                         patient.bed = None
+                        current_user.booked_beds.remove(bed)
                         db.session.commit()
                         flash("Patient disscharged", category="success")
                         return redirect(url_for("user_view.patients_view"))               
@@ -830,12 +841,21 @@ def patients_view():
         timed_out = check_timeouts(patients_timeouts)
         doctors_patients = current_user.patients
         appointments = []
+        beds = []
+        rooms = []
         for patient in doctors_patients:
             appointments.append(patient.last_visit(current_user.id))
-        info = zip(doctors_patients, appointments, timed_out)
+            bed = Bed.query.filter_by(id=patient.bed).first()
+            beds.append(bed)
+            if bed:
+                room = Room.query.filter_by(id=bed.room).first()
+                rooms.append(room)
+            else:
+                rooms.append(None)
+        info = zip(doctors_patients, appointments, timed_out, beds, rooms)
         if not current_user.is_department_head():
-            return render_template("patients.html", user=current_user, info=info, sidebar=MEDICAL_STAFF_SIDEBAR)
-        return render_template("patients.html", user=current_user, info=info, sidebar=DEPARTMENT_HEAD_SIDEBAR)
+            return render_template("patients.html", user=current_user, info=info, room_types=ROOM_TYPES, sidebar=MEDICAL_STAFF_SIDEBAR)
+        return render_template("patients.html", user=current_user, room_types=ROOM_TYPES, info=info, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     abort(401)
 
@@ -848,15 +868,15 @@ def patients_view_phone():
                 data=request.json
                 form_no = data['form']
                 if form_no == 1:
-                    patient_name = data['name']
-                    patient = Patient.query.filter_by(first_name=patient_name).first()
+                    patient_id = data['patient_id']
+                    patient = Patient.query.filter_by(id=patient_id).first()
                     if patient:           
-                        rooms = Room.query.filter_by(department=current_user.department).all()
+                        rooms = Room.query.filter(Room.hospital==current_user.hospital, Room.room_type=='patient').all()
                         for room in rooms:
                             if not room.is_full():
                                 for bed in room.beds:
                                     if not bed.occupied:
-                                        bed.occupy_bed(patient)
+                                        bed.occupy_bed(current_user.id, patient)
                                         patient.bed = bed.id
                                         db.session.commit()
                                         return jsonify({'status':'Patient Admitted'})
@@ -865,13 +885,14 @@ def patients_view_phone():
 
                     return jsonify({'status':'No such patient.'})
                 elif form_no == 2:
-                    patient_name = data['name']
-                    patient = Patient.query.filter_by(first_name=patient_name).first()
+                    patient_id = data['patient_id']
+                    patient = Patient.query.filter_by(id=patient_id).first()
                     if patient:
                         bed = Bed.query.filter_by(id=patient.bed).first()
                         if bed:
                             bed.release_bed()
                             patient.bed = None
+                            current_user.booked_beds.remove(bed)
                             db.session.commit()
                             return jsonify({'status':'Patient Discharged'})               
                 return jsonify({'status':'No such patient.'})
@@ -886,6 +907,7 @@ def patients_view_phone():
                 age=[]
                 phone=[]
                 email=[]
+                p_id=[]
                 patients_timeouts = db.session.query(Patients).filter_by(medical_staff_id=current_user.id).all()
                 timed_out = check_timeouts(patients_timeouts)
                 doctors_patients = current_user.patients
@@ -895,7 +917,8 @@ def patients_view_phone():
                     is_timedout.append(timed_out)
                     age.append(patient.age())
                     phone.append(patient.phone_no)
-                    email.append(patient.email)
+                    email.append(decrypt_email(patient.email))
+                    p_id.append(patient.id)
                     if patient.bed:
                         is_admitted.append('Discharge')
                     else:
@@ -904,16 +927,8 @@ def patients_view_phone():
                         last.append("No Previous Appointments")
                     else :
                         last.append(patient.last_visit(current_user.id))
-                return jsonify({'firstname':firstname,'lastname':lastname,'last':last,'IsAdmitted':is_admitted,'IsTimedOut':is_timedout,'age':age,'phone':phone,'email':email})
+                return jsonify({'firstname':firstname,'lastname':lastname,'last':last,'IsAdmitted':is_admitted,'IsTimedOut':is_timedout,'age':age,'phone':phone,'email':email,'patient_id':p_id})
     
-        # appointments = []
-        # for patient in doctors_patients:
-        #     appointments.append(patient.last_visit(current_user.id))
-
-        # info = zip(doctors_patients, appointments, timed_out)
-        # if not current_user.is_department_head():
-        #     return render_template("patients.html", user=current_user, info=info, sidebar=MEDICAL_STAFF_SIDEBAR)
-        # return render_template("patients.html", user=current_user, info=info, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     abort(401)
 
@@ -923,7 +938,7 @@ def patients_view_phone():
 def upload_file_view():
     if current_user.is_medical_staff():
         if request.method == 'POST':
-            diganosis_file = request.files['diagnosis']
+            diagnosis_file = request.files['diagnosis']
             lab_result_file = request.files['lab_result']
             patient_id = request.form.get("patient_id")
             date_time = request.form.get("appointment")
@@ -933,11 +948,17 @@ def upload_file_view():
             appointment_date_time = datetime.datetime(int(date[0]), int(date[1]), int(date[2]), int(time[0]), int(time[1])) 
             appointment = Appointment.query.filter(Appointment.medical_staff==current_user.id, Appointment.patient==patient_id, Appointment.appointment_date_time==appointment_date_time).first()
             patient = Patient.query.filter_by(id=patient_id).first()
-            if diganosis_file.filename:
-                filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Diagnosis" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")) + "." + diganosis_file.filename.split('.')[-1])
+            if diagnosis_file.filename:
+                filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Diagnosis" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")) + "." + diagnosis_file.filename.split('.')[-1])
                 path = os.path.join(patient.diagnoses_file, filename)
-                print(path,save_path(path))
-                diganosis_file.save(save_path(path))
+                diagnosis_file.save(save_path(path))
+
+                with open(path, 'rb') as file:
+                    original = file.read()
+                encrypted = encrypt_file(original)
+                with open(path, 'wb') as encrypted_file:
+                    encrypted_file.write(encrypted)   
+
                 new_diagnosis = Diagnosis(path=path, date=datetime.datetime.now(), medical_staff=current_user.id, patient=patient_id, appointment=appointment.id)
                 db.session.add(new_diagnosis)
                 db.session.commit()
@@ -947,9 +968,14 @@ def upload_file_view():
             elif lab_result_file:
                 filename = secure_filename("Patient" + str(patient_id) + "_" + "Doctor" + str(current_user.id) + "_" + "Lab_result" + "_" + str(datetime.datetime.today().strftime("%d-%m-%y %H:%M:%S")) + "." + lab_result_file.filename.split('.')[-1])
                 path = os.path.join(patient.lab_results_file, filename)
-
-                print(path,save_path(path))
                 lab_result_file.save(save_path(path))
+                
+                with open(path, 'rb') as file:
+                    original = file.read()
+                encrypted = encrypt_file(original)
+                with open(path, 'wb') as encrypted_file:
+                    encrypted_file.write(encrypted) 
+
                 new_lab_result = Lab_Result(path=path, date=datetime.datetime.now(), medical_staff=current_user.id, patient=patient_id, appointment=appointment.id)
                 db.session.add(new_lab_result)
                 db.session.commit()
@@ -966,17 +992,14 @@ def upload_file_view():
 @user_view.route('/download/<path:filename>', methods=['GET', 'POST'])
 @login_required
 def download_view(filename):
-    if current_user.is_patient():
-        filename = save_path(filename)
-        if os.path.isfile(filename):
+    if os.path.isfile(filename):
+        filename = decrypted_filename(filename)
+        if current_user.is_patient():
             return send_file(get_path(filename), as_attachment=True)
-
-    elif current_user.is_medical_staff():
-        filename = save_path(filename)
-        print(filename)
-        if os.path.isfile(filename):
-            return send_file(get_path(filename), as_attachment=True)       
-    abort(401)
+        elif current_user.is_medical_staff():
+            return send_file(get_path(filename), as_attachment=True)
+        abort(401)
+    abort(404)
 
 
 #Patient_Profile View
@@ -992,13 +1015,13 @@ def patient_details_view(patient_id):
             if patient_id == patient.id:
                 diagnoses = Diagnosis.query.filter(Diagnosis.patient==patient_id, Diagnosis.medical_staff==current_user.id).all()
                 information = patient_appointments(patient_id)
+                patient_email = decrypt_email(patient.email)
                 if not current_user.is_department_head():
-                    return render_template("patient_details.html", user=current_user, medical_staff=current_user, information=information, diagnoses=diagnoses, patient=patient, today=today, sidebar=MEDICAL_STAFF_SIDEBAR)
-                return render_template("patient_details.html", user=current_user, medical_staff=current_user, information=information, diagnoses=diagnoses, patient=patient, today=today, sidebar=DEPARTMENT_HEAD_SIDEBAR)
+                    return render_template("patient_details.html", user=current_user, medical_staff=current_user, information=information, diagnoses=diagnoses, patient=patient, today=today, patient_email=patient_email, sidebar=MEDICAL_STAFF_SIDEBAR)
+                return render_template("patient_details.html", user=current_user, medical_staff=current_user, information=information, diagnoses=diagnoses, patient=patient, today=today, patient_email=patient_email, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
         return redirect(url_for('user_view.patients_view'))
     abort(401)
-
 
 
 #Lab_Results View
@@ -1010,7 +1033,7 @@ def lab_results_view(patient_id=None):
         if request.method == "POST":
             lab_result_id = request.form.get("lab_result_id")
             lab_result = Lab_Result.query.filter(Lab_Result.id==lab_result_id, Lab_Result.medical_staff==current_user.id).first()
-            if lab_result:
+            if lab_result: 
                 os.remove(lab_result.path)
                 db.session.delete(lab_result)
                 db.session.commit()
@@ -1033,16 +1056,128 @@ def lab_results_view(patient_id=None):
         return render_template("lab_results.html", user=current_user, info=info, sidebar=PATIENT_SIDEBAR)
     abort(401)
 
-@user_view.route("/test_download", methods=["POST", "GET"])
+
+@user_view.route("/lab_results_phone/<int:patient_id>", methods=["POST", "GET"])
 @login_required
-def test_download():
+def lab_results_view_phone(patient_id=None):
+    if request.mimetype=='application/json':
+        if current_user.is_medical_staff():
+            if request.method == "POST":
+                data=request.json
+                lab_result_id = data["lab_result_id"]
+                lab_result = Lab_Result.query.filter(Lab_Result.id==lab_result_id, Lab_Result.medical_staff==current_user.id).first()
+                if lab_result:
+                    os.remove(lab_result.path)
+                    db.session.delete(lab_result)
+                    db.session.commit()
+                    return jsonify({'status':'Lab result deleted successfuly'})
+                return jsonify({'status':'Already deleted or you\'re not allowed to delete this file'}) 
+
+            results = Lab_Result.query.filter(Lab_Result.medical_staff==current_user.id, Lab_Result.patient==patient_id).all()
+            patient = medical_staffs_patient(current_user.id, patient_id)
+            patients = []
+            date=[]
+            path=[]
+            file=[]
+            lab_result_id=[]
+            for i in range(len(results)):
+                patients.append(patient)
+            info = zip(results, patients)
+            for (lab,user) in info:
+                date.append(lab.date.strftime("%d-%m-%y"))
+                path.append(lab.path)
+                filename = decrypted_filename(lab.path)
+                file.append(filename.split('/')[-1])
+                lab_result_id.append(lab.id)
+            if path:
+                return jsonify({'Path':path,'Split':file,'Date':date,'Lab_id':lab_result_id})
+            else:
+                pass
+            
+
+@user_view.route("/lab_download", methods=["POST", "GET"])
+@login_required
+def lab_download():
+    path=[]
+    file=[]
+    name=[]
+    email=[]
+    date=[]
+    if request.mimetype=='application/json':
+        if current_user.is_patient():
+            info = patient_lab_results(current_user.id)
+            for (lab,user) in info:
+                name.append(user.first_name)
+                email.append(decrypt_email(user.email))
+                date.append(lab.date.strftime("%d-%m-%y"))
+                path.append(lab.path)
+                filename = decrypted_filename(lab.path)
+                file.append(filename.split('/')[-1])
+        if path:
+            return jsonify({'Path':path,'Split':file,'Name':name,'Email':email,'Date':date})
+        else:
+            pass
+
+@user_view.route("/diagnoses_download", methods=["POST", "GET"])
+@login_required
+def diagnoses_download():
+    path=[]
+    file=[]
+    name=[]
+    email=[]
+    date=[]
     if request.mimetype=='application/json':
         if current_user.is_patient():
             info = patient_diagnoses(current_user.id)
-            for (diagnosis,usr) in info:
-                print(diagnosis.path)
-                return jsonify({'status':diagnosis.path})
+            for (diagnosis,user) in info:
+                name.append(user.first_name)
+                email.append(decrypt_email(user.email))
+                date.append(diagnosis.date.strftime("%d-%m-%y"))
+                path.append(diagnosis.path)
+                filename = decrypted_filename(diagnosis.path)
+                file.append(filename.split('/')[-1])
+        if path:
+            return jsonify({'Path':path,'Split':file,'Name':name,'Email':email,'Date':date})
+        else:
+            pass
 
+@user_view.route("/diagnoses_phone/<int:patient_id>", methods=["POST", "GET"])
+@login_required
+def diagnoses_view_phone(patient_id=None):
+    if request.mimetype=='application/json':
+        if current_user.is_medical_staff():
+            if request.method == "POST":
+                data=request.json
+                diagnosis_id = data["diagnosis_id"]
+                diagnosis = Diagnosis.query.filter(Diagnosis.id==diagnosis_id, Diagnosis.medical_staff==current_user.id).first()
+                if diagnosis:
+                    os.remove(diagnosis.path)
+                    db.session.delete(diagnosis)
+                    db.session.commit()
+                    return jsonify({'status':'Diagnosis deleted successfuly'})
+                return jsonify({'status':'Already deleted or you\'re not allowed to delete this file'})
+
+            diagnoses = Diagnosis.query.filter(Diagnosis.medical_staff==current_user.id, Diagnosis.patient==patient_id).all()
+            patient = medical_staffs_patient(current_user.id, patient_id)
+            patients = []
+            date=[]
+            path=[]
+            file=[]
+            d_id=[]
+            for i in range(len(diagnoses)):
+                patients.append(patient)
+            info = zip(diagnoses,patients)
+            for (diagnosis,user) in info:
+                date.append(diagnosis.date.strftime("%d-%m-%y"))
+                path.append(diagnosis.path)
+                filename = decrypted_filename(diagnosis.path)
+                file.append(filename.split('/')[-1])
+                d_id.append(diagnosis.id)
+            if path:
+                return jsonify({'Path':path,'Split':file,'Date':date,'Diagnoses_id':d_id})
+            else:
+                pass
+            
 
 #Diagnoses View
 @user_view.route("/diagnoses", methods=["POST", "GET"])
@@ -1200,7 +1335,7 @@ def staff_view():
     elif current_user.is_admin():
         if request.method == 'POST':
             form_no = request.form.get("form_no")
-            if form_no =="1":
+            if form_no == "1":
                 if validate_staff_register(request):
                     flash("User Added Successfully", category="success")
                     return redirect(url_for("user_view.staff_view"))
@@ -1209,8 +1344,7 @@ def staff_view():
                 staff = User.query.filter_by(id=staff_id).first()
                 if staff:
                     if staff.is_medical_staff():
-                        doctors_patients = db.session.query(Patients).filter_by(medical_staff_id=staff.id).all()
-                        db.session.delete(doctors_patients)
+                        db.session.query(Patients).filter_by(medical_staff_id=staff.id).delete()
                     db.session.delete(staff)
                     db.session.commit()
                     flash("User deleteed!", category="update")
@@ -1236,22 +1370,26 @@ def staff_details_view(staff_id,role):
     if current_user.is_medical_staff() and current_user.is_department_head():
         information = medical_staff_appointments(staff_id)
         staff = Management_Staff.query.filter_by(id=staff_id).first()
+        staff_email = decrypt_email(staff.email)
         appointment_time = Appointment_Times.query.filter_by(id=staff.appointment_times).first()
-        return render_template("staff_details.html",user=current_user, information=information, staff=staff, appointment_time=appointment_time, sidebar=DEPARTMENT_HEAD_SIDEBAR)
+        return render_template("staff_details.html",user=current_user, information=information, staff=staff, appointment_time=appointment_time, staff_email=staff_email, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     elif current_user.is_management_staff():
         staff = Management_Staff.query.filter_by(id=staff_id).first()
         if staff:
-            return render_template("staff_details.html", user=current_user, staff=staff, sidebar=MANAGEMENT_STAFF_SIDEBAR)
+            staff_email = decrypt_email(staff.email)
+            return render_template("staff_details.html", user=current_user, staff=staff, staff_email=staff_email, sidebar=MANAGEMENT_STAFF_SIDEBAR)
         staff = Medical_Staff.query.filter_by(id=staff_id).first()
         if staff:
+            staff_email = decrypt_email(staff.email)
             appointment_time = Appointment_Times.query.filter_by(id=staff.appointment_times).first()
             information = medical_staff_appointments(staff_id)
-            return render_template("staff_details.html", user=current_user, information=information, staff=staff,  today=today, appointment_time=appointment_time, sidebar=MANAGEMENT_STAFF_SIDEBAR)
+            return render_template("staff_details.html", user=current_user, information=information, staff=staff,  today=today, appointment_time=appointment_time, staff_email=staff_email, sidebar=MANAGEMENT_STAFF_SIDEBAR)
         
     elif current_user.is_admin():
         staff = User.query.filter(User.id==staff_id,  User.role==current_user.role).first()
-        return render_template("staff_details.html",user=current_user, staff=staff, sidebar=ADMIN_SIDEBAR) 
+        staff_email = decrypt_email(staff.email)
+        return render_template("staff_details.html",user=current_user, staff=staff, staff_email=staff_email, sidebar=ADMIN_SIDEBAR) 
             
     abort(401)
 
@@ -1278,6 +1416,7 @@ def rooms_view():
             hospital_id = current_user.hospital
 
             if room_type == 'operation':
+                room_no = "OR " + room_no
                 no_of_beds = 1
 
             if int(no_of_beds) > 4 or int(no_of_beds) < 1:
@@ -1327,6 +1466,40 @@ def rooms_view():
     abort(401)
 
 
+@user_view.route("/rooms_phone", methods=['GET', 'POST'])
+@login_required
+def rooms_view_phone():
+    if current_user.is_medical_staff():
+        hospitals = Hospital.query.all()
+        my_hospital = Hospital.query.filter_by(id=current_user.hospital).first()
+        departments = Department.query.filter_by(hospital=current_user.hospital).all()
+        hospital_name=my_hospital.name
+        beds=my_hospital.hospital_beds_stats(my_hospital.id)
+        occupied=beds[0]-beds[1]
+        depts=[]
+        single_room=[]
+        all_rooms=[]
+        no_rooms_in_department=[]
+        for d in departments:
+            i=0
+
+            depts.append(d.name)
+            for room in d.rooms:
+                if room.room_type !="operation":
+                    single_room=[]
+                    i+=1
+                    beds1 = room.room_stats(room.id)
+                    single_room.append(room.room_no)
+                    single_room.append(beds1[0])
+                    single_room.append(beds1[1])
+                    single_room.append(d.name)
+                    all_rooms.append(single_room)
+            no_rooms_in_department.append(i)
+
+
+        return jsonify({'hospital':hospital_name,'beds':beds,'occupied':occupied,'departments':depts,'rooms_department':no_rooms_in_department,'rooms':all_rooms})
+
+
 @user_view.route("/operation_rooms", methods=['GET', 'POST'])
 @login_required
 def operation_rooms_view():
@@ -1342,37 +1515,15 @@ def operation_rooms_view():
         return render_template("operation_rooms.html", user=current_user, departments=departments, rooms=rooms, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     elif current_user.is_management_staff():
-        if request.method == 'POST':
+        if request.method =="POST":
             room_id = request.form.get("room_id")
             room = Room.query.filter_by(id=room_id).first()
             if room:
-                if room.room_type == "operation":
-                    form_no = request.form.get("form_no")
-                    if form_no == "1":
-                        beds = room.beds
-                        for bed in beds:
-                            bed.occupy_bed()
-                        db.session.commit()
-                        flash("Surgery room is booked", category="success")
-                        return redirect(url_for("user_view.operation_rooms_view")) 
-
-                    elif form_no == "2":
-                        beds = room.beds
-                        for bed in beds:
-                            bed.release_bed()
-                        db.session.commit()
-                        flash("Surgery room is no longer booked", category="success")
-                        return redirect(url_for("user_view.operation_rooms_view")) 
-
-                    flash("No such form exists", category="error")
-                    return redirect(url_for("user_view.operation_rooms_view"))
-
-                flash("This is not an operation room", category="error")
-                return redirect(url_for("user_view.operation_rooms_view"))  
-
-            flash("The Room doesn't exist", category="error")
-            return redirect(url_for("user_view.operation_rooms_view"))
-
+                db.session.delete(room)
+                db.session.commit()
+                flash("Operation room removed", category="success")
+                return redirect(url_for("user_view.operation_rooms_view"))
+            flash("Operation room doesn't exist", category="error")
         departments = Department.query.filter_by(hospital=current_user.hospital).all()
         rooms = []
         for department in departments:
@@ -1384,7 +1535,26 @@ def operation_rooms_view():
     abort(401)
 
 
+@user_view.route("/operation_rooms_phone", methods=['GET', 'POST'])
+@login_required
+def operation_rooms_view_phone():
+    if current_user.is_medical_staff():
+        departments = Department.query.filter_by(hospital=current_user.hospital).all()
+        all_rooms = []
+        for department in departments:
+            for room in department.rooms:
+                if room.room_type == 'operation':
+                    r=[]
+                    r.append(department.name)
+                    r.append(room.room_no)
+                    if room.is_full():
+                        r.append("Booked")
+                    else:
+                        r.append("Free")
+                        all_rooms.append(r)
+        return jsonify({'rooms':all_rooms})
 
+                    
 #Custom error pages
 user_view.errorhandler(400)
 def bad_request(error):
@@ -1480,35 +1650,3 @@ def patient_diagnoses(patient_id):
         for diagnosis in diagnoses:
             medical_staff_objs.append(Medical_Staff.query.filter_by(id=user_id[1]).first())
     return zip(diagnoses,medical_staff_objs)
-
-
-def html_date_to_python_date(date, time=None):
-    date = date.split('-')
-    if time:
-        time = time.split(':')
-        return datetime.datetime(int(date[0]), int(date[1]), int(date[2]), int(time[0]), int(time[1]))
-    return datetime.datetime(int(date[0]), int(date[1]), int(date[2])) 
-
-def check_timeouts(patients_timeouts):
-    time_outs = []
-    for timeout in patients_timeouts:
-        if timeout[2] < datetime.datetime.now():
-            time_outs.append(True)
-        time_outs.append(False)
-    return time_outs
-
-
-def check_timeout(patient_timeout):
-    if patient_timeout < datetime.datetime.now():
-        return True
-    return False
-
-
-def get_path(path):
-    if 'website/' in path:
-        path = path.replace('website/', '')
-    return path.replace("\\", "/")
-
-def save_path(path):
-    print(path, path.replace("\\", "/"))
-    return path.replace("\\", "/")

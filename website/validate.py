@@ -1,26 +1,28 @@
 from website.models import Patient, User, Medical_Staff, Management_Staff, Hospital, Appointment_Times
 from werkzeug.security import check_password_hash, generate_password_hash
 from website import db, app, mail, BAD_LOGINS_LIMIT
-from flask_login import current_user, login_user
+from website.functions import  search_user_by_email, encrypt_email
+from flask_login import current_user
 from flask import flash, url_for
 from flask_mail import Message
 import datetime
 import string
 import random
 
+
+
+
 def validate_login(request):
     if request.mimetype=='application/json':
         data=request.json
-        email = data['email']
+        email = data['email'].lower()
         password = data['password']
     else:
-        email = request.form.get('email')
+        email = request.form.get('email').lower()
         password = request.form.get('password')
 
-    user = User.query.filter_by(email=email).first()
-
+    user = search_user_by_email(email)
     if user:
-        user.block_login = False
         if datetime.datetime.now() >= (user.last_login_attempt + datetime.timedelta(minutes=5)):
             user.block_login = False
             user.last_login_attempt = datetime.datetime.now()
@@ -44,12 +46,13 @@ def validate_login(request):
             user.bad_logins = 0
             
         db.session.commit()
+        
     flash('Invalid Information', category='error')
     return 
 
 
 def validate_patient_register(request):
-    email = request.form.get('email')
+    email = request.form.get('email').lower()
     first_name = request.form.get('firstname')
     last_name = request.form.get('lastname')
     password1 = request.form.get('password1')
@@ -58,7 +61,7 @@ def validate_patient_register(request):
     phone_no = request.form.get('phone_no')
     dob = request.form.get('dob')
 
-    patient = Patient.query.filter_by(email=email).first()
+    patient = search_user_by_email(email)
 
     if patient:
         flash('Email already exists.', category='error')
@@ -75,7 +78,7 @@ def validate_patient_register(request):
     elif len(phone_no) != 13:
         flash("Enter a correct phone number format", category="error")
     else:
-        return Patient(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p', registered_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
+        return Patient(email=encrypt_email(email), first_name=first_name, last_name=last_name, password=generate_password_hash(password1, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role='p', registered_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
     return 
 
 
@@ -89,12 +92,12 @@ def validate_staff_register(request):
     role = request.form.get('role')
     department = request.form.get('department')
     appointment_times_id = request.form.get('appointment_times')
-    submit = request.form.get('submit')
     dpt_head = request.form.get('dpt_head')
     hospital_id = request.form.get('hospital_id')
     appointment_time = Appointment_Times.query.filter_by(id=appointment_times_id).first()
-    staff = User.query.filter_by(email=email).first()
+    staff = search_user_by_email(email)
     password = create_random_password()
+
     if staff:
         flash('Email already exists.', category='error')
     elif len(email) < 4:
@@ -106,17 +109,16 @@ def validate_staff_register(request):
     elif len(phone_no) != 13:
         flash("Enter a correct phone number format", category="error")
     else:
-        print(submit, role)
-        if submit == "Create Management Staff" and role.lower() == "ms":
+        if role.lower() == "ms":
             if hospital_id:
                 if Hospital.query.filter_by(id=hospital_id).first():
-                    new_user = Management_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=hospital_id, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
+                    new_user = Management_Staff(email=encrypt_email(email), first_name=first_name, last_name=last_name, password=generate_password_hash(password, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=hospital_id, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
                 else:
                     flash("Please specify an existing hospital", category="error")
                     return False
             else:
-                new_user = Management_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=current_user.hospital, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
-        elif submit == "Create Medical Staff" and role.lower() == 'md':
+                new_user = Management_Staff(email=encrypt_email(email), first_name=first_name, last_name=last_name, password=generate_password_hash(password, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=current_user.hospital, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
+        elif role.lower() == 'md':
             if dpt_head.lower() == 'false':
                 department_head = False
             elif dpt_head.lower() == 'true':
@@ -125,31 +127,31 @@ def validate_staff_register(request):
                 flash("Please specify if the doctor is a department head", category="error")
                 return False
             if appointment_time:
-                new_user = Medical_Staff(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=current_user.hospital, department=department, appointment_times=appointment_times_id, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), department_head=department_head, last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
+                new_user = Medical_Staff(email=encrypt_email(email), first_name=first_name, last_name=last_name, password=generate_password_hash(password, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, hospital=current_user.hospital, department=department, appointment_times=appointment_times_id, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), department_head=department_head, last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
                 appointment_time.medical_staff.append(new_user)
             else:
                 flash("Please Specify times for this doctor", category="error")
                 return False
-        elif submit == "Create Admin" and role.lower() == "a":
-            new_user = User(email=email, first_name=first_name, last_name=last_name, password=generate_password_hash(password, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
+        elif role.lower() == "a":
+            new_user = User(email=encrypt_email(email), first_name=first_name, last_name=last_name, password=generate_password_hash(password, method='sha256'), phone_no=phone_no, gender=gender, date_of_birth=dob, role=role, registered_on=datetime.datetime.now(), confirmed=True, confirmed_on=datetime.datetime.now(), last_login=datetime.datetime.now(), last_login_attempt=datetime.datetime.now())
         else:
             flash("Please Submit from the correct form and Specify role", category="error")
             return False
         db.session.add(new_user)
         db.session.commit()
-        new_staff_welcome_email(new_user, password)
+        new_staff_welcome_email(new_user, email, password)
         return True
     return False
 
 
-def new_staff_welcome_email(user, password):
+def new_staff_welcome_email(user, email, password):
     token = user.get_token()
     msg = Message('Welcome To The Team',
                 sender=("MedBay Support", "noreply@medbay.org"),
-                recipients=["bashar.n.bader@gmail.com"])
+                recipients=[email ,"bashar.n.bader@gmail.com"])
     msg.body = f'''Welcome to our humble abode.
     Your credentials are:
-    Email: {user.email}
+    Email: {email}
     Password: {password}
     We strongly recommend that you change your randomly generated password.
     To change your password please follow the link below:

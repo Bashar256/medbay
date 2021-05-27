@@ -17,7 +17,7 @@
                         <div class="modal-body">
                             <div class="form-group">
                                 <label class="mb-1"><strong>Department</strong></label>
-                                <select name='department_id' class="form-control ">
+                                <select name='department_id' class="form-control">
                                     {% for department in departments: %}
                                         <option value="{{department.id}}">{{department.name}}</option>
                                     {% endfor %}
@@ -150,7 +150,7 @@
                     </div>
                 {% endif %}
                 {% for hospital in hospitals: %}
-                    {% if user.is_management_staff() and user.hospital != hospital.id %}
+                    {% if (user.is_management_staff() and user.hospital != hospital.id) or user.is_admin() %}
                         <div class="accordion__item">
                             <div class="accordion__header collapse rounded-lg" data-toggle="collapse" data-target="#hospital_collapse{{hospital.id}}">
                                 <span class="form-group">{{hospital.name}}</span>
