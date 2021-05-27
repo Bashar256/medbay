@@ -249,7 +249,7 @@ def appointment_upcoming():
 def edit_profile_view():
     if request.method == 'POST':
         count = 0
-        email = request.form.get('email')
+        email = request.form.get('email').lower()
         first_name = request.form.get('firstname')
         last_name = request.form.get('lastname')
         password1=request.form.get('password1')
@@ -337,7 +337,7 @@ def edit_profile_view_phone():
     if request.method == 'POST':
         if request.mimetype=='application/json':
             data=request.json
-            email = data['email']
+            email = data['email'].lower()
             first_name = data['firstname']
             last_name = data['lastname']
             password1 = data['password1']

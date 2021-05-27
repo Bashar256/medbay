@@ -36,7 +36,7 @@ def login_view_phone():
     if request.method == 'POST':
         if request.mimetype=='application/json':
             data=request.json
-            email = data['email']
+            email = data['email'].lower()
             password = data['password']
 
             user = search_user_by_email(email)
@@ -109,7 +109,7 @@ def register_view():
 def register_view_phone():
     if request.mimetype=='application/json':
         data=request.json
-        email = data['email']
+        email = data['email'].lower()
         first_name = data['firstname']
         last_name = data['lastname']
         password1 = data['password1']
