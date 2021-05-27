@@ -150,9 +150,9 @@ def reset_password_view():
     if request.method == "POST":
         if request.mimetype=='application/json':
             data=request.json
-            email = data['email']
+            email = data['email'].lower()
         else:
-            email = request.form.get("email")
+            email = request.form.get("email").lower()
         user = search_user_by_email(email)
         
         if user:
