@@ -89,9 +89,6 @@ def logout_view():
 @auth_view.route("/register", methods=["POST", "GET"])
 def register_view():
     if request.method == 'POST':
-        # if request.mimetype=='application/json':
-        #     status=validate_patient_register_phone(request)
-        #     return jsonify({'status':status})
         new_patient = validate_patient_register(request) 
         if new_patient:
             new_patient.create_patient_file()

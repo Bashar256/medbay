@@ -15,10 +15,10 @@ import random
 def validate_login(request):
     if request.mimetype=='application/json':
         data=request.json
-        email = data['email']
+        email = data['email'].lower()
         password = data['password']
     else:
-        email = request.form.get('email')
+        email = request.form.get('email').lower()
         password = request.form.get('password')
 
     user = search_user_by_email(email)
@@ -52,7 +52,7 @@ def validate_login(request):
 
 
 def validate_patient_register(request):
-    email = request.form.get('email')
+    email = request.form.get('email').lower()
     first_name = request.form.get('firstname')
     last_name = request.form.get('lastname')
     password1 = request.form.get('password1')
@@ -60,7 +60,7 @@ def validate_patient_register(request):
     gender = request.form.get('gender')
     phone_no = request.form.get('phone_no')
     dob = request.form.get('dob')
-
+    print(dob)
     patient = search_user_by_email(email)
 
     if patient:
