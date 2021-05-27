@@ -99,10 +99,6 @@ def register_view():
             flash('Account created successfully !', category='register')
             return redirect(url_for('user_view.home_view'))
         return render_template("register.html")
-<<<<<<< HEAD
-   # create_stuff()
-=======
->>>>>>> b0631fcb58ce8f3daece52fd0b8682641eb2f42a
     return render_template("register.html")
 
 @auth_view.route("/register_phone", methods=["POST", "GET"])
