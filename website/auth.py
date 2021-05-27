@@ -61,13 +61,16 @@ def login_view_phone():
                 if datetime.datetime.now() < (user.last_login_attempt + datetime.timedelta(minutes=5)):
                     user.last_login_attempt = datetime.datetime.now()
                     user.bad_logins = user.bad_logins + 1
+                    
 
                 if user.bad_logins >= BAD_LOGINS_LIMIT:
                     user.block_login = True
                     user.bad_logins = 0
+                    db.session.commit()
                     return jsonify({'status':'To many bad attempts access will be blocked for 5 mins'})
                 
                 db.session.commit()
+            
             
             return jsonify({'status':'Incorrect username or password!'})
 
