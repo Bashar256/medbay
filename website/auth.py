@@ -99,10 +99,6 @@ def register_view():
             flash('Account created successfully !', category='register')
             return redirect(url_for('user_view.home_view'))
         return render_template("register.html")
-<<<<<<< HEAD
-   # create_stuff()
-=======
->>>>>>> b0631fcb58ce8f3daece52fd0b8682641eb2f42a
     return render_template("register.html")
 
 @auth_view.route("/register_phone", methods=["POST", "GET"])
@@ -154,9 +150,9 @@ def reset_password_view():
     if request.method == "POST":
         if request.mimetype=='application/json':
             data=request.json
-            email = data['email']
+            email = data['email'].lower()
         else:
-            email = request.form.get("email")
+            email = request.form.get("email").lower()
         user = search_user_by_email(email)
         
         if user:
