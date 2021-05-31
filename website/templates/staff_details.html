@@ -40,7 +40,7 @@
                     <li class="nav-item">
                         <a class="nav-link active" data-toggle="tab" href="#information"><i class="la la-phone mr-2"></i>Information</a>
                     </li>
-                    {% if (user.is_management_staff() and staff.is_medical_staff()) or (user.is_medical_staff() and user.is_department_head()): %}
+                    {% if (user.is_management_staff() and staff.is_medical_staff()) or (user.is_medical_staff() and user.is_department_head() and staff.is_medical_staff()): %}
                     <li class="nav-item">
                         <a class="nav-link" data-toggle="tab" href="#history"><i class="la la-user mr-2"></i>History</a>
                     </li>
@@ -63,7 +63,7 @@
                             {% endif %}
                         </div>
                     </div>
-                    {% if user.is_management_staff() and staff.is_medical_staff(): %}
+                    {% if (user.is_management_staff() and staff.is_medical_staff()) or (user.is_medical_staff() and user.is_department_head() and staff.is_medical_staff()): %}
                         <div class="tab-pane fade" id="history" role="tabpanel">
                             <div class="pt-4">
                                 <h4>Appointment History</h4>
