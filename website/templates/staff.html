@@ -362,7 +362,7 @@
                                                     <div class="media-body">
                                                         <a href="/staff/staff_details_{{manager.id}}{{manager.role}}"><h4 class="mb-2">{{manager}}</h4></a>
                                                     </div>
-                                                    {% if user.id != manager.id: %}
+                                                    {% if user.is_management_staff() and user.id != manager.id: %}
                                                         <div class="d-flex">
                                                             <a href="#" title="Remove" class="btn btn-danger shadow btn-xs sharp mr-1" data-toggle="modal" data-target="#delete{{manager.id}}" ><i class="fa fa-trash"></i></a>
                                                             <div class="modal fade" id="delete{{manager.id}}">
