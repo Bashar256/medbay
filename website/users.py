@@ -316,15 +316,16 @@ def edit_profile_view():
 
         return redirect(url_for("user_view.edit_profile_view"))
 
-    elif current_user.is_patient():
-        return render_template("edit_profile.html",user=current_user, sidebar=PATIENT_SIDEBAR)
+    user_email = decrypt_email(current_user.email)
+    if current_user.is_patient():
+        return render_template("edit_profile.html",user=current_user, user_email=user_email, sidebar=PATIENT_SIDEBAR)
 
     elif current_user.is_medical_staff():
         if not current_user.is_department_head():
-            return render_template("edit_profile.html",user=current_user, sidebar=MEDICAL_STAFF_SIDEBAR)
-        return render_template("edit_profile.html",user=current_user, sidebar=DEPARTMENT_HEAD_SIDEBAR)
+            return render_template("edit_profile.html",user=current_user, user_email=user_email, sidebar=MEDICAL_STAFF_SIDEBAR)
+        return render_template("edit_profile.html",user=current_user, user_email=user_email, sidebar=DEPARTMENT_HEAD_SIDEBAR)
     elif current_user.is_management_staff():
-        return render_template("edit_profile.html",user=current_user, sidebar=MANAGEMENT_STAFF_SIDEBAR)
+        return render_template("edit_profile.html",user=current_user, user_email=user_email, sidebar=MANAGEMENT_STAFF_SIDEBAR)
         
     elif current_user.is_admin():
         return render_template("edit_profile.html",user=current_user, sidebar=ADMIN_SIDEBAR)    
@@ -1280,8 +1281,8 @@ def staff_view():
     if current_user.is_medical_staff() and current_user.is_department_head():
         medical_staff = Medical_Staff.query.filter_by(department=current_user.department).all()
         management_staff = Management_Staff.query.all()
-        department = Department.query.filter_by(id=current_user.department).first()
-        hospital = Hospital.query.filter_by(id=current_user.hospital).first()
+        department = list(Department.query.filter_by(id=current_user.department).first())
+        hospital = list(Hospital.query.filter_by(id=current_user.hospital).first())
         appointment_times = Appointment_Times.query.filter_by(hospital=current_user.hospital).all()
         return render_template("staff.html", user=current_user, hospital=hospital, doctors=medical_staff, departments=department, management_staff=management_staff, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
