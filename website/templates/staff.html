@@ -346,55 +346,57 @@
                         </div>
                     {% endfor %}
                 {% else: %}
-                    <div class="accordion__item">
-                        <div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#managers_collapse">
-                            <span class="form-group">{{hospital.name}} Management</span>
-                            <span class="accordion__header-line flex-grow-1"></span>
-                            <span class="accordion__header--indicator style_two"></span>
-                        </div>
-                        <div id="managers_collapse" class="collapse accordion__body show" data-parent="#accordion-one">
-                            <div class="widget-media best-doctor pt-4">
-                                <div class="timeline row">
-                                    {% for manager in management_staff: %}
-                                        {% if manager.hospital == hospital.id %}
-                                            <div class="col-lg-6">
-                                                <div class="timeline-panel bg-white p-4 mb-4">
-                                                    <div class="media-body">
-                                                        <a href="/staff/staff_details_{{manager.id}}{{manager.role}}"><h4 class="mb-2">{{manager}}</h4></a>
-                                                    </div>
-                                                    {% if user.id != manager.id: %}
-                                                        <div class="d-flex">
-                                                            <a href="#" title="Remove" class="btn btn-danger shadow btn-xs sharp mr-1" data-toggle="modal" data-target="#delete{{manager.id}}" ><i class="fa fa-trash"></i></a>
-                                                            <div class="modal fade" id="delete{{manager.id}}">
-                                                                <div class="modal-dialog" role="document">
-                                                                    <form method='POST'>
-                                                                        <div class="modal-content">
-                                                                            <div class="modal-header">
-                                                                                <h5 class="modal-title">Remove Manager</h5>
+                    {% if management_staff: %}
+                        <div class="accordion__item">
+                            <div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#managers_collapse">
+                                <span class="form-group">{{hospital.name}} Management</span>
+                                <span class="accordion__header-line flex-grow-1"></span>
+                                <span class="accordion__header--indicator style_two"></span>
+                            </div>
+                            <div id="managers_collapse" class="collapse accordion__body show" data-parent="#accordion-one">
+                                <div class="widget-media best-doctor pt-4">
+                                    <div class="timeline row">
+                                        {% for manager in management_staff: %}
+                                            {% if manager.hospital == hospital.id %}
+                                                <div class="col-lg-6">
+                                                    <div class="timeline-panel bg-white p-4 mb-4">
+                                                        <div class="media-body">
+                                                            <a href="/staff/staff_details_{{manager.id}}{{manager.role}}"><h4 class="mb-2">{{manager}}</h4></a>
+                                                        </div>
+                                                        {% if user.id != manager.id: %}
+                                                            <div class="d-flex">
+                                                                <a href="#" title="Remove" class="btn btn-danger shadow btn-xs sharp mr-1" data-toggle="modal" data-target="#delete{{manager.id}}" ><i class="fa fa-trash"></i></a>
+                                                                <div class="modal fade" id="delete{{manager.id}}">
+                                                                    <div class="modal-dialog" role="document">
+                                                                        <form method='POST'>
+                                                                            <div class="modal-content">
+                                                                                <div class="modal-header">
+                                                                                    <h5 class="modal-title">Remove Manager</h5>
+                                                                                </div>
+                                                                                <div class="modal-body">
+                                                                                <input type="hidden" name="form_no" value="2">
+                                                                                <input type="hidden" name="user_id" value="{{manager.id}}"></input>
+                                                                                Are you sure you want to remove this manager?
+                                                                                </div>
+                                                                                <div class="modal-footer">
+                                                                                    <button type="submit" class="btn btn-primary">Remove</button>
+                                                                                    <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
+                                                                                </div>
                                                                             </div>
-                                                                            <div class="modal-body">
-                                                                            <input type="hidden" name="form_no" value="2">
-                                                                            <input type="hidden" name="user_id" value="{{manager.id}}"></input>
-                                                                            Are you sure you want to remove this manager?
-                                                                            </div>
-                                                                            <div class="modal-footer">
-                                                                                <button type="submit" class="btn btn-primary">Remove</button>
-                                                                                <button type="button" data-dismiss="modal" class="btn btn-light">Cancel</button>
-                                                                            </div>
-                                                                        </div>
-                                                                    </form>
+                                                                        </form>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    {% endif %}
+                                                        {% endif %}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        {% endif %}
-                                    {% endfor %}	
+                                            {% endif %}
+                                        {% endfor %}	
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    {% endif %}
                     {% for department in departments: %}
                         <div class="accordion__item">
                             <div class="accordion__header rounded-lg" data-toggle="collapse" data-target="#department{{department.id}}_collapse">
