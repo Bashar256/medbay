@@ -1369,11 +1369,16 @@ def staff_view():
 @login_required
 def staff_details_view(staff_id,role):
     if current_user.is_medical_staff() and current_user.is_department_head():
-        information = medical_staff_appointments(staff_id)
         staff = Management_Staff.query.filter_by(id=staff_id).first()
-        staff_email = decrypt_email(staff.email)
-        appointment_time = Appointment_Times.query.filter_by(id=staff.appointment_times).first()
-        return render_template("staff_details.html",user=current_user, information=information, staff=staff, appointment_time=appointment_time, staff_email=staff_email, sidebar=DEPARTMENT_HEAD_SIDEBAR)
+        if staff:
+            staff_email = decrypt_email(staff.email)
+            return render_template("staff_details.html", user=current_user, staff=staff, staff_email=staff_email, sidebar=DEPARTMENT_HEAD_SIDEBAR)
+        staff = Medical_Staff.query.filter_by(id=staff_id).first()
+        if staff:
+            staff_email = decrypt_email(staff.email)
+            appointment_time = Appointment_Times.query.filter_by(id=staff.appointment_times).first()
+            information = medical_staff_appointments(staff_id)
+            return render_template("staff_details.html", user=current_user, information=information, staff=staff,  today=today, appointment_time=appointment_time, staff_email=staff_email, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     elif current_user.is_management_staff():
         staff = Management_Staff.query.filter_by(id=staff_id).first()
