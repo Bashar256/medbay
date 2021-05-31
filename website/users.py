@@ -1281,8 +1281,8 @@ def staff_view():
     if current_user.is_medical_staff() and current_user.is_department_head():
         medical_staff = Medical_Staff.query.filter_by(department=current_user.department).all()
         management_staff = Management_Staff.query.all()
-        department = list(Department.query.filter_by(id=current_user.department).first())
-        hospital = list(Hospital.query.filter_by(id=current_user.hospital).first())
+        department = [Department.query.filter_by(id=current_user.department).first()]
+        hospital = [Hospital.query.filter_by(id=current_user.hospital).first()]
         appointment_times = Appointment_Times.query.filter_by(hospital=current_user.hospital).all()
         return render_template("staff.html", user=current_user, hospital=hospital, doctors=medical_staff, departments=department, management_staff=management_staff, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
