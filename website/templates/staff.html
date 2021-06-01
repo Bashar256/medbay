@@ -2,9 +2,9 @@
 {% block title %}Staff{% endblock %}
 {% block body %}
     <div class="bootstrap-modal">
-        <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addMedicalStaff">+ Doctor</button>
-        <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addAppointmentTimes">+ Appointment Hours</button>
-        {% if user.is_management_staff(): %}
+        {% if (user.is_management_staff()) or (user.is_medical_staff() and user.is_department_head()): %}
+            <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addMedicalStaff">+ Doctor</button>
+            <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addAppointmentTimes">+ Appointment Hours</button>
             <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addManagementStaff">+ Manager</button>
         {% elif user.is_admin(): %}
             <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addAdmin">+ Admin</button>

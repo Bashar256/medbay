@@ -783,18 +783,6 @@ def appointment_change_phone():
                 return jsonify({'status':'Appointment Does not exist'})            
 
 
-    #     information = patient_appointments(current_user.id)
-    #     return render_template("my_appointments.html", user=current_user, information=information, today=today, max_appointment_date=today + datetime.timedelta(days=MAX_APPOINTMENT_DATE), sidebar=PATIENT_SIDEBAR)
-
-    # if current_user.is_medical_staff():
-    #     information = medical_staff_appointments(current_user.id)
-    #     if not current_user.is_department_head():
-    #         return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=MEDICAL_STAFF_SIDEBAR)
-    #     return render_template("my_appointments.html", user=current_user, information=information, today=today, sidebar=DEPARTMENT_HEAD_SIDEBAR)
-    
-    # abort(401)
-
-
 #Doctor_Patients View 
 @user_view.route("/patients", methods=["GET", "POST"])
 @login_required
@@ -859,6 +847,7 @@ def patients_view():
         return render_template("patients.html", user=current_user, room_types=ROOM_TYPES, info=info, sidebar=DEPARTMENT_HEAD_SIDEBAR)
 
     abort(401)
+
 
 @user_view.route("/patients_phone", methods=["GET", "POST"])
 @login_required
