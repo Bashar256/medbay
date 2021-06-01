@@ -53,7 +53,7 @@
                                                                     </div>
                                                                     <div class="form-group">
                                                                         <label class="text-black font-w500">Appointment Time</label>
-                                                                        <select name="appointment_time" id="appointment_time" class="form-control" disabled>
+                                                                        <select name="appointment_time" id="appointment_time" class="form-control">
                                                                             <option>{{appointment.appointment_date_time.strftime("%H:%M")}}</option>
                                                                         </select>
                                                                     </div>
@@ -112,8 +112,6 @@
             function update_appointment_time() {
                 var appointment_date = dropdown.appointment_date.val();
                 var medical_staff_id = document.getElementById('medical_staff_id').value
-                dropdown.appointment_time.attr('disabled', 'disabled');
-
                 if (appointment_date.length) {
                     dropdown.appointment_time.empty();
                     $.getJSON("{{ url_for('user_view.appointment_time_select_View') }}", {appointment_date: appointment_date, medical_staff_id: medical_staff_id}, function(data) {
@@ -129,7 +127,6 @@
                                 })
                             );
                         });
-                        dropdown.appointment_time.removeAttr('disabled');
                     });
                 }
             }
