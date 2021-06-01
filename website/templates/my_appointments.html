@@ -49,11 +49,11 @@
                                                                         <input type="hidden" name="appointment_id" value="{{appointment.id}}"></input>
                                                                         <input type="hidden" name="form_no" value="2"></input>
                                                                         <label class="text-black font-w500">Appointment Date</label>
-                                                                        <input type="date" name="appointment_date" id="appointment_date" value="{{appointment.appointment_date_time.strftime("%Y-%m-%d")}}" max="{{max_appointment_date.strftime("%Y-%m-%d")}}" min="{{today.strftime("%Y-%m-%d")}}" class="form-control">
+                                                                        <input type="date" name="appointment_date{{appointment.id}}" id="appointment_date" value="{{appointment.appointment_date_time.strftime("%Y-%m-%d")}}" max="{{max_appointment_date.strftime("%Y-%m-%d")}}" min="{{today.strftime("%Y-%m-%d")}}" class="form-control">
                                                                     </div>
                                                                     <div class="form-group">
                                                                         <label class="text-black font-w500">Appointment Time</label>
-                                                                        <select name="appointment_time" id="appointment_time" class="form-control" disabled>
+                                                                        <select name="appointment_time{{appointment.id}}" id="appointment_time" class="form-control" disabled>
                                                                             <option>{{appointment.appointment_date_time.strftime("%H:%M")}}</option>
                                                                         </select>
                                                                     </div>
