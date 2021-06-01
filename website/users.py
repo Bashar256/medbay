@@ -845,14 +845,15 @@ def patients_view():
         beds = []
         rooms = []
         for patient in doctors_patients:
-            appointments.append(patient.last_visit(current_user.id))
-            bed = Bed.query.filter_by(id=patient.bed).first()
-            beds.append(bed)
-            if bed:
-                room = Room.query.filter_by(id=bed.room).first()
-                rooms.append(room)
-            else:
-                rooms.append(None)
+            if not patient.last_visit(current_user.id) in appointments:
+                appointments.append(patient.last_visit(current_user.id))
+                bed = Bed.query.filter_by(id=patient.bed).first()
+                beds.append(bed)
+                if bed:
+                    room = Room.query.filter_by(id=bed.room).first()
+                    rooms.append(room)
+                else:
+                    rooms.append(None)
         info = zip(doctors_patients, appointments, timed_out, beds, rooms)
         if not current_user.is_department_head():
             return render_template("patients.html", user=current_user, info=info, room_types=ROOM_TYPES, sidebar=MEDICAL_STAFF_SIDEBAR)
