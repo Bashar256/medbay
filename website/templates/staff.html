@@ -2,7 +2,9 @@
 {% block title %}Staff{% endblock %}
 {% block body %}
     <div class="bootstrap-modal">
-        {% if (user.is_management_staff()) or (user.is_medical_staff() and user.is_department_head()): %}
+        {% if user.is_medical_staff() and user.is_department_head(): %}
+            <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addMedicalStaff">+ Doctor</button>
+        {% elif user.is_management_staff(): %}
             <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addMedicalStaff">+ Doctor</button>
             <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addAppointmentTimes">+ Appointment Hours</button>
             <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#addManagementStaff">+ Manager</button>
@@ -94,6 +96,8 @@
                 </div>
             </div>
         </div>
+    {% endif %}
+    {% if user.is_management_staff()%}
         <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" id="addAppointmentTimes" style="display: none;" aria-modal="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
