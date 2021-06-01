@@ -31,7 +31,7 @@
                                             <p>Appointment Time: {{appointment.appointment_date_time.strftime("%H:%M")}}</p>
                                             {% if user.is_patient(): %}
                                                 <div class="text-center mt-4">
-                                                    <button type="submit" class="btn btn-primary btn-block" data-toggle="modal" data-target="#EditAppointment{{appointment.id}}">Edit</button>
+                                                    <button type="submit" class="btn btn-primary btn-block" data-toggle="modal" data-target="#EditAppointment{{appointment.id}}" onclick="update_appointment_time()">Edit</button>
                                                 </div>
                                                 <div class="text-center mt-4">
                                                     <button type="submit" class="btn btn-danger btn-block" data-toggle="modal" data-target="#DeleteAppointment{{appointment.id}}">Delete</button>
@@ -54,7 +54,7 @@
                                                                     <div class="form-group">
                                                                         <label class="text-black font-w500">Appointment Time</label>
                                                                         <select name="appointment_time" id="appointment_time" class="form-control">
-                                                                            <option>{{appointment.appointment_date_time.strftime("%H:%M")}}</option>
+                                                                            <option selected>{{appointment.appointment_date_time.strftime("%H:%M")}}</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
