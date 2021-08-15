@@ -235,7 +235,7 @@ def confirm_email(user):
     token = user.get_token()
     msg = Message('Email Confirmation',
                 sender=("MedBay Support", "noreply@medbay.org"),
-                recipients=["bashar.n.bader@gmail.com", decrypt_email(user.email)])
+                recipients=[decrypt_email(user.email)])
     msg.body = f'''To confirm your email please follow the link below:
     {url_for('auth_view.verify_email_view', token=token, _external=True)}'''
     Thread(target=send_email, args=[msg]).start()
